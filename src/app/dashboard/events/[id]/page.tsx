@@ -39,8 +39,10 @@ export default function EventDetailPage() {
   const [copiedLink, setCopiedLink] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
   const [origin, setOrigin] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin)
     }
@@ -59,16 +61,27 @@ export default function EventDetailPage() {
         return
       }
 
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, name, public_slug, status, guest_limit, event_date, location')
-        .eq('id', id)
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('id, name, public_slug, status, guest_limit, event_date, location')
+          .eq('id', id)
+          .single()
 
-      if (!error && data) {
-        setEvent(data)
+        if (!error && data) {
+          setEvent(data)
+        } else {
+          // Fallback to matching in mock
+          const fallback = mockEvents.find((e) => e.id === id || e.public_slug === id)
+          if (fallback) setEvent(fallback as unknown as EventDetail)
+        }
+      } catch (err) {
+        console.error('Error loading event:', err)
+        const fallback = mockEvents.find((e) => e.id === id || e.public_slug === id)
+        if (fallback) setEvent(fallback as unknown as EventDetail)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     loadEvent()
   }, [id])
@@ -93,7 +106,9 @@ export default function EventDetailPage() {
     )
   }
 
-  const joinUrl = `${origin || ''}/join/${event.public_slug}`
+  // Ensure absolute URL with fallback
+  const baseOrigin = origin || (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+  const joinUrl = `${baseOrigin}/join/${event.public_slug}`
 
   const copyLink = () => {
     navigator.clipboard.writeText(joinUrl)
@@ -174,13 +189,19 @@ export default function EventDetailPage() {
 
             {/* High-Resolution SVG QR Code */}
             <div className="bg-white p-5 rounded-3xl shadow-md border mt-2">
-              <QRCodeSVG
-                id="qr-code"
-                value={joinUrl}
-                size={220}
-                level="H"
-                includeMargin={false}
-              />
+              {mounted ? (
+                <QRCodeSVG
+                  id="qr-code"
+                  value={joinUrl}
+                  size={220}
+                  level="H"
+                  includeMargin={false}
+                />
+              ) : (
+                <div className="w-[220px] h-[220px] bg-muted animate-pulse rounded-2xl flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
 
             {/* Event Code Pill with Copy */}
