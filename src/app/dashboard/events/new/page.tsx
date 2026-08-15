@@ -1,25 +1,26 @@
+'use client'
+
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
-
 import { MOCK_MODE, mockEvents } from '@/lib/mockData'
 
-export default function CreateEvent() {
+export default function CreateEventPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [formData, setFormData] = useState({
     name: '',
     event_type: 'Wedding',
     event_date: '',
-    location: ''
+    location: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +31,7 @@ export default function CreateEvent() {
 
     if (MOCK_MODE) {
       setTimeout(() => {
-        navigate(`/dashboard/events/${mockEvents[0].id}`)
+        router.push(`/dashboard/events/${mockEvents[0].id}`)
       }, 500)
       return
     }
@@ -38,7 +39,9 @@ export default function CreateEvent() {
     // Generate unguessable slug
     const slugBytes = new Uint8Array(8)
     crypto.getRandomValues(slugBytes)
-    const public_slug = Array.from(slugBytes).map(b => b.toString(16).padStart(2, '0')).join('')
+    const public_slug = Array.from(slugBytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
 
     // Expires in 30 days by default for MVP
     const expiresAt = new Date()
@@ -53,7 +56,7 @@ export default function CreateEvent() {
         event_date: formData.event_date,
         location: formData.location,
         public_slug,
-        expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString(),
       })
       .select('id')
       .single()
@@ -66,10 +69,10 @@ export default function CreateEvent() {
 
     // Insert default settings
     await supabase.from('event_settings').insert({
-      event_id: data.id
+      event_id: data.id,
     })
 
-    navigate(`/dashboard/events/${data.id}`)
+    router.push(`/dashboard/events/${data.id}`)
   }
 
   return (
@@ -81,7 +84,10 @@ export default function CreateEvent() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-card border rounded-lg p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-card border rounded-lg p-6"
+      >
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
             {error}
@@ -90,12 +96,12 @@ export default function CreateEvent() {
 
         <div className="space-y-2">
           <Label htmlFor="name">Event Name</Label>
-          <Input 
-            id="name" 
+          <Input
+            id="name"
             placeholder="e.g. Sita & Ramesh Wedding"
             required
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             disabled={loading}
           />
         </div>
@@ -103,11 +109,13 @@ export default function CreateEvent() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="type">Event Type</Label>
-            <select 
+            <select
               id="type"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.event_type}
-              onChange={(e) => setFormData({...formData, event_type: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, event_type: e.target.value })
+              }
               disabled={loading}
             >
               <option value="Wedding">Wedding</option>
@@ -123,12 +131,14 @@ export default function CreateEvent() {
 
           <div className="space-y-2">
             <Label htmlFor="date">Event Date</Label>
-            <Input 
-              id="date" 
+            <Input
+              id="date"
               type="date"
               required
               value={formData.event_date}
-              onChange={(e) => setFormData({...formData, event_date: e.target.value})}
+              onChange={(e) =>
+                setFormData({ ...formData, event_date: e.target.value })
+              }
               disabled={loading}
             />
           </div>
@@ -136,17 +146,24 @@ export default function CreateEvent() {
 
         <div className="space-y-2">
           <Label htmlFor="location">Location (Optional)</Label>
-          <Input 
-            id="location" 
+          <Input
+            id="location"
             placeholder="e.g. Yak & Yeti, Kathmandu"
             value={formData.location}
-            onChange={(e) => setFormData({...formData, location: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, location: e.target.value })
+            }
             disabled={loading}
           />
         </div>
 
         <div className="pt-4 flex justify-end gap-4">
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)} disabled={loading}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => router.back()}
+            disabled={loading}
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={loading}>

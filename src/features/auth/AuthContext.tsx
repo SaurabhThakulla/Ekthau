@@ -1,12 +1,14 @@
+'use client'
+
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-
 import { MOCK_MODE, mockSession } from '@/lib/mockData'
 
 interface AuthContextType {
   session: Session | null
   user: User | null
+  loading: boolean
   signOut: () => Promise<void>
   forceMockLogin?: () => void
 }
@@ -14,6 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
+  loading: true,
   signOut: async () => {},
 })
 
@@ -24,8 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (MOCK_MODE) {
-      setSession(mockSession as any)
-      setUser(mockSession.user as any)
+      setSession(mockSession as unknown as Session)
+      setUser(mockSession.user as unknown as User)
       setLoading(false)
       return
     }
@@ -36,7 +39,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
     })
@@ -51,19 +56,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return
     }
     await supabase.auth.signOut()
+    setSession(null)
+    setUser(null)
   }
 
   const forceMockLogin = () => {
-    setSession(mockSession as any)
-    setUser(mockSession.user as any)
-  }
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    setSession(mockSession as unknown as Session)
+    setUser(mockSession.user as unknown as User)
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, signOut, forceMockLogin }}>
+    <AuthContext.Provider
+      value={{ session, user, loading, signOut, forceMockLogin }}
+    >
       {children}
     </AuthContext.Provider>
   )

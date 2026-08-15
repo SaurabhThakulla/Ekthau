@@ -1,6 +1,7 @@
 // Mock data for UI testing without Supabase
 
-export const MOCK_MODE = !import.meta.env.VITE_SUPABASE_URL;
+export const MOCK_MODE =
+  !process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.VITE_SUPABASE_URL
 
 export const mockUser = {
   id: 'mock-user-123',
@@ -14,7 +15,7 @@ export const mockSession = {
   refresh_token: 'mock-refresh',
   expires_in: 3600,
   token_type: 'bearer',
-  user: mockUser
+  user: mockUser,
 }
 
 export const mockEvents = [
@@ -27,7 +28,8 @@ export const mockEvents = [
     public_slug: 'sita-ramesh-2026',
     guest_limit: 500,
     allow_anonymous: true,
-    cover_image_path: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop'
+    cover_image_path:
+      'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop',
   },
   {
     id: 'evt_2',
@@ -38,39 +40,42 @@ export const mockEvents = [
     public_slug: 'aarav-bday',
     guest_limit: 100,
     allow_anonymous: true,
-    cover_image_path: null
-  }
+    cover_image_path: null,
+  },
 ]
 
 export const mockMedia = [
   {
     id: 'med_1',
-    storage_path: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop',
+    storage_path:
+      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop',
     mime_type: 'image/jpeg',
     status: 'approved',
     created_at: new Date().toISOString(),
     width: 1920,
     height: 1080,
-    uploaded_at: new Date().toISOString()
+    uploaded_at: new Date().toISOString(),
   },
   {
     id: 'med_2',
-    storage_path: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=2070&auto=format&fit=crop',
+    storage_path:
+      'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=2070&auto=format&fit=crop',
     mime_type: 'image/jpeg',
     status: 'pending',
     created_at: new Date().toISOString(),
     width: 1920,
     height: 1080,
-    uploaded_at: new Date().toISOString()
+    uploaded_at: new Date().toISOString(),
   },
   {
     id: 'med_3',
-    storage_path: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=2070&auto=format&fit=crop',
+    storage_path:
+      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=2070&auto=format&fit=crop',
     mime_type: 'image/jpeg',
     status: 'approved',
     created_at: new Date().toISOString(),
     width: 1920,
     height: 1080,
-    uploaded_at: new Date().toISOString()
-  }
+    uploaded_at: new Date().toISOString(),
+  },
 ]

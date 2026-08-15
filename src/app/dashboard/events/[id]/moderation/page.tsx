@@ -1,9 +1,11 @@
+'use client'
+
 import { useEffect, useState, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Loader2, Check, X, Trash2, ArrowLeft } from 'lucide-react'
-
 import { MOCK_MODE, mockMedia } from '@/lib/mockData'
 
 interface Media {
@@ -14,8 +16,9 @@ interface Media {
   created_at: string
 }
 
-export default function Moderation() {
-  const { id } = useParams()
+export default function ModerationPage() {
+  const params = useParams()
+  const id = params?.id as string
   const [media, setMedia] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +27,7 @@ export default function Moderation() {
     setLoading(true)
 
     if (MOCK_MODE) {
-      setMedia(mockMedia as any)
+      setMedia(mockMedia as unknown as Media[])
       setLoading(false)
       return
     }
@@ -35,7 +38,7 @@ export default function Moderation() {
       .eq('event_id', id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
-      
+
     if (!error && data) {
       setMedia(data)
     }
@@ -51,9 +54,11 @@ export default function Moderation() {
       .from('media')
       .update({ status: newStatus })
       .eq('id', mediaId)
-      
+
     if (!error) {
-      setMedia(prev => prev.map(m => m.id === mediaId ? { ...m, status: newStatus } : m))
+      setMedia((prev) =>
+        prev.map((m) => (m.id === mediaId ? { ...m, status: newStatus } : m))
+      )
     }
   }
 
@@ -64,26 +69,36 @@ export default function Moderation() {
       .from('media')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', mediaId)
-      
+
     if (!error) {
-      setMedia(prev => prev.filter(m => m.id !== mediaId))
+      setMedia((prev) => prev.filter((m) => m.id !== mediaId))
     }
   }
 
   const getMediaUrl = (storagePath: string) => {
-    const publicDomain = import.meta.env.VITE_R2_PUBLIC_DOMAIN
-    return publicDomain ? `https://${publicDomain}/${storagePath}` : `/mock-storage/${storagePath}`
+    const publicDomain =
+      process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN ||
+      process.env.VITE_R2_PUBLIC_DOMAIN
+    return publicDomain
+      ? `https://${publicDomain}/${storagePath}`
+      : storagePath.startsWith('http')
+      ? storagePath
+      : `/mock-storage/${storagePath}`
   }
 
   if (loading) {
-    return <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    return (
+      <div className="flex justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link to={`/dashboard/events/${id}`}>
+          <Link href={`/dashboard/events/${id}`}>
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
@@ -97,32 +112,58 @@ export default function Moderation() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {media.map((item) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden flex flex-col bg-card">
+            <div
+              key={item.id}
+              className="border rounded-lg overflow-hidden flex flex-col bg-card"
+            >
               <div className="aspect-square bg-gray-100 dark:bg-zinc-800 relative">
                 {item.mime_type.startsWith('video/') ? (
-                  <video src={getMediaUrl(item.storage_path)} className="w-full h-full object-cover" controls />
+                  <video
+                    src={getMediaUrl(item.storage_path)}
+                    className="w-full h-full object-cover"
+                    controls
+                  />
                 ) : (
-                  <img src={getMediaUrl(item.storage_path)} className="w-full h-full object-cover" />
+                  <img
+                    src={getMediaUrl(item.storage_path)}
+                    alt="Media preview"
+                    className="w-full h-full object-cover"
+                  />
                 )}
                 <div className="absolute top-2 left-2 bg-black/60 rounded px-2 py-1 text-xs text-white uppercase font-bold">
                   {item.status}
                 </div>
               </div>
-              
+
               <div className="p-3 flex justify-between gap-2">
                 {item.status === 'pending' || item.status === 'rejected' ? (
-                  <Button size="sm" variant="outline" className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 dark:bg-green-900/30 dark:text-green-400" onClick={() => updateStatus(item.id, 'approved')}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    onClick={() => updateStatus(item.id, 'approved')}
+                  >
                     <Check className="h-4 w-4" />
                   </Button>
                 ) : null}
-                
+
                 {item.status === 'pending' || item.status === 'approved' ? (
-                  <Button size="sm" variant="outline" className="flex-1 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" onClick={() => updateStatus(item.id, 'rejected')}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                    onClick={() => updateStatus(item.id, 'rejected')}
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 ) : null}
 
-                <Button size="sm" variant="outline" className="flex-1 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200" onClick={() => deleteMedia(item.id)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200"
+                  onClick={() => deleteMedia(item.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

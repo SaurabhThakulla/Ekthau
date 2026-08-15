@@ -1,4 +1,6 @@
-import { createContext, useContext, useState } from 'react'
+'use client'
+
+import { createContext, useContext, useState, useEffect } from 'react'
 
 export interface GuestSession {
   session_id: string
@@ -23,13 +25,19 @@ export const GuestProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSessionState] = useState<GuestSession | null>(null)
 
   const setSession = (newSession: GuestSession | null) => {
-    if (newSession) {
-      localStorage.setItem(`ekthau_guest_${newSession.event_id}`, JSON.stringify(newSession))
+    if (typeof window !== 'undefined') {
+      if (newSession) {
+        localStorage.setItem(
+          `ekthau_guest_${newSession.event_id}`,
+          JSON.stringify(newSession)
+        )
+      }
     }
     setSessionState(newSession)
   }
 
   const getEventSession = (eventId: string): GuestSession | null => {
+    if (typeof window === 'undefined') return null
     try {
       const item = localStorage.getItem(`ekthau_guest_${eventId}`)
       if (!item) return null

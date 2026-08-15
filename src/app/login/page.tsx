@@ -1,5 +1,8 @@
+'use client'
+
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,12 +11,12 @@ import { Loader2 } from 'lucide-react'
 import { MOCK_MODE } from '@/lib/mockData'
 import { useAuth } from '@/features/auth/AuthContext'
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const { forceMockLogin } = useAuth()
 
@@ -24,10 +27,10 @@ export default function Login() {
 
     if (MOCK_MODE && forceMockLogin) {
       forceMockLogin()
-      navigate('/dashboard')
+      router.push('/dashboard')
       return
     }
-    
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -37,7 +40,7 @@ export default function Login() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/dashboard')
+      router.push('/dashboard')
     }
   }
 
@@ -48,7 +51,7 @@ export default function Login() {
           <h1 className="text-3xl font-bold tracking-tighter">Ekthau</h1>
           <p className="text-muted-foreground">Sign in to your host account</p>
         </div>
-        
+
         <form onSubmit={handleLogin} className="space-y-4">
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
@@ -57,10 +60,10 @@ export default function Login() {
           )}
           <div className="space-y-2 text-left">
             <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              required 
+            <Input
+              id="email"
+              type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
@@ -68,10 +71,10 @@ export default function Login() {
           </div>
           <div className="space-y-2 text-left">
             <Label htmlFor="password">Password</Label>
-            <Input 
-              id="password" 
-              type="password" 
-              required 
+            <Input
+              id="password"
+              type="password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
@@ -82,10 +85,10 @@ export default function Login() {
             Sign In
           </Button>
         </form>
-        
+
         <div className="text-center text-sm">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-primary hover:underline">
+          Don&apos;t have an account?{' '}
+          <Link href="/signup" className="text-primary hover:underline">
             Sign up
           </Link>
         </div>
