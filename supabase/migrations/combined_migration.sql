@@ -380,7 +380,7 @@ begin
 end;
 $$;
 
--- RPC to record uploaded media metadata
+-- RPC to record uploaded media metadata (Idempotent)
 create or replace function public.record_uploaded_media(
   p_event_id uuid, 
   p_session_token_hash text, 
@@ -390,7 +390,10 @@ create or replace function public.record_uploaded_media(
   p_width int default null,
   p_height int default null,
   p_duration_ms int default null,
-  p_content_hash text default null
+  p_content_hash text default null,
+  p_media_id uuid default null,
+  p_thumbnail_path text default null,
+  p_preview_path text default null
 )
 returns uuid
 language plpgsql
@@ -402,6 +405,7 @@ declare
   v_event record;
   v_media_id uuid;
   v_initial_status text;
+  v_target_id uuid;
 begin
   -- Validate session
   select * into v_session from public.guest_sessions 
@@ -409,6 +413,21 @@ begin
   
   if not found then
     raise exception 'Invalid or expired session';
+  end if;
+
+  -- If media with this specific ID or content_hash already exists, return existing ID (Idempotency)
+  if p_media_id is not null then
+    select id into v_target_id from public.media where id = p_media_id;
+    if v_target_id is not null then
+      return v_target_id;
+    end if;
+  end if;
+
+  if p_content_hash is not null then
+    select id into v_target_id from public.media where event_id = p_event_id and content_hash = p_content_hash;
+    if v_target_id is not null then
+      return v_target_id;
+    end if;
   end if;
 
   select * into v_event from public.events where id = p_event_id;
@@ -426,13 +445,19 @@ begin
     raise exception 'Event storage limit exceeded';
   end if;
 
+  v_media_id := coalesce(p_media_id, uuid_generate_v4());
+
   insert into public.media (
-    event_id, guest_session_id, storage_path, mime_type, size_bytes, 
+    id, event_id, guest_session_id, storage_path, thumbnail_path, mime_type, size_bytes, 
     width, height, duration_ms, content_hash, status, uploaded_at
   ) values (
-    p_event_id, v_session.id, p_storage_path, p_mime_type, p_size_bytes,
+    v_media_id, p_event_id, v_session.id, p_storage_path, coalesce(p_thumbnail_path, p_preview_path), p_mime_type, p_size_bytes,
     p_width, p_height, p_duration_ms, p_content_hash, v_initial_status, now()
-  ) returning id into v_media_id;
+  ) 
+  on conflict (id) do update set
+    storage_path = excluded.storage_path,
+    thumbnail_path = coalesce(excluded.thumbnail_path, public.media.thumbnail_path)
+  returning id into v_media_id;
 
   -- Atomically update usage meter
   insert into public.usage_meter (event_id, storage_bytes, photo_count, video_count, updated_at)

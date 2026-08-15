@@ -11,21 +11,18 @@ import {
   Image as ImageIcon,
   UploadCloud,
   CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  X,
+  WifiOff,
+  Sparkles,
+  ChevronDown,
+  Layers,
 } from 'lucide-react'
-import { compressImage, generateContentHash } from '@/lib/media'
-import { get, set } from 'idb-keyval'
-import { MOCK_MODE } from '@/lib/mockData'
-import { supabase } from '@/lib/supabase'
-
-interface QueuedItem {
-  id: string
-  file: File
-  type: 'photo' | 'video'
-  status: 'queued' | 'uploading' | 'completed' | 'failed'
-  progress: number
-}
-
-const QUEUE_STORAGE_KEY = 'ekthau_upload_queue'
+import {
+  uploadQueueManager,
+  UploadQueueItem,
+} from '@/lib/upload/uploadQueue'
 
 export default function GuestCameraPage() {
   const params = useParams()
@@ -36,14 +33,28 @@ export default function GuestCameraPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>(
-    'environment'
-  )
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
   const [permissionError, setPermissionError] = useState(false)
-  const [queue, setQueue] = useState<QueuedItem[]>([])
-  const [uploading, setUploading] = useState(false)
+  const [queue, setQueue] = useState<UploadQueueItem[]>([])
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [flashEffect, setFlashEffect] = useState(false)
 
-  // Stop current active stream tracks
+  // Bind session to UploadQueueManager
+  useEffect(() => {
+    if (session?.event_id && session?.session_token_hash) {
+      uploadQueueManager.setSession(session.event_id, session.session_token_hash)
+    }
+  }, [session])
+
+  // Subscribe to queue changes
+  useEffect(() => {
+    const unsubscribe = uploadQueueManager.subscribe((items) => {
+      setQueue(items)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  // Camera stream controls
   const stopCurrentStream = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
@@ -57,7 +68,6 @@ export default function GuestCameraPage() {
     }
   }, [])
 
-  // Initialize Camera
   const startCamera = useCallback(
     async (mode: 'environment' | 'user') => {
       if (typeof window === 'undefined' || !navigator?.mediaDevices) return
@@ -91,292 +101,144 @@ export default function GuestCameraPage() {
     }
   }, [facingMode, startCamera, stopCurrentStream])
 
-  // Load any unsynced queue from IndexedDB on mount
-  useEffect(() => {
-    async function loadPersistedQueue() {
-      if (typeof window === 'undefined') return
-      try {
-        const stored = await get<
-          Array<{
-            id: string
-            name: string
-            type: 'photo' | 'video'
-            buffer: ArrayBuffer
-            mimeType: string
-          }>
-        >(QUEUE_STORAGE_KEY)
-        if (stored && stored.length > 0) {
-          const restoredItems: QueuedItem[] = stored.map((item) => ({
-            id: item.id,
-            file: new File([item.buffer], item.name, { type: item.mimeType }),
-            type: item.type,
-            status: 'queued',
-            progress: 0,
-          }))
-          setQueue((prev) => {
-            const existingIds = new Set(prev.map((p) => p.id))
-            const filtered = restoredItems.filter((r) => !existingIds.has(r.id))
-            return [...prev, ...filtered]
-          })
-        }
-      } catch (err) {
-        console.warn('Failed to load queue from IndexedDB', err)
-      }
-    }
-    loadPersistedQueue()
-  }, [])
-
-  // Queue Management
-  const addToQueue = useCallback(
-    async (file: File, type: 'photo' | 'video') => {
-      const id = crypto.randomUUID()
-
-      // Compress immediately if photo
-      let processedFile = file
-      if (type === 'photo') {
-        processedFile = await compressImage(file)
-      }
-
-      const newItem: QueuedItem = {
-        id,
-        file: processedFile,
-        type,
-        status: 'queued',
-        progress: 0,
-      }
-
-      setQueue((prev) => [...prev, newItem])
-
-      // Persist buffer to IndexedDB for offline / page refresh resilience
-      if (typeof window !== 'undefined') {
-        try {
-          const buffer = await processedFile.arrayBuffer()
-          const existing = (await get<any[]>(QUEUE_STORAGE_KEY)) || []
-          await set(QUEUE_STORAGE_KEY, [
-            ...existing,
-            {
-              id,
-              name: processedFile.name,
-              type,
-              buffer,
-              mimeType: processedFile.type,
-            },
-          ])
-        } catch (err) {
-          console.warn('Failed to persist queued file to IndexedDB', err)
-        }
-      }
-    },
-    []
-  )
-
+  // Instant shutter capture (< 50ms)
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !streamRef.current) return
-    const canvas = document.createElement('canvas')
+    if (!videoRef.current || !streamRef.current || !session) return
+
+    // Trigger visual shutter flash
+    setFlashEffect(true)
+    setTimeout(() => setFlashEffect(false), 120)
+
     const video = videoRef.current
+    const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth || 1920
     canvas.height = video.videoHeight || 1080
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
+    // Capture full resolution raw JPEG without downscaling
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          const file = new File([blob], `capture-${Date.now()}.jpg`, {
+          const rawFile = new File([blob], `capture-${Date.now()}.jpg`, {
             type: 'image/jpeg',
+            lastModified: Date.now(),
           })
-          addToQueue(file, 'photo')
+          // Send straight to background queue
+          uploadQueueManager.addFile(rawFile, 'photo', session.event_id)
         }
       },
       'image/jpeg',
-      0.95
+      0.98 // High original quality preservation
     )
-  }, [addToQueue])
+  }, [session])
 
+  // File Picker Upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files) return
+    if (!files || !session) return
+
     Array.from(files).forEach((file) => {
       const type = file.type.startsWith('video') ? 'video' : 'photo'
-      addToQueue(file, type)
+      uploadQueueManager.addFile(file, type, session.event_id)
     })
+
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
-  // Upload worker loop
-  useEffect(() => {
-    const processQueue = async () => {
-      if (uploading || !session) return
-
-      const nextItemIndex = queue.findIndex((q) => q.status === 'queued')
-      if (nextItemIndex === -1) return
-
-      setUploading(true)
-      const item = queue[nextItemIndex]
-
-      try {
-        // 1. Mark uploading
-        setQueue((prev) =>
-          prev.map((q, i) =>
-            i === nextItemIndex ? { ...q, status: 'uploading' } : q
-          )
-        )
-
-        // 2. Hash content
-        const contentHash = await generateContentHash(item.file)
-
-        // 3. Request presigned URL from Edge Function
-        if (MOCK_MODE) {
-          await new Promise((resolve) => setTimeout(resolve, 800))
-        } else {
-          const supabaseUrl =
-            process.env.NEXT_PUBLIC_SUPABASE_URL ||
-            process.env.VITE_SUPABASE_URL
-          const anonKey =
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-            process.env.VITE_SUPABASE_ANON_KEY
-          const edgeFunctionUrl = supabaseUrl
-            ? `${supabaseUrl}/functions/v1/upload-url`
-            : null
-
-          let storagePath = `events/${session.event_id}/media/${crypto.randomUUID()}/${item.file.name}`
-
-          if (edgeFunctionUrl && anonKey) {
-            const res = await fetch(edgeFunctionUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${anonKey}`,
-              },
-              body: JSON.stringify({
-                event_id: session.event_id,
-                filename: item.file.name,
-                content_type: item.file.type,
-                session_token_hash: session.session_token_hash,
-              }),
-            })
-
-            if (!res.ok) throw new Error('Failed to get signed URL')
-            const data = await res.json()
-            storagePath = data.storagePath
-
-            // 4. Upload directly to R2
-            const uploadRes = await fetch(data.signedUrl, {
-              method: 'PUT',
-              body: item.file,
-              headers: { 'Content-Type': item.file.type },
-            })
-            if (!uploadRes.ok) throw new Error('Upload to storage failed')
-          }
-
-          // 5. Save metadata to Supabase using RPC
-          await supabase.rpc('record_uploaded_media', {
-            p_event_id: session.event_id,
-            p_session_token_hash: session.session_token_hash,
-            p_storage_path: storagePath,
-            p_mime_type: item.file.type,
-            p_size_bytes: item.file.size,
-            p_content_hash: contentHash,
-          })
-        }
-
-        // 6. Mark completed & cleanup from IndexedDB
-        setQueue((prev) =>
-          prev.map((q, i) =>
-            i === nextItemIndex ? { ...q, status: 'completed' } : q
-          )
-        )
-        if (typeof window !== 'undefined') {
-          try {
-            const existing = (await get<any[]>(QUEUE_STORAGE_KEY)) || []
-            await set(
-              QUEUE_STORAGE_KEY,
-              existing.filter((e) => e.id !== item.id)
-            )
-          } catch {
-            // ignore
-          }
-        }
-      } catch (err) {
-        console.error('Upload error', err)
-        setQueue((prev) =>
-          prev.map((q, i) =>
-            i === nextItemIndex ? { ...q, status: 'failed' } : q
-          )
-        )
-      } finally {
-        setUploading(false)
-      }
-    }
-
-    processQueue()
-  }, [queue, uploading, session])
-
-  const pendingCount = queue.filter(
-    (q) => q.status === 'queued' || q.status === 'uploading'
-  ).length
-  const completedCount = queue.filter((q) => q.status === 'completed').length
+  const stats = uploadQueueManager.getStats()
+  const activeUpload = queue.find((q) => q.status === 'uploading' || q.status === 'registering')
 
   if (!session) {
     return (
-      <div className="flex h-screen items-center justify-center flex-col gap-4 p-4 text-center">
-        <p className="text-muted-foreground">Please join the event first.</p>
-        <Link
-          href={`/join/${slug}`}
-          className="text-primary font-medium hover:underline"
-        >
-          Join Event
-        </Link>
+      <div className="flex h-screen items-center justify-center flex-col gap-4 p-4 text-center bg-background">
+        <p className="text-muted-foreground font-medium">Please join the celebration first.</p>
+        <Button asChild className="rounded-xl font-bold">
+          <Link href={`/join/${slug}`}>Join Event</Link>
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-black text-white overflow-hidden relative">
-      {/* Top Bar */}
-      <div className="absolute top-0 w-full p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent">
+    <div className="flex flex-col h-[100dvh] bg-black text-white overflow-hidden relative select-none">
+      {/* Shutter White Flash Animation */}
+      {flashEffect && (
+        <div className="absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 opacity-80" />
+      )}
+
+      {/* Top Header Bar */}
+      <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
         <Link
           href={`/e/${slug}/gallery`}
-          className="text-white drop-shadow-md font-medium text-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-bold border border-white/10 active:scale-95 transition-transform"
         >
-          Gallery
+          <Layers className="h-3.5 w-3.5" />
+          <span>Live Gallery</span>
         </Link>
 
-        {/* Upload Status */}
-        {(pendingCount > 0 || completedCount > 0) && (
-          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium border border-white/10">
-            {pendingCount > 0 ? (
+        {/* Floating Upload Status Pill */}
+        {queue.length > 0 && (
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold backdrop-blur-md border shadow-lg transition-all active:scale-95 ${
+              !stats.isOnline
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                : stats.failed > 0
+                ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                : stats.pending > 0
+                ? 'bg-primary/25 text-white border-primary/40'
+                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+            }`}
+          >
+            {!stats.isOnline ? (
+              <>
+                <WifiOff className="h-3.5 w-3.5 text-amber-400" />
+                <span>Offline (Paused)</span>
+              </>
+            ) : stats.failed > 0 ? (
+              <>
+                <AlertCircle className="h-3.5 w-3.5 text-red-400" />
+                <span>{stats.failed} failed</span>
+              </>
+            ) : stats.pending > 0 ? (
               <>
                 <UploadCloud className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>{pendingCount} uploading</span>
+                <span>
+                  {stats.pending} uploading
+                  {activeUpload && ` • ${activeUpload.progress}%`}
+                </span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
-                <span>All uploaded</span>
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                <span>All {stats.completed} saved</span>
               </>
             )}
-          </div>
+            <ChevronDown className="h-3 w-3 opacity-60" />
+          </button>
         )}
       </div>
 
-      {/* Camera Viewport */}
-      <div className="flex-1 relative bg-zinc-900 flex items-center justify-center">
+      {/* Camera Viewfinder */}
+      <div className="flex-1 relative bg-zinc-950 flex items-center justify-center overflow-hidden">
         {permissionError ? (
-          <div className="text-center p-6 space-y-4">
+          <div className="text-center p-6 space-y-4 max-w-xs">
             <CameraIcon className="h-12 w-12 mx-auto text-zinc-500" />
-            <h3 className="font-semibold text-lg">Camera Access Denied</h3>
-            <p className="text-sm text-zinc-400">
-              Please enable camera access or upload from your gallery.
+            <h3 className="font-bold text-lg">Camera Access Needed</h3>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Enable camera permissions in your browser settings or choose photos directly from your gallery.
             </p>
             <Button
               variant="secondary"
+              className="rounded-xl font-bold text-xs"
               onClick={() => fileInputRef.current?.click()}
             >
-              Upload from Gallery
+              Upload from Device
             </Button>
           </div>
         ) : (
@@ -391,12 +253,14 @@ export default function GuestCameraPage() {
       </div>
 
       {/* Bottom Controls */}
-      <div className="h-32 bg-black flex items-center justify-around pb-6 px-6">
+      <div className="h-32 bg-black/90 backdrop-blur-md flex items-center justify-around pb-6 px-6 z-20 border-t border-white/5">
+        {/* Gallery Pick Button */}
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full h-12 w-12 text-white hover:bg-white/20"
+          className="rounded-full h-12 w-12 text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-transform"
           onClick={() => fileInputRef.current?.click()}
+          title="Upload full resolution photo or video"
         >
           <ImageIcon className="h-6 w-6" />
         </Button>
@@ -413,20 +277,19 @@ export default function GuestCameraPage() {
         <button
           onClick={capturePhoto}
           disabled={permissionError}
-          className="h-20 w-20 rounded-full border-4 border-white flex items-center justify-center disabled:opacity-50"
-          aria-label="Take Photo"
+          className="h-20 w-20 rounded-full border-4 border-white flex items-center justify-center disabled:opacity-50 active:scale-90 transition-transform shadow-xl shadow-white/10"
+          aria-label="Snap High-Res Photo"
         >
-          <div className="h-16 w-16 bg-white rounded-full active:scale-95 transition-transform" />
+          <div className="h-16 w-16 bg-white rounded-full" />
         </button>
 
+        {/* Switch Camera */}
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full h-12 w-12 text-white hover:bg-white/20"
+          className="rounded-full h-12 w-12 text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-transform"
           onClick={() =>
-            setFacingMode((prev) =>
-              prev === 'environment' ? 'user' : 'environment'
-            )
+            setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'))
           }
           disabled={permissionError}
           aria-label="Switch Camera"
@@ -434,6 +297,120 @@ export default function GuestCameraPage() {
           <SwitchCamera className="h-6 w-6" />
         </Button>
       </div>
+
+      {/* Upload Queue Popover / Drawer */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end animate-in fade-in-50">
+          <div
+            className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl p-5 max-h-[70vh] flex flex-col space-y-4 animate-in slide-in-from-bottom-6 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <h3 className="font-bold text-base text-white">Upload Activity</h3>
+                <p className="text-xs text-zinc-400">
+                  {stats.pending > 0
+                    ? `${stats.pending} remaining • Uploading in original quality`
+                    : `All ${stats.completed} uploads completed`}
+                </p>
+              </div>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="rounded-full p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Quick Actions */}
+            {stats.failed > 0 && (
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs">
+                <span className="text-red-300 font-medium">
+                  {stats.failed} upload{stats.failed > 1 ? 's' : ''} encountered a network issue
+                </span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-8 rounded-xl text-xs font-bold"
+                  onClick={() => uploadQueueManager.retryAllFailed()}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Retry All
+                </Button>
+              </div>
+            )}
+
+            {/* List of queue items */}
+            <div className="overflow-y-auto space-y-2.5 max-h-[45vh] pr-1">
+              {queue.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-xs"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="h-10 w-10 rounded-xl bg-zinc-800 shrink-0 flex items-center justify-center font-mono font-bold text-[10px] text-zinc-400">
+                      {item.type === 'video' ? 'VID' : 'RAW'}
+                    </div>
+                    <div className="truncate">
+                      <p className="font-bold text-white truncate">{item.file.name}</p>
+                      <p className="text-[11px] text-zinc-400 font-mono">
+                        {(item.file.size / (1024 * 1024)).toFixed(1)} MB
+                        {item.isMultipart && ' • Multipart'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {item.status === 'completed' && (
+                      <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Saved
+                      </span>
+                    )}
+
+                    {item.status === 'uploading' && (
+                      <div className="flex items-center gap-1.5 text-blue-400 font-bold">
+                        <UploadCloud className="h-4 w-4 animate-pulse" />
+                        <span>{item.progress}%</span>
+                      </div>
+                    )}
+
+                    {item.status === 'registering' && (
+                      <span className="text-purple-400 font-bold animate-pulse">Syncing...</span>
+                    )}
+
+                    {item.status === 'queued' && (
+                      <span className="text-zinc-400 font-medium">Queued</span>
+                    )}
+
+                    {item.status === 'paused' && (
+                      <span className="text-amber-400 font-medium">Paused</span>
+                    )}
+
+                    {item.status === 'failed' && (
+                      <button
+                        onClick={() => uploadQueueManager.retryFailed(item.id)}
+                        className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 font-bold flex items-center gap-1"
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                        Retry
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              className="w-full h-11 rounded-xl font-bold"
+              onClick={() => setDrawerOpen(false)}
+            >
+              Continue Snapping
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

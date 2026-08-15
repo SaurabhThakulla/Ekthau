@@ -160,7 +160,7 @@ export default function GalleryGrid({
             </div>
           ) : (
             <img
-              src={getMediaUrl(media.storage_path)}
+              src={getMediaUrl(media.thumbnail_path || media.storage_path)}
               alt="Event media"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               loading="lazy"
