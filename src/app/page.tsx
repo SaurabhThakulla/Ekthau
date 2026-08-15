@@ -35,9 +35,10 @@ import {
   HelpCircle,
   Sparkles,
   ArrowUpRight,
+  Scan,
+  Maximize2,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
-import { mockEvents } from '@/lib/mockData'
 
 export default function LandingPage() {
   const { session } = useAuth()
@@ -48,37 +49,6 @@ export default function LandingPage() {
     setOpenFaq(openFaq === index ? null : index)
   }
 
-  const sampleMoments = [
-    {
-      url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
-      guest: 'Suman K.',
-      table: 'Table 4',
-      caption: 'First toast to the couple!',
-      time: 'Just now',
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
-      guest: 'Anjali P.',
-      table: 'Family Row',
-      caption: 'Pure joy on the stage ✨',
-      time: '2m ago',
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1200&auto=format&fit=crop',
-      guest: 'Rohan D.',
-      table: 'Dance Floor',
-      caption: 'The energy right now is insane',
-      time: '4m ago',
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=1200&auto=format&fit=crop',
-      guest: 'Pooja T.',
-      table: 'Lounge',
-      caption: 'Reunion after 6 years',
-      time: '7m ago',
-    },
-  ]
-
   const pricingPlans = [
     {
       id: 'free',
@@ -86,13 +56,15 @@ export default function LandingPage() {
       capacity: 'Up to 30 guests',
       price: 'Free',
       numericPrice: 0,
-      description: 'Ideal for intimate family dinners, small birthday lunches, or trying out Ekthau.',
+      description: 'Ideal for intimate family dinners, birthday brunches, or trying out Ekthau.',
       duration: '30 days online access',
       storage: '1 GB storage (~350 photos)',
-      featured: false,
-      ai: false,
+      badge: 'Free Forever',
+      badgeClass: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
+      cardClass: 'border-border bg-card',
+      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
       features: [
-        'Browser-based camera (zero app download)',
+        'In-browser camera (zero app downloads)',
         'Printable table QR code pass (PNG)',
         'Shared live mobile gallery',
         'Single-click bulk ZIP download',
@@ -107,11 +79,13 @@ export default function LandingPage() {
       capacity: 'Up to 100 guests',
       price: 'Rs. 99',
       numericPrice: 99,
-      description: 'Perfect for engagement parties, birthday bashes, and private dinners.',
+      description: 'Perfect for engagement parties, anniversary dinners, and private bashes.',
       duration: '60 days (2 months) storage',
       storage: '5 GB storage (~1,500 photos & clips)',
-      featured: false,
-      ai: false,
+      badge: 'Mini Event',
+      badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+      cardClass: 'border-border bg-card',
+      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
       features: [
         'Everything in Starter',
         'Original HD quality photo preservation',
@@ -128,11 +102,13 @@ export default function LandingPage() {
       capacity: 'Up to 250 guests',
       price: 'Rs. 499',
       numericPrice: 499,
-      description: 'Built for wedding receptions, milestone anniversaries, and reunions.',
+      description: 'Built for reception parties, milestone birthdays, and family reunions.',
       duration: '90 days (3 months) storage',
       storage: '10 GB storage (~3,500 photos & videos)',
-      featured: false,
-      ai: false,
+      badge: 'Celebration',
+      badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      cardClass: 'border-border bg-card',
+      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
       features: [
         'Everything in Mini Event',
         'Extended video uploads (up to 60s)',
@@ -149,12 +125,10 @@ export default function LandingPage() {
       capacity: 'Up to 600 guests',
       price: 'Rs. 999',
       numericPrice: 999,
-      badge: 'Recommended for Weddings',
-      description: 'The standard choice for full-scale weddings and large party gatherings.',
-      duration: '180 days (6 months) storage',
-      storage: '30 GB storage (~10,000 photos & 4K clips)',
-      featured: true,
-      ai: false,
+      badge: '🔥 Most Popular for Weddings',
+      badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+      cardClass: 'border-amber-500/40 bg-gradient-to-b from-amber-500/5 via-card to-card shadow-xl ring-1 ring-amber-500/30',
+      buttonClass: 'bg-foreground text-background hover:bg-foreground/90 shadow-md',
       features: [
         'Everything in Celebration',
         'Original 4K photo & video preservation',
@@ -165,6 +139,7 @@ export default function LandingPage() {
       ],
       cta: 'Get Grand Celebration Plan',
       ctaHref: '/signup?plan=30gb',
+      featured: true,
     },
     {
       id: '100gb',
@@ -172,11 +147,10 @@ export default function LandingPage() {
       capacity: 'Up to 2,000 guests',
       price: 'Rs. 1,999',
       numericPrice: 1999,
-      badge: '✨ AI Face Search Included',
-      description: 'For college festivals, multi-day concerts, and large conventions.',
-      duration: '1 Full Year (365 days) storage',
-      storage: '100 GB storage (~35,000 photos & videos)',
-      featured: false,
+      badge: '✨ AI Photo Scan Included',
+      badgeClass: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+      cardClass: 'border-purple-500/40 bg-gradient-to-b from-purple-500/5 via-card to-card shadow-lg ring-1 ring-purple-500/20',
+      buttonClass: 'border border-purple-500/40 text-purple-600 dark:text-purple-300 hover:bg-purple-500/10 font-bold',
       ai: true,
       features: [
         'Everything in Grand Celebration',
@@ -196,10 +170,9 @@ export default function LandingPage() {
       price: 'Rs. 4,999',
       numericPrice: 4999,
       badge: '👑 Ultimate Multi-Event Vault',
-      description: 'For traditional multi-day weddings with Haldi, Sangeet, Wedding, and Reception.',
-      duration: '2 Years Permanent Archival',
-      storage: '250 GB storage (~90,000 photos & 4K media)',
-      featured: false,
+      badgeClass: 'bg-amber-400/20 text-amber-300 border-amber-400/30',
+      cardClass: 'border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 text-white shadow-2xl',
+      buttonClass: 'bg-amber-400 text-zinc-950 hover:bg-amber-300 font-bold shadow-lg',
       ai: true,
       features: [
         'Everything in Mega Festival',
@@ -207,7 +180,7 @@ export default function LandingPage() {
         '✨ Advanced AI Face Match + Auto-Highlights album',
         'Custom event domain & white-label signage',
         'Dedicated event setup concierge',
-        'Permanent download vault link',
+        '2 Years permanent download vault link',
       ],
       cta: 'Select Royal 250GB Vault',
       ctaHref: '/signup?plan=250gb',
@@ -217,15 +190,15 @@ export default function LandingPage() {
   const faqs = [
     {
       q: 'Do guests need to download an app or create an account?',
-      a: 'No. Guests simply point their phone camera at the table QR code and the camera opens instantly in their native mobile browser (Safari, Chrome, etc.). No app installation, no passwords, no App Store friction.',
+      a: 'No. Guests simply point their phone camera at the table QR code and the camera opens instantly in their native mobile browser (Safari, Chrome, etc.). No app installation, no passwords, zero friction.',
     },
     {
       q: 'What happens if the venue Wi-Fi or mobile data is slow or intermittent?',
-      a: 'Ekthau is engineered specifically for real-world event venues. When a guest takes a photo, it is saved instantly on their device and queues in the background. If cell reception drops, the upload pauses safely and resumes automatically as soon as connection is restored. Guests never have to wait or stare at an upload bar.',
+      a: 'Ekthau is engineered specifically for real-world event halls in Nepal. Photos save locally to the guest’s phone first and queue in the background. If cell reception drops, the upload pauses safely and resumes automatically when connection returns.',
     },
     {
       q: 'Are photos compressed or reduced in quality?',
-      a: 'The original photos and videos are stored in 100% full original resolution (10–25MB raw JPEGs, 4K videos). Ekthau simultaneously generates lightweight web previews in the background so the live wall stays fast, while preserving the full-fidelity originals for your final download archive.',
+      a: 'Original photos and videos are stored in 100% full uncompressed quality (10–25MB raw files, 4K videos). Lightweight previews are generated in the background so the live wall stays instant, while the full originals are preserved for your final ZIP download.',
     },
     {
       q: 'How does the Live Wall projector mode work?',
@@ -236,33 +209,36 @@ export default function LandingPage() {
       a: 'Yes. You can enable Host Moderation in your settings with one click. Photos will only appear on the public wall once you (or a designated co-host) tap "Approve" in your private dashboard.',
     },
     {
-      q: 'How do I get the photos after the event ends?',
-      a: 'You can download the entire full-resolution archive as a single ZIP file at any time from your host dashboard. Depending on your plan, photos remain safely preserved for up to 2 years.',
+      q: 'How does the ✨ AI Photo Scan work?',
+      a: 'On our 100GB and 250GB plans, guests can tap "Find My Photos" and snap a 1-second selfie. Our AI facial recognition instantly scans the entire event archive and generates a private album of every photo and video they appear in.',
     },
   ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-foreground selection:text-background font-sans antialiased">
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-amber-500 selection:text-black font-sans antialiased">
       {/* 1. TOP NAVIGATION */}
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
         <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4 max-w-7xl">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 rounded-xl bg-foreground text-background flex items-center justify-center font-black transition-transform group-hover:scale-95">
-              <Camera className="h-4 w-4" />
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-black flex items-center justify-center font-black shadow-md shadow-amber-500/20 transition-transform group-hover:scale-95">
+              <Camera className="h-4 w-4 stroke-[2.5]" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight leading-none text-foreground">
+              <span className="font-black text-lg tracking-tight leading-none text-foreground flex items-center gap-1.5">
                 Ekthau
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  एकठाउँ
+                </span>
               </span>
               <span className="text-[10px] text-muted-foreground font-medium tracking-wide">
-                एकठाउँ • Disposable Camera
+                The Digital Disposable Camera
               </span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition-colors">
               How It Works
             </a>
@@ -284,14 +260,14 @@ export default function LandingPage() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setJoinModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
             >
-              <QrCode className="h-3.5 w-3.5" />
-              <span>Join with Code</span>
+              <QrCode className="h-3.5 w-3.5 text-amber-500" />
+              <span>Join Event</span>
             </button>
 
             {session ? (
-              <Button asChild size="sm" className="rounded-lg font-semibold text-xs h-9 px-3.5">
+              <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-4 bg-foreground text-background hover:bg-foreground/90 shadow-sm">
                 <Link href="/dashboard">
                   Dashboard
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
@@ -299,10 +275,10 @@ export default function LandingPage() {
               </Button>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild className="rounded-lg font-medium text-xs h-9 px-3 hidden sm:inline-flex">
+                <Button variant="ghost" size="sm" asChild className="rounded-xl font-semibold text-xs h-9 px-3 hidden sm:inline-flex">
                   <Link href="/login">Host Sign In</Link>
                 </Button>
-                <Button asChild size="sm" className="rounded-lg font-semibold text-xs h-9 px-4 bg-foreground text-background hover:bg-foreground/90">
+                <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20">
                   <Link href="/signup">Create Event</Link>
                 </Button>
               </div>
@@ -312,33 +288,39 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* 2. HERO SECTION */}
-        <section className="relative pt-12 pb-16 md:pt-24 md:pb-28 overflow-hidden">
+        {/* 2. HERO SECTION WITH RICH COLOR GRADING & BESPOKE VISUALS */}
+        <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
+          {/* Subtle Ambient Warm Glow */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-amber-500/10 via-rose-500/5 to-purple-500/10 blur-[100px] rounded-full pointer-events-none -z-10" />
+
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-            {/* Header Content */}
+            {/* Header Copy */}
             <div className="max-w-3xl mx-auto text-center space-y-6">
-              {/* Eyebrow */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border text-foreground text-xs font-semibold tracking-wider uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                The Digital Disposable Camera for Events
+              {/* Eyebrow badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold tracking-wider uppercase shadow-xs">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+                Digital Disposable Camera for Real-World Events
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-foreground leading-[1.08] text-balance">
-                Your celebration, through everyone&apos;s eyes.
+              <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-foreground leading-[1.06] text-balance">
+                Your celebration, through{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600">
+                  everyone’s eyes.
+                </span>
               </h1>
 
-              {/* Supporting Subtitle */}
+              {/* Subtitle */}
               <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-balance">
-                Give your guests a disposable camera right in their phone browser. Scan a table QR code, snap raw candid moments, and watch memories stream into a shared gallery in real time.
+                Give your guests a disposable camera in their phone browser. Place QR stands on tables, let guests snap raw candid moments, and watch memories stream live onto venue screens.
               </p>
 
-              {/* Distinct Hero CTAs */}
+              {/* Distinct Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-3">
                 <Button
                   asChild
                   size="lg"
-                  className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold bg-foreground text-background hover:bg-foreground/90 shadow-md transition-all active:scale-98"
+                  className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl font-bold bg-foreground text-background hover:bg-foreground/90 shadow-lg shadow-black/5 transition-all active:scale-98"
                 >
                   <Link href="/signup">
                     Get Your Event Camera
@@ -348,75 +330,75 @@ export default function LandingPage() {
 
                 <button
                   onClick={() => setJoinModalOpen(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold text-sm text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 sm:h-13 px-6 rounded-xl font-bold text-sm text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
                 >
-                  <QrCode className="h-4 w-4 text-muted-foreground" />
+                  <QrCode className="h-4 w-4 text-amber-500" />
                   <span>Scan or Enter Code</span>
                 </button>
               </div>
 
               {/* Trust statement */}
-              <p className="text-xs text-muted-foreground pt-4 font-medium">
-                No app installation required • 100% original photo quality • 1 GB free on every celebration
+              <p className="text-xs text-muted-foreground pt-3 font-medium flex items-center justify-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                No app downloads required • 100% original raw quality • 1 GB free on every event
               </p>
             </div>
 
-            {/* HERO VISUAL: EDITORIAL PRODUCT SHOWCASE */}
-            <div className="mt-14 sm:mt-20 max-w-5xl mx-auto">
-              <div className="relative rounded-3xl p-3 sm:p-4 bg-muted/50 border border-border/80 shadow-2xl">
-                {/* Main Visual Frame */}
-                <div className="relative rounded-2xl overflow-hidden bg-zinc-950 aspect-[16/10] sm:aspect-[21/10] flex items-center justify-center">
-                  <Image
-                    src="/images/live-wall.jpg"
-                    alt="Live wedding celebration photo wall"
-                    fill
-                    priority
-                    className="object-cover brightness-75"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+            {/* HERO VISUAL: DUAL LUXURY SHOWCASE */}
+            <div className="mt-12 sm:mt-16 max-w-5xl mx-auto">
+              <div className="grid md:grid-cols-12 gap-5 items-stretch">
+                {/* Visual Left: Tabletop QR Stand (The physical touchpoint) */}
+                <div className="md:col-span-5 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-xl group">
+                  <div className="aspect-[4/3] md:h-full relative min-h-[280px]">
+                    <Image
+                      src="/images/table-qr-stand.jpg"
+                      alt="Elegant wedding table QR stand"
+                      fill
+                      priority
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Badge Overlay */}
+                    <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-white text-[11px] font-bold flex items-center gap-1.5">
+                      <QrCode className="h-3.5 w-3.5 text-amber-400" />
+                      Table QR Pass
+                    </div>
 
-                  {/* Overlaid UI Elements */}
-                  <div className="absolute inset-0 p-4 sm:p-8 flex flex-col justify-between z-10 pointer-events-none">
-                    {/* Top status bar */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 text-white text-xs font-semibold">
+                    <div className="absolute bottom-4 inset-x-4 text-white">
+                      <p className="text-sm font-bold">1. Placed on every table</p>
+                      <p className="text-xs text-zinc-300">Guests scan with their regular phone camera</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Right: Phone Camera Point-of-View in Action */}
+                <div className="md:col-span-7 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-xl group">
+                  <div className="aspect-[16/10] md:h-full relative min-h-[280px]">
+                    <Image
+                      src="/images/phone-camera-snap.jpg"
+                      alt="Guest holding phone taking photos at wedding"
+                      fill
+                      priority
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                    {/* Top live indicator */}
+                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+                      <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-white text-[11px] font-bold flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                        Live Event Wall • Sita & Ramesh Wedding
+                        In-Browser Camera • Shutter &lt; 50ms
                       </div>
 
-                      <div className="hidden sm:flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs text-zinc-300">
-                        <Users className="h-3.5 w-3.5 text-blue-400" />
-                        <span>142 Guests Connected</span>
+                      <div className="hidden sm:flex bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-amber-300 text-[11px] font-bold">
+                        100% Uncompressed Raw
                       </div>
                     </div>
 
-                    {/* Bottom strip of candid incoming photos */}
-                    <div className="space-y-3">
-                      <div className="hidden md:flex items-center justify-between text-white text-xs font-medium">
-                        <span>Latest Guest Captures</span>
-                        <span className="text-zinc-400">Streaming live from Table QR passes</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        {sampleMoments.map((moment, i) => (
-                          <div
-                            key={i}
-                            className="relative h-24 sm:h-32 rounded-xl overflow-hidden border border-white/15 shadow-md bg-black/40 group"
-                          >
-                            <Image
-                              src={moment.url}
-                              alt={moment.caption}
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                            <div className="absolute bottom-2 inset-x-2 text-[11px] text-white flex items-center justify-between">
-                              <span className="font-semibold truncate">{moment.guest}</span>
-                              <span className="text-[10px] text-zinc-300 font-mono">{moment.time}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="absolute bottom-4 inset-x-4 text-white">
+                      <p className="text-sm font-bold">2. Guests capture candid moments</p>
+                      <p className="text-xs text-zinc-300">Fast shutter, background upload queue, works even in patchy venue Wi-Fi</p>
                     </div>
                   </div>
                 </div>
@@ -425,25 +407,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 3. PRODUCT PROOF BAR */}
-        <section className="border-y border-border py-8 bg-muted/20">
+        {/* 3. PRODUCT PROOF METRICS BAR */}
+        <section className="border-y border-border py-8 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               <div>
-                <p className="text-xl sm:text-2xl font-black tracking-tight text-foreground">0 Apps</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Works directly in mobile browser</p>
+                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">0 Apps</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium">Opens directly in Safari / Chrome</p>
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-black tracking-tight text-foreground">&lt; 50ms</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Instant camera shutter speed</p>
+                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">&lt; 50ms</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium">Instant shutter response</p>
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-black tracking-tight text-foreground">100% Raw</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Original quality preserved</p>
+                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">100% Raw</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium">Full original resolution preserved</p>
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-black tracking-tight text-foreground">1-Click ZIP</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Bulk download all event media</p>
+                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">1-Click ZIP</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium">Bulk download full event archive</p>
               </div>
             </div>
           </div>
@@ -453,291 +435,223 @@ export default function LandingPage() {
         <section id="how-it-works" className="py-20 md:py-28">
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
             <div className="max-w-2xl space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                How It Works
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                Simple 3-Step Setup
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-                Simple by design. No friction.
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+                Zero friction. Maximum memories.
               </h2>
-              <p className="text-muted-foreground text-base">
-                Chasing guests on WhatsApp or sharing clunky Google Drive folders never works. Ekthau makes capturing and sharing effortless in 3 steps.
+              <p className="text-muted-foreground text-sm sm:text-base">
+                No more WhatsApp spam or broken Google Drive folders. Ekthau makes collecting event photography effortless.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-10">
+            <div className="grid md:grid-cols-3 gap-8">
               {/* Step 01 */}
-              <div className="space-y-4 border-t border-border pt-6">
-                <span className="text-4xl font-black text-muted-foreground/40 font-mono">01</span>
-                <h3 className="text-xl font-bold tracking-tight">Create your event space</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Set up your celebration in 30 seconds. Ekthau generates your event page along with high-resolution printable QR table cards ready to stand on dinner tables or bar counters.
+              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-mono font-black text-xl">
+                  01
+                </div>
+                <h3 className="text-xl font-bold tracking-tight">Create & Print QR Stands</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Set up your event in 30 seconds. Download customized high-res printable QR cards ready to display on dinner tables, cocktail bars, or entry signage.
                 </p>
               </div>
 
               {/* Step 02 */}
-              <div className="space-y-4 border-t border-border pt-6">
-                <span className="text-4xl font-black text-muted-foreground/40 font-mono">02</span>
-                <h3 className="text-xl font-bold tracking-tight">Guests scan & snap</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Guests point their default smartphone camera at the table QR code. The camera opens instantly in their browser. They snap candid photos without signing up or installing an app.
+              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-12 w-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-mono font-black text-xl">
+                  02
+                </div>
+                <h3 className="text-xl font-bold tracking-tight">Guests Scan & Shoot</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Guests scan the QR code with their regular smartphone camera. The camera opens instantly in their browser. They snap candid photos without downloading any app.
                 </p>
               </div>
 
               {/* Step 03 */}
-              <div className="space-y-4 border-t border-border pt-6">
-                <span className="text-4xl font-black text-muted-foreground/40 font-mono">03</span>
-                <h3 className="text-xl font-bold tracking-tight">Relive every moment live</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Photos stream live into a shared gallery and on venue projector screens. Once the event ends, download the entire full-resolution archive in a single click.
+              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-mono font-black text-xl">
+                  03
+                </div>
+                <h3 className="text-xl font-bold tracking-tight">Stream Live & Download</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Moments stream in real-time to venue projector screens and guest mobile feeds. Once the party ends, download all full-resolution photos in 1 click.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 5. PRODUCT EXPERIENCE SPOTLIGHT (SPLIT FEATURE) */}
-        <section id="experience" className="py-20 md:py-28 bg-muted/25 border-y border-border">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
-              {/* Left Column: Image & Mockup */}
-              <div className="lg:col-span-6 flex justify-center">
-                <div className="relative w-full max-w-md bg-card border border-border rounded-3xl p-5 shadow-lg space-y-4">
-                  <div className="aspect-[4/3] rounded-2xl overflow-hidden relative bg-zinc-950">
-                    <Image
-                      src="/images/auth-hero.jpg"
-                      alt="Guests snapping candid photos"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-[11px] text-white font-medium border border-white/10">
-                      In-Browser Camera • No App Needed
-                    </div>
-                  </div>
-
-                  {/* Upload State pill indicator */}
-                  <div className="p-3.5 rounded-2xl bg-muted border border-border flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                        <CheckCircle2 className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">12 photos captured</p>
-                        <p className="text-[11px] text-muted-foreground">Uploading in background</p>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-mono font-bold text-muted-foreground">100% saved</span>
-                  </div>
+        {/* 5. IMMERSIVE LIVE WALL SHOWCASE (PROJECTOR MODE) */}
+        <section id="live-wall" className="py-20 md:py-28 bg-zinc-950 text-white">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-12">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="max-w-2xl space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold tracking-wider uppercase">
+                  <Tv className="h-3.5 w-3.5 text-amber-400" />
+                  Venue Projector & TV Slideshow
                 </div>
-              </div>
-
-              {/* Right Column: Copy & Value */}
-              <div className="lg:col-span-6 space-y-6">
-                <div className="space-y-3">
-                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                    Guest Experience
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                  The event keeps moving. <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-400">
+                    So does the live gallery.
                   </span>
-                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-                    A disposable camera everyone already has in their pocket.
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Most people don&apos;t want to download a dedicated app just for a 4-hour wedding. Ekthau removes all barrier to entry by using the browser guests already trust.
-                  </p>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-start gap-3.5">
-                    <div className="h-8 w-8 rounded-xl bg-foreground/5 border border-border flex items-center justify-center text-foreground shrink-0 mt-0.5">
-                      <QrCode className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">Zero App Downloads</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
-                        Works on any iPhone or Android camera. Guests scan and shoot in seconds.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3.5">
-                    <div className="h-8 w-8 rounded-xl bg-foreground/5 border border-border flex items-center justify-center text-foreground shrink-0 mt-0.5">
-                      <WifiOff className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">Made for Real-World Venues</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
-                        Crowded wedding hall with weak signal? Photos save locally on the device first, pausing and resuming automatically without losing moments.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3.5">
-                    <div className="h-8 w-8 rounded-xl bg-foreground/5 border border-border flex items-center justify-center text-foreground shrink-0 mt-0.5">
-                      <Sliders className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">Host Moderation Controls</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
-                        You decide what goes on the big screen. Approve or hide photos with a single tap from your host dashboard.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => setJoinModalOpen(true)}
-                    className="inline-flex items-center gap-2 text-xs font-bold text-foreground hover:opacity-80 underline underline-offset-4"
-                  >
-                    <span>Test the Guest Experience Now</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. LIVE WALL SECTION */}
-        <section id="live-wall" className="py-20 md:py-28">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-12">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-8">
-              <div className="max-w-xl space-y-3">
-                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  The Live Wall
-                </span>
-                <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-                  The event keeps moving. So does the gallery.
                 </h2>
-                <p className="text-muted-foreground text-sm sm:text-base">
-                  Connect your laptop to any venue projector or TV screen. As guests take photos around the room, candid moments appear live on the big screen.
+                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                  Connect any laptop to a venue projector, big-screen TV, or LED wall. As guests snap photos from their tables, candid memories automatically fade onto the main screen in real time.
                 </p>
               </div>
 
-              <Button asChild variant="outline" className="rounded-xl font-semibold self-start border-border hover:bg-muted">
-                <Link href="/signup">
-                  <Tv className="mr-2 h-4 w-4 text-muted-foreground" />
-                  Launch Projector Mode
-                </Link>
-              </Button>
+              <div className="flex items-center gap-3 self-start">
+                <Button asChild className="rounded-xl font-bold bg-white text-zinc-950 hover:bg-zinc-100 shadow-md">
+                  <Link href="/signup">
+                    <Maximize2 className="mr-2 h-4 w-4" />
+                    Launch Live Wall Demo
+                  </Link>
+                </Button>
+              </div>
             </div>
 
-            {/* Live Wall Visual Demo */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {sampleMoments.map((moment, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl border border-border overflow-hidden bg-card shadow-xs group flex flex-col justify-between"
-                >
-                  <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                    <Image
-                      src={moment.url}
-                      alt={moment.caption}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+            {/* Massive Ballroom Visual Image Showcase */}
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 aspect-[16/9] group">
+              <Image
+                src="/images/projector-live-wall.jpg"
+                alt="Grand wedding celebration with massive live photo wall screen"
+                fill
+                priority
+                className="object-cover group-hover:scale-102 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
+
+              {/* Status bar badge overlay */}
+              <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+                <div className="flex items-center gap-2.5 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-white text-xs font-bold shadow-lg">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>NOW STREAMING LIVE • TABLE CANDIDS & REACTIONS</span>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2 bg-black/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-amber-300 text-xs font-bold shadow-lg">
+                  <Sliders className="h-3.5 w-3.5" />
+                  <span>Host Moderation Active</span>
+                </div>
+              </div>
+
+              {/* Bottom live stats */}
+              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-black/80 backdrop-blur-md border border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
+                <div className="flex items-center gap-6">
+                  <div>
+                    <p className="text-zinc-400 text-[11px]">Connected Guests</p>
+                    <p className="text-white font-black text-sm">214 Tables Active</p>
                   </div>
-                  <div className="p-4 space-y-2">
-                    <p className="text-xs font-semibold text-foreground italic">&ldquo;{moment.caption}&rdquo;</p>
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
-                      <span className="font-bold text-foreground">{moment.guest}</span>
-                      <span>{moment.table}</span>
-                    </div>
+                  <div className="h-6 w-px bg-white/20" />
+                  <div>
+                    <p className="text-zinc-400 text-[11px]">Photos Projected</p>
+                    <p className="text-emerald-400 font-black text-sm">1,248 Saved Live</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* 7. ORIGINAL QUALITY & PRESERVATION */}
-        <section className="py-16 md:py-24 bg-zinc-950 text-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-            <div className="grid md:grid-cols-12 gap-8 items-center">
-              <div className="md:col-span-7 space-y-4">
-                <span className="text-xs font-mono uppercase tracking-widest text-zinc-400">
-                  Full Resolution Storage
-                </span>
-                <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-                  Keep the moment. Keep the original quality.
-                </h2>
-                <p className="text-sm sm:text-base text-zinc-300 leading-relaxed max-w-xl">
-                  Unlike WhatsApp or social media that heavily compress your media, Ekthau preserves the raw 10–25MB files and 4K videos. You get crisp, print-ready photos for your wedding album.
+                <p className="text-zinc-300 text-[11px]">
+                  ✨ Automatically rotates slides with smooth crossfades every 6 seconds
                 </p>
               </div>
-
-              <div className="md:col-span-5 flex flex-col gap-3">
-                <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
-                    <span>Original Raw Capture</span>
-                    <span className="text-emerald-400 font-bold">100% Uncompressed</span>
-                  </div>
-                  <p className="text-xs text-zinc-300">Saved for your full-resolution final ZIP archive</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-1">
-                  <div className="flex justify-between items-center text-xs font-mono text-zinc-400">
-                    <span>Live Web Previews</span>
-                    <span className="text-blue-400 font-bold">Instant Stream</span>
-                  </div>
-                  <p className="text-xs text-zinc-300">Optimized derivatives keep the live wall fast on mobile</p>
-                </div>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* 8. OCCASIONS / USE CASES */}
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-12">
+        {/* 6. THE 4-PILLAR PRODUCT EXPERIENCE (INCLUDING AI FACE SEARCH) */}
+        <section id="experience" className="py-20 md:py-28">
+          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
             <div className="max-w-2xl space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Occasions
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                The Product Experience
               </span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-                Crafted for every meaningful gathering.
+                Designed for real parties. Loved by everyone.
               </h2>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  title: 'Weddings & Receptions',
-                  desc: 'Catch every perspective from every table that the official photographer couldn’t reach.',
-                  tag: 'Most Popular',
-                },
-                {
-                  title: 'Milestone Birthdays',
-                  desc: 'Collect hilarious selfies, group laughs, and candid moments into one shared digital album.',
-                  tag: 'Parties',
-                },
-                {
-                  title: 'College & Alumni Fests',
-                  desc: 'Stream crowd energy, stage performances, and reunions directly onto venue screens.',
-                  tag: 'Festivals',
-                },
-                {
-                  title: 'Corporate Summits & Galas',
-                  desc: 'Display attendee engagement and real-time event moments on mainstage displays.',
-                  tag: 'Corporate',
-                },
-              ].map((item, i) => (
-                <div key={i} className="p-6 rounded-2xl border border-border bg-card space-y-3 shadow-xs">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
-                    {item.tag}
-                  </span>
-                  <h3 className="font-bold text-lg">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+            {/* 2x2 Feature Grid with Rich Imagery */}
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Feature 1: No App Friction */}
+              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                    <QrCode className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-tight">Zero App Downloads</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    Guests point their phone at the table QR code and the camera opens instantly in their native mobile browser. No App Store downloads, no passwords, no signup friction.
+                  </p>
                 </div>
-              ))}
+                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-border">
+                  <Image
+                    src="/images/table-qr-stand.jpg"
+                    alt="Table QR stand"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Feature 2: ✨ AI Smart Photo Scan */}
+              <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-500/5 via-card to-card p-6 sm:p-8 space-y-6 shadow-md flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                    ✨ AI Smart Photo Scan
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
+                      100GB+
+                    </span>
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    Guests take a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads. No more endless scrolling.
+                  </p>
+                </div>
+                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-purple-500/20">
+                  <Image
+                    src="/images/ai-face-album.jpg"
+                    alt="AI Face Scan Album Search"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Feature 3: Venue Resilience */}
+              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 shadow-xs">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  <WifiOff className="h-5 w-5" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">Engineered for Weak Signals</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Crowded party hall with patchy 3G/4G? Photos queue locally in the phone’s browser storage first. If reception drops, uploads pause safely and resume automatically as soon as connection is restored.
+                </p>
+              </div>
+
+              {/* Feature 4: Full Uncompressed Originals */}
+              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 shadow-xs">
+                <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <HardDrive className="h-5 w-5" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">100% Original Raw Quality</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Unlike WhatsApp or social media that brutally compress your media, Ekthau preserves raw 10–25MB files and 4K videos. You receive crisp, print-ready photos for your wedding album.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 9. PRICING SECTION (EVENT-CENTRIC WITH DISTINCT BUTTONS) */}
-        <section id="pricing" className="py-20 md:py-28 bg-muted/20 border-t border-border">
+        {/* 7. PRICING SECTION (EVENT-CENTRIC WITH DISTINCT BUTTONS & GRADIENTS) */}
+        <section id="pricing" className="py-20 md:py-28 bg-muted/30 border-t border-border">
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
             <div className="text-center max-w-3xl mx-auto space-y-4">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Pricing & Event Plans
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+                Transparent Pricing & Plans
               </span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
                 Simple plans based on your celebration size.
@@ -752,18 +666,14 @@ export default function LandingPage() {
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all bg-card border ${
-                    plan.featured
-                      ? 'border-foreground shadow-xl ring-1 ring-foreground/20'
-                      : 'border-border shadow-xs hover:border-border/80'
-                  }`}
+                  className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all ${plan.cardClass}`}
                 >
                   <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <h3 className="text-xl font-bold tracking-tight">{plan.name}</h3>
                       {plan.badge && (
-                        <span className="px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-foreground/10 text-foreground border border-border">
+                        <span className={`px-2.5 py-0.5 text-[11px] rounded-full font-bold border ${plan.badgeClass}`}>
                           {plan.badge}
                         </span>
                       )}
@@ -772,19 +682,19 @@ export default function LandingPage() {
                     {/* Price & Capacity */}
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+                        <span className="text-3xl sm:text-4xl font-black tracking-tight">
                           {plan.price}
                         </span>
                         {plan.numericPrice > 0 && (
                           <span className="text-xs font-medium text-muted-foreground">/ event</span>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-foreground mt-1">{plan.capacity}</p>
+                      <p className="text-xs font-bold mt-1">{plan.capacity}</p>
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{plan.description}</p>
                     </div>
 
                     {/* Storage info pill */}
-                    <div className="p-2.5 rounded-xl bg-muted border border-border/80 text-[11px] text-muted-foreground space-y-0.5">
+                    <div className="p-2.5 rounded-xl bg-muted/60 border border-border/80 text-[11px] text-muted-foreground space-y-0.5">
                       <p className="font-semibold text-foreground">{plan.duration}</p>
                       <p>{plan.storage}</p>
                     </div>
@@ -793,7 +703,7 @@ export default function LandingPage() {
                     <div className="pt-2 space-y-2.5 text-xs">
                       {plan.features.map((feat, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-muted-foreground">
-                          <Check className="h-3.5 w-3.5 text-foreground shrink-0 mt-0.5" />
+                          <Check className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                           <span className={feat.includes('AI') ? 'font-bold text-foreground' : ''}>
                             {feat}
                           </span>
@@ -806,13 +716,7 @@ export default function LandingPage() {
                   <div className="pt-6">
                     <Button
                       asChild
-                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all ${
-                        plan.featured
-                          ? 'bg-foreground text-background hover:bg-foreground/90 shadow-sm'
-                          : plan.ai
-                          ? 'border border-purple-500/40 text-purple-600 dark:text-purple-300 hover:bg-purple-500/10'
-                          : 'border border-border bg-background hover:bg-muted text-foreground'
-                      }`}
+                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all ${plan.buttonClass}`}
                       variant={plan.featured ? 'default' : 'outline'}
                     >
                       <Link href={plan.ctaHref}>
@@ -827,11 +731,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 10. FREQUENTLY ASKED QUESTIONS */}
+        {/* 8. FREQUENTLY ASKED QUESTIONS */}
         <section id="faq" className="py-20 md:py-28 border-t border-border">
           <div className="container mx-auto px-4 sm:px-6 max-w-4xl space-y-12">
             <div className="space-y-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
                 Got Questions?
               </span>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
@@ -845,12 +749,12 @@ export default function LandingPage() {
                 return (
                   <div
                     key={index}
-                    className="rounded-2xl border border-border bg-card p-5 cursor-pointer transition-colors hover:border-border/80"
+                    className="rounded-2xl border border-border bg-card p-5 cursor-pointer transition-colors hover:border-amber-500/30"
                     onClick={() => toggleFaq(index)}
                   >
                     <div className="flex items-center justify-between gap-4">
                       <h4 className="font-bold text-sm sm:text-base text-foreground">{faq.q}</h4>
-                      <span className="font-bold text-muted-foreground text-base">
+                      <span className="font-bold text-amber-500 text-lg">
                         {isOpen ? '−' : '+'}
                       </span>
                     </div>
@@ -866,22 +770,27 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 11. FINAL EMOTIONAL CALL TO ACTION */}
-        <section className="py-20 md:py-28 bg-zinc-950 text-white text-center">
-          <div className="container mx-auto px-4 sm:px-6 max-w-3xl space-y-8">
+        {/* 9. FINAL EMOTIONAL CALL TO ACTION (LUXURY DARK CLOSING BANNER) */}
+        <section className="py-20 md:py-28 bg-zinc-950 text-white text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-zinc-950 to-zinc-950 pointer-events-none" />
+
+          <div className="container mx-auto px-4 sm:px-6 max-w-3xl space-y-8 relative z-10">
             <div className="space-y-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                Capture the Full Story
+              </span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
                 Don&apos;t let the hired photographer be the only one capturing the night.
               </h2>
               <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-                Give everyone at your celebration a shared disposable camera. Create your event space in seconds.
+                Give everyone at your celebration a shared disposable camera. Create your event space in 30 seconds.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl text-base font-bold bg-white text-black hover:bg-white/90 shadow-lg">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/20">
                 <Link href="/signup">
-                  Start Your Event in 30s
+                  Create Your Event Space
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -897,14 +806,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* 12. FOOTER */}
+      {/* 10. FOOTER */}
       <footer className="border-t border-border py-12 bg-background text-xs text-muted-foreground">
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 font-bold text-foreground">
-            <div className="h-6 w-6 rounded-lg bg-foreground text-background flex items-center justify-center font-black">
-              <Camera className="h-3 w-3" />
+            <div className="h-6 w-6 rounded-lg bg-amber-500 text-black flex items-center justify-center font-black">
+              <Camera className="h-3 w-3 stroke-[2.5]" />
             </div>
-            <span>Ekthau • The Digital Disposable Camera</span>
+            <span>Ekthau (एकठाउँ) • The Digital Disposable Camera</span>
           </div>
 
           <div className="flex items-center gap-6">
