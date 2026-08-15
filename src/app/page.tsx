@@ -218,7 +218,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-amber-500 selection:text-black font-sans antialiased">
       {/* 1. TOP NAVIGATION */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
-        <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4 max-w-7xl">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 h-16 sm:h-20 flex items-center justify-between gap-4">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-black flex items-center justify-center font-black shadow-md shadow-amber-500/20 transition-transform group-hover:scale-95">
@@ -260,7 +260,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setJoinModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
             >
               <QrCode className="h-3.5 w-3.5 text-amber-500" />
               <span>Join Event</span>
@@ -275,7 +275,7 @@ export default function LandingPage() {
               </Button>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild className="rounded-xl font-semibold text-xs h-9 px-3 hidden sm:inline-flex">
+                <Button variant="ghost" size="sm" asChild className="rounded-xl font-semibold text-xs h-9 px-3.5 hidden sm:inline-flex">
                   <Link href="/login">Host Sign In</Link>
                 </Button>
                 <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20">
@@ -288,14 +288,14 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* 2. HERO SECTION WITH RICH COLOR GRADING & BESPOKE VISUALS */}
+        {/* 2. HERO SECTION WITH EXPANDED LUXURY WIDTH */}
         <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
           {/* Subtle Ambient Warm Glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-amber-500/10 via-rose-500/5 to-purple-500/10 blur-[100px] rounded-full pointer-events-none -z-10" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-tr from-amber-500/10 via-rose-500/5 to-purple-500/10 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
             {/* Header Copy */}
-            <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
               {/* Eyebrow badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold tracking-wider uppercase shadow-xs">
                 <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
@@ -303,7 +303,7 @@ export default function LandingPage() {
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-foreground leading-[1.06] text-balance">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-foreground leading-[1.05] text-balance">
                 Your celebration, through{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600">
                   everyone’s eyes.
@@ -311,16 +311,16 @@ export default function LandingPage() {
               </h1>
 
               {/* Subtitle */}
-              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-balance">
+              <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-balance">
                 Give your guests a disposable camera in their phone browser. Place QR stands on tables, let guests snap raw candid moments, and watch memories stream live onto venue screens.
               </p>
 
               {/* Distinct Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <Button
                   asChild
                   size="lg"
-                  className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl font-bold bg-foreground text-background hover:bg-foreground/90 shadow-lg shadow-black/5 transition-all active:scale-98"
+                  className="w-full sm:w-auto h-13 px-9 rounded-xl font-bold text-base bg-foreground text-background hover:bg-foreground/90 shadow-xl shadow-black/5 transition-all active:scale-98"
                 >
                   <Link href="/signup">
                     Get Your Event Camera
@@ -330,7 +330,7 @@ export default function LandingPage() {
 
                 <button
                   onClick={() => setJoinModalOpen(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 sm:h-13 px-6 rounded-xl font-bold text-sm text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-13 px-7 rounded-xl font-bold text-base text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
                 >
                   <QrCode className="h-4 w-4 text-amber-500" />
                   <span>Scan or Enter Code</span>
@@ -338,68 +338,64 @@ export default function LandingPage() {
               </div>
 
               {/* Trust statement */}
-              <p className="text-xs text-muted-foreground pt-3 font-medium flex items-center justify-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+              <p className="text-xs sm:text-sm text-muted-foreground pt-3 font-medium flex items-center justify-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
                 No app downloads required • 100% original raw quality • 1 GB free on every event
               </p>
             </div>
 
-            {/* HERO VISUAL: DUAL LUXURY SHOWCASE */}
-            <div className="mt-12 sm:mt-16 max-w-5xl mx-auto">
-              <div className="grid md:grid-cols-12 gap-5 items-stretch">
-                {/* Visual Left: Tabletop QR Stand (The physical touchpoint) */}
-                <div className="md:col-span-5 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-xl group">
-                  <div className="aspect-[4/3] md:h-full relative min-h-[280px]">
-                    <Image
-                      src="/images/table-qr-stand.jpg"
-                      alt="Elegant wedding table QR stand"
-                      fill
-                      priority
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    {/* Badge Overlay */}
-                    <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-white text-[11px] font-bold flex items-center gap-1.5">
-                      <QrCode className="h-3.5 w-3.5 text-amber-400" />
-                      Table QR Pass
-                    </div>
+            {/* HERO VISUAL: EXPANDED DUAL SHOWCASE */}
+            <div className="mt-14 sm:mt-20 w-full">
+              <div className="grid md:grid-cols-12 gap-6 items-stretch">
+                {/* Visual Left: Tabletop QR Stand */}
+                <div className="md:col-span-5 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-2xl group min-h-[340px] md:min-h-[460px]">
+                  <Image
+                    src="/images/table-qr-stand.jpg"
+                    alt="Elegant wedding table QR stand"
+                    fill
+                    priority
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                  
+                  {/* Badge Overlay */}
+                  <div className="absolute top-5 left-5 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-white text-xs font-bold flex items-center gap-2">
+                    <QrCode className="h-4 w-4 text-amber-400" />
+                    Table QR Pass
+                  </div>
 
-                    <div className="absolute bottom-4 inset-x-4 text-white">
-                      <p className="text-sm font-bold">1. Placed on every table</p>
-                      <p className="text-xs text-zinc-300">Guests scan with their regular phone camera</p>
-                    </div>
+                  <div className="absolute bottom-5 inset-x-5 text-white space-y-1">
+                    <p className="text-base font-bold">1. Placed on every guest table</p>
+                    <p className="text-xs sm:text-sm text-zinc-300">Guests scan with their default phone camera to start snapping instantly</p>
                   </div>
                 </div>
 
-                {/* Visual Right: Phone Camera Point-of-View in Action */}
-                <div className="md:col-span-7 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-xl group">
-                  <div className="aspect-[16/10] md:h-full relative min-h-[280px]">
-                    <Image
-                      src="/images/phone-camera-snap.jpg"
-                      alt="Guest holding phone taking photos at wedding"
-                      fill
-                      priority
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Visual Right: Phone Camera POV in Action */}
+                <div className="md:col-span-7 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-2xl group min-h-[340px] md:min-h-[460px]">
+                  <Image
+                    src="/images/phone-camera-snap.jpg"
+                    alt="Guest holding phone taking photos at wedding"
+                    fill
+                    priority
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-                    {/* Top live indicator */}
-                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                      <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-white text-[11px] font-bold flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                        In-Browser Camera • Shutter &lt; 50ms
-                      </div>
-
-                      <div className="hidden sm:flex bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-amber-300 text-[11px] font-bold">
-                        100% Uncompressed Raw
-                      </div>
+                  {/* Top live indicator */}
+                  <div className="absolute top-5 left-5 right-5 flex items-center justify-between">
+                    <div className="bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-white text-xs font-bold flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      In-Browser Camera • Shutter &lt; 50ms
                     </div>
 
-                    <div className="absolute bottom-4 inset-x-4 text-white">
-                      <p className="text-sm font-bold">2. Guests capture candid moments</p>
-                      <p className="text-xs text-zinc-300">Fast shutter, background upload queue, works even in patchy venue Wi-Fi</p>
+                    <div className="hidden sm:flex bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-amber-300 text-xs font-bold">
+                      100% Uncompressed Raw
                     </div>
+                  </div>
+
+                  <div className="absolute bottom-5 inset-x-5 text-white space-y-1">
+                    <p className="text-base font-bold">2. Guests capture candid memories</p>
+                    <p className="text-xs sm:text-sm text-zinc-300">Fast shutter, background upload queue, works even in patchy venue Wi-Fi</p>
                   </div>
                 </div>
               </div>
@@ -408,74 +404,74 @@ export default function LandingPage() {
         </section>
 
         {/* 3. PRODUCT PROOF METRICS BAR */}
-        <section className="border-y border-border py-8 bg-muted/30">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <section className="border-y border-border py-10 bg-muted/30">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div>
-                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">0 Apps</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium">Opens directly in Safari / Chrome</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">0 Apps</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Opens directly in Safari / Chrome</p>
               </div>
               <div>
-                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">&lt; 50ms</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium">Instant shutter response</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">&lt; 50ms</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Instant shutter response</p>
               </div>
               <div>
-                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">100% Raw</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium">Full original resolution preserved</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">100% Raw</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Full original resolution preserved</p>
               </div>
               <div>
-                <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">1-Click ZIP</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium">Bulk download full event archive</p>
+                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">1-Click ZIP</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Bulk download full event archive</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* 4. HOW IT WORKS (3-STEP EDITORIAL TIMELINE) */}
-        <section id="how-it-works" className="py-20 md:py-28">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
-            <div className="max-w-2xl space-y-3">
+        <section id="how-it-works" className="py-24 md:py-32">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
+            <div className="max-w-3xl space-y-3">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
                 Simple 3-Step Setup
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground">
                 Zero friction. Maximum memories.
               </h2>
-              <p className="text-muted-foreground text-sm sm:text-base">
+              <p className="text-muted-foreground text-base sm:text-lg">
                 No more WhatsApp spam or broken Google Drive folders. Ekthau makes collecting event photography effortless.
               </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {/* Step 01 */}
-              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-mono font-black text-xl">
+              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-14 w-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-mono font-black text-2xl">
                   01
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">Create & Print QR Stands</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold tracking-tight">Create & Print QR Stands</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Set up your event in 30 seconds. Download customized high-res printable QR cards ready to display on dinner tables, cocktail bars, or entry signage.
                 </p>
               </div>
 
               {/* Step 02 */}
-              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-12 w-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-mono font-black text-xl">
+              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-mono font-black text-2xl">
                   02
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">Guests Scan & Shoot</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold tracking-tight">Guests Scan & Shoot</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Guests scan the QR code with their regular smartphone camera. The camera opens instantly in their browser. They snap candid photos without downloading any app.
                 </p>
               </div>
 
               {/* Step 03 */}
-              <div className="p-7 rounded-3xl border border-border bg-card shadow-xs space-y-4 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-mono font-black text-xl">
+              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
+                <div className="h-14 w-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-mono font-black text-2xl">
                   03
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">Stream Live & Download</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold tracking-tight">Stream Live & Download</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Moments stream in real-time to venue projector screens and guest mobile feeds. Once the party ends, download all full-resolution photos in 1 click.
                 </p>
               </div>
@@ -484,28 +480,28 @@ export default function LandingPage() {
         </section>
 
         {/* 5. IMMERSIVE LIVE WALL SHOWCASE (PROJECTOR MODE) */}
-        <section id="live-wall" className="py-20 md:py-28 bg-zinc-950 text-white">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-12">
+        <section id="live-wall" className="py-24 md:py-32 bg-zinc-950 text-white">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="max-w-2xl space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold tracking-wider uppercase">
+              <div className="max-w-3xl space-y-3">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold tracking-wider uppercase">
                   <Tv className="h-3.5 w-3.5 text-amber-400" />
                   Venue Projector & TV Slideshow
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
                   The event keeps moving. <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-400">
                     So does the live gallery.
                   </span>
                 </h2>
-                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
                   Connect any laptop to a venue projector, big-screen TV, or LED wall. As guests snap photos from their tables, candid memories automatically fade onto the main screen in real time.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 self-start">
-                <Button asChild className="rounded-xl font-bold bg-white text-zinc-950 hover:bg-zinc-100 shadow-md">
+                <Button asChild className="rounded-xl font-bold text-sm h-12 px-6 bg-white text-zinc-950 hover:bg-zinc-100 shadow-md">
                   <Link href="/signup">
                     <Maximize2 className="mr-2 h-4 w-4" />
                     Launch Live Wall Demo
@@ -515,7 +511,7 @@ export default function LandingPage() {
             </div>
 
             {/* Massive Ballroom Visual Image Showcase */}
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 aspect-[16/9] group">
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 aspect-[16/9] min-h-[400px] md:min-h-[600px] group">
               <Image
                 src="/images/projector-live-wall.jpg"
                 alt="Grand wedding celebration with massive live photo wall screen"
@@ -526,33 +522,33 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
 
               {/* Status bar badge overlay */}
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-                <div className="flex items-center gap-2.5 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-white text-xs font-bold shadow-lg">
+              <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
+                <div className="flex items-center gap-2.5 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-white text-xs sm:text-sm font-bold shadow-lg">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>NOW STREAMING LIVE • TABLE CANDIDS & REACTIONS</span>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2 bg-black/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-amber-300 text-xs font-bold shadow-lg">
-                  <Sliders className="h-3.5 w-3.5" />
+                <div className="hidden sm:flex items-center gap-2 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-amber-300 text-xs sm:text-sm font-bold shadow-lg">
+                  <Sliders className="h-4 w-4" />
                   <span>Host Moderation Active</span>
                 </div>
               </div>
 
               {/* Bottom live stats */}
-              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-black/80 backdrop-blur-md border border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
-                <div className="flex items-center gap-6">
+              <div className="absolute bottom-6 left-6 right-6 p-5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
+                <div className="flex items-center gap-8">
                   <div>
-                    <p className="text-zinc-400 text-[11px]">Connected Guests</p>
-                    <p className="text-white font-black text-sm">214 Tables Active</p>
+                    <p className="text-zinc-400 text-xs">Connected Guests</p>
+                    <p className="text-white font-black text-base">214 Tables Active</p>
                   </div>
-                  <div className="h-6 w-px bg-white/20" />
+                  <div className="h-8 w-px bg-white/20" />
                   <div>
-                    <p className="text-zinc-400 text-[11px]">Photos Projected</p>
-                    <p className="text-emerald-400 font-black text-sm">1,248 Saved Live</p>
+                    <p className="text-zinc-400 text-xs">Photos Projected</p>
+                    <p className="text-emerald-400 font-black text-base">1,248 Saved Live</p>
                   </div>
                 </div>
 
-                <p className="text-zinc-300 text-[11px]">
+                <p className="text-zinc-300 text-xs sm:text-sm">
                   ✨ Automatically rotates slides with smooth crossfades every 6 seconds
                 </p>
               </div>
@@ -560,28 +556,28 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 6. THE 4-PILLAR PRODUCT EXPERIENCE (INCLUDING AI FACE SEARCH) */}
-        <section id="experience" className="py-20 md:py-28">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
-            <div className="max-w-2xl space-y-3">
+        {/* 6. THE 4-PILLAR PRODUCT EXPERIENCE (WIDE GRID) */}
+        <section id="experience" className="py-24 md:py-32">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
+            <div className="max-w-3xl space-y-3">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
                 The Product Experience
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight">
                 Designed for real parties. Loved by everyone.
               </h2>
             </div>
 
             {/* 2x2 Feature Grid with Rich Imagery */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-10">
               {/* Feature 1: No App Friction */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between">
+              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-6 shadow-xs flex flex-col justify-between">
                 <div className="space-y-3">
-                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                    <QrCode className="h-5 w-5" />
+                  <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                    <QrCode className="h-6 w-6" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight">Zero App Downloads</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Zero App Downloads</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     Guests point their phone at the table QR code and the camera opens instantly in their native mobile browser. No App Store downloads, no passwords, no signup friction.
                   </p>
                 </div>
@@ -596,18 +592,18 @@ export default function LandingPage() {
               </div>
 
               {/* Feature 2: ✨ AI Smart Photo Scan */}
-              <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-500/5 via-card to-card p-6 sm:p-8 space-y-6 shadow-md flex flex-col justify-between">
+              <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-500/5 via-card to-card p-8 sm:p-10 space-y-6 shadow-md flex flex-col justify-between">
                 <div className="space-y-3">
-                  <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-                    <Sparkles className="h-5 w-5" />
+                  <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <Sparkles className="h-6 w-6" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
                     ✨ AI Smart Photo Scan
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
                       100GB+
                     </span>
                   </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     Guests take a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads. No more endless scrolling.
                   </p>
                 </div>
@@ -622,23 +618,23 @@ export default function LandingPage() {
               </div>
 
               {/* Feature 3: Venue Resilience */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 shadow-xs">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                  <WifiOff className="h-5 w-5" />
+              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-4 shadow-xs">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  <WifiOff className="h-6 w-6" />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight">Engineered for Weak Signals</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Engineered for Weak Signals</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   Crowded party hall with patchy 3G/4G? Photos queue locally in the phone’s browser storage first. If reception drops, uploads pause safely and resume automatically as soon as connection is restored.
                 </p>
               </div>
 
               {/* Feature 4: Full Uncompressed Originals */}
-              <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 shadow-xs">
-                <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                  <HardDrive className="h-5 w-5" />
+              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-4 shadow-xs">
+                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <HardDrive className="h-6 w-6" />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight">100% Original Raw Quality</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">100% Original Raw Quality</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   Unlike WhatsApp or social media that brutally compress your media, Ekthau preserves raw 10–25MB files and 4K videos. You receive crisp, print-ready photos for your wedding album.
                 </p>
               </div>
@@ -646,34 +642,34 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 7. PRICING SECTION (EVENT-CENTRIC WITH DISTINCT BUTTONS & GRADIENTS) */}
-        <section id="pricing" className="py-20 md:py-28 bg-muted/30 border-t border-border">
-          <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
+        {/* 7. PRICING SECTION (EXPANDED WIDE GRID) */}
+        <section id="pricing" className="py-24 md:py-32 bg-muted/30 border-t border-border">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
             <div className="text-center max-w-3xl mx-auto space-y-4">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
                 Transparent Pricing & Plans
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight">
                 Simple plans based on your celebration size.
               </h2>
-              <p className="text-muted-foreground text-sm sm:text-base">
+              <p className="text-muted-foreground text-base sm:text-lg">
                 Start with <strong className="text-foreground">1 GB completely free</strong>. Upgrade whenever you need more guest capacity, longer storage duration, or ✨ AI Face Search.
               </p>
             </div>
 
             {/* Pricing Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all ${plan.cardClass}`}
+                  className={`rounded-3xl p-8 sm:p-9 flex flex-col justify-between transition-all ${plan.cardClass}`}
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {/* Header */}
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold tracking-tight">{plan.name}</h3>
+                      <h3 className="text-2xl font-bold tracking-tight">{plan.name}</h3>
                       {plan.badge && (
-                        <span className={`px-2.5 py-0.5 text-[11px] rounded-full font-bold border ${plan.badgeClass}`}>
+                        <span className={`px-3 py-1 text-xs rounded-full font-bold border ${plan.badgeClass}`}>
                           {plan.badge}
                         </span>
                       )}
@@ -682,28 +678,28 @@ export default function LandingPage() {
                     {/* Price & Capacity */}
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-black tracking-tight">
+                        <span className="text-4xl sm:text-5xl font-black tracking-tight">
                           {plan.price}
                         </span>
                         {plan.numericPrice > 0 && (
-                          <span className="text-xs font-medium text-muted-foreground">/ event</span>
+                          <span className="text-sm font-medium text-muted-foreground">/ event</span>
                         )}
                       </div>
-                      <p className="text-xs font-bold mt-1">{plan.capacity}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{plan.description}</p>
+                      <p className="text-sm font-bold mt-1.5">{plan.capacity}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{plan.description}</p>
                     </div>
 
                     {/* Storage info pill */}
-                    <div className="p-2.5 rounded-xl bg-muted/60 border border-border/80 text-[11px] text-muted-foreground space-y-0.5">
+                    <div className="p-3 rounded-xl bg-muted/60 border border-border/80 text-xs text-muted-foreground space-y-0.5">
                       <p className="font-semibold text-foreground">{plan.duration}</p>
                       <p>{plan.storage}</p>
                     </div>
 
                     {/* Features checklist */}
-                    <div className="pt-2 space-y-2.5 text-xs">
+                    <div className="pt-2 space-y-3 text-xs sm:text-sm">
                       {plan.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-muted-foreground">
-                          <Check className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                        <div key={idx} className="flex items-start gap-2.5 text-muted-foreground">
+                          <Check className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                           <span className={feat.includes('AI') ? 'font-bold text-foreground' : ''}>
                             {feat}
                           </span>
@@ -713,15 +709,15 @@ export default function LandingPage() {
                   </div>
 
                   {/* Plan Button */}
-                  <div className="pt-6">
+                  <div className="pt-8">
                     <Button
                       asChild
-                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all ${plan.buttonClass}`}
+                      className={`w-full h-12 rounded-xl text-sm font-bold transition-all ${plan.buttonClass}`}
                       variant={plan.featured ? 'default' : 'outline'}
                     >
                       <Link href={plan.ctaHref}>
                         {plan.cta}
-                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
@@ -732,34 +728,34 @@ export default function LandingPage() {
         </section>
 
         {/* 8. FREQUENTLY ASKED QUESTIONS */}
-        <section id="faq" className="py-20 md:py-28 border-t border-border">
-          <div className="container mx-auto px-4 sm:px-6 max-w-4xl space-y-12">
+        <section id="faq" className="py-24 md:py-32 border-t border-border">
+          <div className="w-full max-w-[1000px] mx-auto px-4 sm:px-8 space-y-12">
             <div className="space-y-3 text-center">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
                 Got Questions?
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
                 Frequently asked questions
               </h2>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {faqs.map((faq, index) => {
                 const isOpen = openFaq === index
                 return (
                   <div
                     key={index}
-                    className="rounded-2xl border border-border bg-card p-5 cursor-pointer transition-colors hover:border-amber-500/30"
+                    className="rounded-2xl border border-border bg-card p-6 cursor-pointer transition-colors hover:border-amber-500/30"
                     onClick={() => toggleFaq(index)}
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <h4 className="font-bold text-sm sm:text-base text-foreground">{faq.q}</h4>
-                      <span className="font-bold text-amber-500 text-lg">
+                      <h4 className="font-bold text-base sm:text-lg text-foreground">{faq.q}</h4>
+                      <span className="font-bold text-amber-500 text-xl">
                         {isOpen ? '−' : '+'}
                       </span>
                     </div>
                     {isOpen && (
-                      <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed pt-2 border-t border-border">
+                      <p className="mt-4 text-sm text-muted-foreground leading-relaxed pt-3 border-t border-border">
                         {faq.a}
                       </p>
                     )}
@@ -770,25 +766,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 9. FINAL EMOTIONAL CALL TO ACTION (LUXURY DARK CLOSING BANNER) */}
-        <section className="py-20 md:py-28 bg-zinc-950 text-white text-center relative overflow-hidden">
+        {/* 9. FINAL EMOTIONAL CALL TO ACTION */}
+        <section className="py-24 md:py-32 bg-zinc-950 text-white text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-zinc-950 to-zinc-950 pointer-events-none" />
 
-          <div className="container mx-auto px-4 sm:px-6 max-w-3xl space-y-8 relative z-10">
-            <div className="space-y-4">
+          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-8 relative z-10">
+            <div className="max-w-4xl mx-auto space-y-4">
               <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
                 Capture the Full Story
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
                 Don&apos;t let the hired photographer be the only one capturing the night.
               </h2>
-              <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+              <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
                 Give everyone at your celebration a shared disposable camera. Create your event space in 30 seconds.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/20">
+              <Button asChild size="lg" className="w-full sm:w-auto h-13 px-9 rounded-xl text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/20">
                 <Link href="/signup">
                   Create Your Event Space
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -797,7 +793,7 @@ export default function LandingPage() {
 
               <button
                 onClick={() => setJoinModalOpen(true)}
-                className="text-xs font-semibold text-zinc-400 hover:text-white underline underline-offset-4 transition-colors py-2 px-3"
+                className="text-sm font-semibold text-zinc-400 hover:text-white underline underline-offset-4 transition-colors py-2 px-3"
               >
                 I&apos;m a guest with an event code →
               </button>
@@ -807,16 +803,16 @@ export default function LandingPage() {
       </main>
 
       {/* 10. FOOTER */}
-      <footer className="border-t border-border py-12 bg-background text-xs text-muted-foreground">
-        <div className="container mx-auto px-4 sm:px-6 max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-border py-14 bg-background text-xs sm:text-sm text-muted-foreground">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 font-bold text-foreground">
-            <div className="h-6 w-6 rounded-lg bg-amber-500 text-black flex items-center justify-center font-black">
-              <Camera className="h-3 w-3 stroke-[2.5]" />
+            <div className="h-7 w-7 rounded-lg bg-amber-500 text-black flex items-center justify-center font-black">
+              <Camera className="h-3.5 w-3.5 stroke-[2.5]" />
             </div>
             <span>Ekthau (एकठाउँ) • The Digital Disposable Camera</span>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             <a href="#how-it-works" className="hover:text-foreground transition-colors">
               How It Works
             </a>
