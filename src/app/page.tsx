@@ -35,7 +35,6 @@ import {
   HelpCircle,
   Sparkles,
   ArrowUpRight,
-  CameraOff,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { mockEvents } from '@/lib/mockData'
@@ -99,7 +98,7 @@ export default function LandingPage() {
         'Single-click bulk ZIP download',
         'Standard upload speeds',
       ],
-      cta: 'Create Free Event',
+      cta: 'Start Free with 1GB',
       ctaHref: '/signup',
     },
     {
@@ -120,7 +119,7 @@ export default function LandingPage() {
         'Host moderation panel (approve/hide photos)',
         'Customized venue and event details',
       ],
-      cta: 'Choose Mini Event',
+      cta: 'Select 5GB Plan',
       ctaHref: '/signup?plan=5gb',
     },
     {
@@ -141,7 +140,7 @@ export default function LandingPage() {
         'Priority mobile upload queue',
         'Custom welcome message for attendees',
       ],
-      cta: 'Choose Celebration',
+      cta: 'Select 10GB Plan',
       ctaHref: '/signup?plan=10gb',
     },
     {
@@ -164,7 +163,7 @@ export default function LandingPage() {
         'Top contributor stats & photographer leaderboard',
         'Multi-host moderation access',
       ],
-      cta: 'Get Grand Celebration',
+      cta: 'Get Grand Celebration Plan',
       ctaHref: '/signup?plan=30gb',
     },
     {
@@ -187,7 +186,7 @@ export default function LandingPage() {
         'Multi-screen live sync across large venues',
         'Direct bulk sync to Google Drive',
       ],
-      cta: 'Get 100GB with AI Scan',
+      cta: 'Select 100GB with AI Scan',
       ctaHref: '/signup?plan=100gb',
     },
     {
@@ -210,7 +209,7 @@ export default function LandingPage() {
         'Dedicated event setup concierge',
         'Permanent download vault link',
       ],
-      cta: 'Get Royal Wedding Plan',
+      cta: 'Select Royal 250GB Vault',
       ctaHref: '/signup?plan=250gb',
     },
   ]
@@ -282,20 +281,17 @@ export default function LandingPage() {
           </nav>
 
           {/* Nav Actions */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center gap-2.5">
+            <button
               onClick={() => setJoinModalOpen(true)}
-              className="rounded-xl font-medium text-xs sm:text-sm h-9 sm:h-10 px-3.5 border-border/80 hover:bg-muted"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
             >
-              <QrCode className="h-3.5 w-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Join Event</span>
-              <span className="sm:hidden">Join</span>
-            </Button>
+              <QrCode className="h-3.5 w-3.5" />
+              <span>Join with Code</span>
+            </button>
 
             {session ? (
-              <Button asChild size="sm" className="rounded-xl font-medium text-xs sm:text-sm h-9 sm:h-10 px-4">
+              <Button asChild size="sm" className="rounded-lg font-semibold text-xs h-9 px-3.5">
                 <Link href="/dashboard">
                   Dashboard
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
@@ -303,10 +299,10 @@ export default function LandingPage() {
               </Button>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild className="rounded-xl font-medium text-xs sm:text-sm h-9 sm:h-10 hidden sm:inline-flex">
+                <Button variant="ghost" size="sm" asChild className="rounded-lg font-medium text-xs h-9 px-3 hidden sm:inline-flex">
                   <Link href="/login">Host Sign In</Link>
                 </Button>
-                <Button asChild size="sm" className="rounded-xl font-medium text-xs sm:text-sm h-9 sm:h-10 px-4 bg-foreground text-background hover:bg-foreground/90">
+                <Button asChild size="sm" className="rounded-lg font-semibold text-xs h-9 px-4 bg-foreground text-background hover:bg-foreground/90">
                   <Link href="/signup">Create Event</Link>
                 </Button>
               </div>
@@ -337,24 +333,26 @@ export default function LandingPage() {
                 Give your guests a disposable camera right in their phone browser. Scan a table QR code, snap raw candid moments, and watch memories stream into a shared gallery in real time.
               </p>
 
-              {/* CTAs */}
+              {/* Distinct Hero CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-3">
-                <Button asChild size="lg" className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl text-base font-semibold bg-foreground text-background hover:bg-foreground/90 shadow-sm transition-all">
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold bg-foreground text-background hover:bg-foreground/90 shadow-md transition-all active:scale-98"
+                >
                   <Link href="/signup">
-                    Create an Event
+                    Get Your Event Camera
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="lg"
+                <button
                   onClick={() => setJoinModalOpen(true)}
-                  className="w-full sm:w-auto h-12 sm:h-13 px-7 rounded-xl text-base font-semibold border-border hover:bg-muted transition-all"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl font-semibold text-sm text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
                 >
-                  <QrCode className="mr-2 h-4 w-4" />
-                  Join with Code or QR
-                </Button>
+                  <QrCode className="h-4 w-4 text-muted-foreground" />
+                  <span>Scan or Enter Code</span>
+                </button>
               </div>
 
               {/* Trust statement */}
@@ -583,6 +581,16 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => setJoinModalOpen(true)}
+                    className="inline-flex items-center gap-2 text-xs font-bold text-foreground hover:opacity-80 underline underline-offset-4"
+                  >
+                    <span>Test the Guest Experience Now</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -604,10 +612,10 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <Button asChild variant="outline" className="rounded-xl font-semibold self-start">
+              <Button asChild variant="outline" className="rounded-xl font-semibold self-start border-border hover:bg-muted">
                 <Link href="/signup">
-                  Projector Presentation Mode
-                  <Tv className="ml-2 h-4 w-4" />
+                  <Tv className="mr-2 h-4 w-4 text-muted-foreground" />
+                  Launch Projector Mode
                 </Link>
               </Button>
             </div>
@@ -724,7 +732,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 9. PRICING SECTION (EVENT-CENTRIC) */}
+        {/* 9. PRICING SECTION (EVENT-CENTRIC WITH DISTINCT BUTTONS) */}
         <section id="pricing" className="py-20 md:py-28 bg-muted/20 border-t border-border">
           <div className="container mx-auto px-4 sm:px-6 max-w-6xl space-y-16">
             <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -794,14 +802,16 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Button */}
+                  {/* Plan Button */}
                   <div className="pt-6">
                     <Button
                       asChild
-                      className={`w-full h-11 rounded-xl text-xs font-bold ${
+                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all ${
                         plan.featured
-                          ? 'bg-foreground text-background hover:bg-foreground/90'
-                          : 'border-border'
+                          ? 'bg-foreground text-background hover:bg-foreground/90 shadow-sm'
+                          : plan.ai
+                          ? 'border border-purple-500/40 text-purple-600 dark:text-purple-300 hover:bg-purple-500/10'
+                          : 'border border-border bg-background hover:bg-muted text-foreground'
                       }`}
                       variant={plan.featured ? 'default' : 'outline'}
                     >
@@ -868,22 +878,20 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-xl text-base font-semibold bg-white text-black hover:bg-white/90">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl text-base font-bold bg-white text-black hover:bg-white/90 shadow-lg">
                 <Link href="/signup">
-                  Create Your Event
+                  Start Your Event in 30s
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
+
+              <button
                 onClick={() => setJoinModalOpen(true)}
-                className="w-full sm:w-auto h-12 sm:h-13 px-7 rounded-xl text-base font-semibold bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800"
+                className="text-xs font-semibold text-zinc-400 hover:text-white underline underline-offset-4 transition-colors py-2 px-3"
               >
-                <QrCode className="mr-2 h-4 w-4" />
-                Join an Existing Event
-              </Button>
+                I&apos;m a guest with an event code →
+              </button>
             </div>
           </div>
         </section>
