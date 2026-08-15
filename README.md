@@ -1,695 +1,186 @@
 <div align="center">
 
-Ekthau
+# 📸 Ekthau (एकठाउँ)
+### *Capture Every Perspective of Your Celebration — Live, Effortless & App-Free.*
 
-Disposable Camera for Real-World Events
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20Stream-emerald?style=for-the-badge&logo=vercel)](https://ekthau.com)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
+[![Cloudflare R2](https://img.shields.io/badge/Cloudflare_R2-Original_Storage-F38020?style=for-the-badge&logo=cloudflare)](https://cloudflare.com)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-Capture the moments. Let everyone contribute. See the event come alive in real time.
+<br />
 
+**Ekthau** transforms every guest's smartphone into a digital disposable camera.  
+Place a QR code on tables — your guests scan, snap raw candid photos & videos, and watch memories stream into a shared live gallery in real time. **Zero apps to download.**
 
+[Explore Live Demo](#-how-it-works) • [View Pricing Plans](#-transparent-pricing--storage-plans) • [Quick Setup](#-quick-start-guide)
 
-
-
-
-
+---
 
 </div>
 
-About
+<br />
+
+## 🌟 The Problem with Event Photography Today
 
-Ekthau is a digital disposable-camera platform for weddings, parties, festivals, and other events.
+During weddings, birthdays, and parties, hundreds of incredible candid moments happen simultaneously across every table. But collecting them afterwards is painful:
+- ❌ **Google Drive / Dropbox links** are clunky and require logging in.
+- ❌ **WhatsApp groups** brutally compress photo quality and turn into notification spam.
+- ❌ **Dedicated event apps** fail because 80% of guests refuse to download an app at a party.
+- ❌ **Slow venue Wi-Fi & cell signals** cause uploads to fail and get lost.
+
+**Ekthau fixes all of this.**
 
-Guests scan an event QR code, open the camera in their browser, take photos, and contribute them to a shared event gallery.
+---
 
-The key idea is simple:
+## ✨ Why Hosts & Guests Love Ekthau
 
-Take the photo. Keep enjoying the event. Ekthau handles the upload.
+<table>
+  <tr>
+    <td width="50%">
+      <h3>📱 Zero Friction for Guests</h3>
+      <ul>
+        <li><strong>No App Downloads:</strong> Guests point their default phone camera at the table QR code and the camera opens instantly in their mobile browser.</li>
+        <li><strong>Instant Capture:</strong> Snap candid photos in &lt;50ms without waiting for uploads.</li>
+        <li><strong>Crowded Venue Resilience:</strong> Works even on patchy 3G/4G networks with an offline queue that resumes automatically when connection returns.</li>
+        <li><strong>Live Shared Gallery:</strong> Guests can view everyone's photos in real-time during the party.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>👑 Total Control for Hosts</h3>
+      <ul>
+        <li><strong>100% Original Quality:</strong> Preserves full raw 10–25MB photos and 4K videos without destructive social media compression.</li>
+        <li><strong>Live TV / Projector Slideshow:</strong> Plug your laptop into any venue screen to project incoming guest photos live.</li>
+        <li><strong>Host Moderation Panel:</strong> 1-click approve or hide photos before they appear on the big screen.</li>
+        <li><strong>1-Click Bulk ZIP:</strong> Download the entire full-resolution archive in a single click after the celebration.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-Ekthau is designed for real-world event conditions, including slow and unstable mobile networks. Original photos are preserved while uploads happen directly to Cloudflare R2 using a reliable, resumable upload pipeline.
+---
 
-Features
+## 🚀 How It Works (3 Simple Steps)
 
-📸 Disposable camera experience — guests can take photos directly from their phones.
+```
+       STEP 1                      STEP 2                      STEP 3
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│  Create Event &     │     │  Guests Scan &      │     │  Live Stream &      │
+│  Print Table QR     │ ──► │  Snap Candid Photos │ ──► │  Download Archive   │
+│  (Takes 30 seconds) │     │  (Zero Apps Needed) │     │  (Full-Res Originals)│
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+```
 
-📱 No app installation required — browser-first guest experience.
+1. **Step 1 — Create & Print QR**: Set up your celebration in 30 seconds. Download customized printable QR table cards and signage ready for your venue.
+2. **Step 2 — Guests Scan & Snap**: Guests scan the table QR code with their regular camera, enter their name (or stay anonymous), and start capturing moments.
+3. **Step 3 — Live Stream & Archive**: Photos stream live on venue projectors and mobile feeds. When the party ends, download all full-resolution photos in 1 click.
 
-⚡ Live photo wall — newly approved photos appear in real time.
+---
 
-☁️ Direct-to-R2 uploads — large media bypasses the application server.
+## 💎 Transparent Pricing & Storage Plans
 
-🔄 Resumable uploads — interrupted large uploads can continue instead of restarting.
+Start with **1 GB completely free**. Upgrade whenever you need more storage, longer cloud retention, or our **✨ AI Smart Photo Scan**.
 
-📥 Background upload queue — guests can keep taking photos while uploads run.
+| Plan | Storage | Price | Retention Duration | Guest Limit | Key Highlights |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Starter** | **1 GB** | **Free** | **30 Days** (1 Month) | Up to 30 Guests | Standard in-browser camera, live mobile web gallery, printable QR pass (PNG), 1-click ZIP download. |
+| **Mini Event** | **5 GB** | **Rs. 99** | **60 Days** (2 Months) | Up to 100 Guests | Original HD uploads, short video clips (up to 30s), host moderation panel, venue customization. |
+| **Celebration** | **10 GB** | **Rs. 499** | **90 Days** (3 Months) | Up to 250 Guests | Extended video uploads (up to 60s), live TV/projector slideshow mode, priority upload queue. |
+| **Grand Celebration** 🔥 | **30 GB** | **Rs. 999** | **180 Days** (6 Months) | Up to 600 Guests | Full 4K uploads, custom monogram QR stand, live wall with guest reactions, top contributor leaderboard. |
+| **Mega Festival** ✨ | **100 GB** | **Rs. 1,999** | **1 Year** (365 Days) | Up to 2,000 Guests | **✨ AI Smart Photo Scan & Face Match** (guests snap a selfie to find all their photos across thousands of uploads), Google Drive sync. |
+| **Royal Wedding & Multi-Day** 👑 | **250 GB** | **Rs. 4,999** | **2 Years** (Permanent) | **Unlimited** | **✨ Advanced AI Face Match + Auto-Highlights Album Generator**, Multi-Day Sub-Events (*Haldi, Sangeet, Wedding, Reception*), dedicated concierge support. |
 
-🌐 Network-aware uploading — upload concurrency adapts to mobile network conditions.
+---
 
-🖼️ Original-quality storage — originals are preserved instead of being destructively compressed.
+## 🤖 ✨ AI Smart Photo Scan (100GB & 250GB Plans)
 
-🖼️ Thumbnail + preview pipeline — fast browsing without downloading full-resolution originals.
+Ever attended a 500-person wedding and spent 40 minutes scrolling through thousands of photos just to find the 3 pictures you appear in?
 
-🔐 Signed upload authorization — R2 credentials never reach the browser.
+With **Ekthau AI Photo Scan**:
+1. Guests tap **"Find My Photos"** and snap a quick 1-second selfie.
+2. Our private AI facial clustering scans all event uploads.
+3. Guests instantly see a personalized album containing only the photos & videos they appear in!
 
-👥 Guest sessions — uploads are associated with valid event sessions.
+---
 
-🛡️ Upload limits and validation — protects events from abuse.
+## 🎪 Perfect For Every Special Gathering
 
-⚡ Realtime metadata updates — Supabase Realtime powers the live experience.
+- 💍 **Weddings & Receptions**: Collect raw candid emotions from every guest table that the hired photographer missed.
+- 🎂 **Birthdays & Milestones**: Let family and friends upload funny moments and group selfies into one shared album.
+- 🎓 **College & Alumni Fests**: Capture energetic stage performances, reunions, and festival crowds seamlessly.
+- 🏢 **Corporate Galas & Summits**: Project live attendee photos on conference mainstage screens in real time.
 
-Architecture
+---
 
-Ekthau separates application data from large media files.
+## 🛠️ Technology Stack
 
-                         EKTHAU
+- **Frontend & App Router**: [Next.js 15](https://nextjs.org/) (React 19, TypeScript, Tailwind CSS)
+- **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL, Row-Level Security, Realtime WebSockets)
+- **Edge Storage**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) (Zero-egress cost, S3-compatible, direct-to-cloud resumable multipart uploads)
+- **In-Browser Scanning & Persistence**: `jsQR` (Real-time live camera QR decoding) + `IndexedDB` (Offline queue resilience)
 
-┌─────────────────────────────┐
-│        Guest Browser        │
-│                             │
-│  Camera → Local Queue       │
-│          → Upload Worker    │
-└──────────────┬──────────────┘
-               │
-               │ 1. Request upload authorization
-               ▼
-┌─────────────────────────────┐
-│     Supabase Edge Function  │
-│                             │
-│  • Validate guest session   │
-│  • Validate event           │
-│  • Validate file            │
-│  • Generate upload access   │
-└──────────────┬──────────────┘
-               │
-               │ 2. Temporary signed authorization
-               ▼
-┌─────────────────────────────┐
-│       Cloudflare R2         │
-│                             │
-│  Original / Preview /       │
-│  Thumbnail                  │
-└──────────────┬──────────────┘
-               │
-               │ 3. Upload confirmed
-               ▼
-┌─────────────────────────────┐
-│     Supabase PostgreSQL     │
-│                             │
-│  Media metadata             │
-│  Event / Guest association  │
-│  Upload status              │
-└──────────────┬──────────────┘
-               │
-               │ 4. Realtime event
-               ▼
-┌─────────────────────────────┐
-│       Live Wall / Gallery   │
-└─────────────────────────────┘
+---
 
-Why this architecture?
+## 💻 Quick Start Guide for Developers & Self-Hosting
 
-Large files do not pass through the application server.
+### 1. Clone the repository
+```bash
+git clone https://github.com/SaurabhThakulla/Ekthau.git
+cd Ekthau
+```
 
-Instead:
-
-Guest Phone ───────────────────────► Cloudflare R2
-                    Direct upload
-
-Guest Phone ───► Supabase Edge Function
-                  Authorization only
-
-This reduces application-server bandwidth and makes the system much easier to scale during large events.
-
-Upload Flow
-
-1. Guest captures a photo
-
-The camera captures the original image.
-
-For example:
-
-20 MB JPEG
-
-The original is kept intact.
-
-2. Photo enters the local upload queue
-
-The camera does not wait for the upload to finish.
-
-Camera
-  ↓
-Local Queue
-  ↓
-Upload Worker
-
-The guest can continue taking photos while previous photos upload in the background.
-
-3. Supabase authorizes the upload
-
-The browser calls the upload authorization Edge Function with information such as:
-
-{
-  "event_id": "...",
-  "filename": "capture.jpg",
-  "content_type": "image/jpeg",
-  "session_token_hash": "..."
-}
-
-The Edge Function validates the guest and event before generating temporary R2 upload authorization.
-
-4. Browser uploads directly to R2
-
-The browser sends the file directly to Cloudflare R2.
-
-Browser ─────────────────────► R2
-            20 MB
-
-The application server never has to receive the 20 MB file.
-
-5. Large files use resumable multipart uploads
-
-Large files can be split into parts:
-
-20 MB
-
-┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
-│ 5 MB  │ │ 5 MB  │ │ 5 MB  │ │ 5 MB  │
-└───────┘ └───────┘ └───────┘ └───────┘
-
-If the network drops:
-
-Part 1 ✓
-Part 2 ✓
-Part 3 ✗
-Part 4 ✓
-
-Only the failed part needs to be retried.
-
-The entire file does not have to restart.
-
-6. Media is registered in Supabase
-
-After R2 confirms the upload:
-
-R2 upload complete
-        ↓
-record_uploaded_media
-        ↓
-Supabase media table
-
-The database stores metadata and references to the object in R2 rather than the large media bytes.
-
-7. Live Wall updates through Realtime
-
-Supabase Realtime broadcasts the new media metadata.
-
-Supabase Realtime
-       ↓
-Live Wall
-       ↓
-R2 preview / thumbnail
-
-Images themselves are not sent through WebSockets.
-
-Media Storage Strategy
-
-Ekthau separates media into different representations.
-
-events/{event_id}/media/{media_id}/
-│
-├── original.jpg
-├── preview.jpg
-└── thumbnail.jpg
-
-Original
-
-Used for:
-
-Full-resolution viewing
-
-Downloads
-
-Event archive
-
-Preview
-
-Used for:
-
-Gallery
-
-Larger media viewer
-
-Mobile browsing
-
-Thumbnail
-
-Used for:
-
-Live wall
-
-Photo grids
-
-Small cards
-
-This prevents the Live Wall from downloading 10–20 MB originals for every photo.
-
-Reliability on Slow Networks
-
-Ekthau is specifically designed for event environments where mobile connectivity may be slow or unstable.
-
-Upload queue
-
-✓ Photo 1
-✓ Photo 2
-↑ Photo 3 — 67%
-○ Photo 4
-○ Photo 5
-
-Connection loss
-
-Uploading
-    ↓
-Internet lost
-    ↓
-Queue paused
-    ↓
-Internet returns
-    ↓
-Queue resumes
-
-Adaptive concurrency
-
-Network
-
-Concurrent uploads
-
-Very slow
-
-1
-
-Normal
-
-1–2
-
-Fast
-
-2
-
-The priority is reliability rather than saturating the guest's connection.
-
-Security
-
-Ekthau never exposes permanent R2 credentials to the browser.
-
-The server keeps:
-
-R2_ACCESS_KEY_ID
-R2_SECRET_ACCESS_KEY
-
-The browser receives only temporary upload authorization.
-
-The upload authorization flow validates:
-
-Event
-
-Guest session
-
-Session expiration
-
-MIME type
-
-File size
-
-Event limits
-
-Storage paths are generated server-side and are not freely chosen by the client.
-
-Idempotent Media Registration
-
-Distributed systems can fail between two successful operations.
-
-For example:
-
-R2 upload succeeds
-        ↓
-Database request fails
-        ↓
-Client retries
-
-The retry must not create a duplicate media record.
-
-Ekthau uses a unique media identifier/idempotency key so registration can safely be retried.
-
-Abuse Protection
-
-Because Ekthau is an event-facing public application, upload authorization does not mean unlimited uploads.
-
-Recommended controls include:
-
-Per-session upload limits
-
-Per-event storage limits
-
-Maximum file sizes
-
-MIME validation
-
-Rate limiting
-
-Event expiration
-
-Presigned URL expiration
-
-Video duration/size limits
-
-Monitoring and alerts
-
-Tech Stack
-
-Layer
-
-Technology
-
-Frontend
-
-Next.js / React
-
-Language
-
-TypeScript
-
-Styling
-
-Tailwind CSS
-
-Database
-
-Supabase PostgreSQL
-
-Authentication / Sessions
-
-Supabase
-
-Serverless API
-
-Supabase Edge Functions
-
-Realtime
-
-Supabase Realtime
-
-Media Storage
-
-Cloudflare R2
-
-Upload Protocol
-
-S3-compatible / Multipart
-
-Client Persistence
-
-IndexedDB
-
-Hosting
-
-Vercel / compatible deployment
-
-Project Structure
-
-A simplified structure:
-
-ekthau/
-├── src/
-│   ├── app/
-│   │   ├── e/
-│   │   │   └── [slug]/
-│   │   │       └── camera/
-│   │   └── ...
-│   ├── components/
-│   ├── lib/
-│   └── ...
-│
-├── supabase/
-│   ├── functions/
-│   │   └── upload-url/
-│   │       └── index.ts
-│   ├── migrations/
-│   └── ...
-│
-├── public/
-├── package.json
-├── .env.example
-└── README.md
-
-The exact structure may evolve as the application grows.
-
-Getting Started
-
-Prerequisites
-
-Make sure you have:
-
-Node.js 20+
-
-npm / pnpm / yarn
-
-A Supabase project
-
-A Cloudflare account with R2 enabled
-
-R2 bucket
-
-Supabase CLI
-
-Git
-
-Installation
-
-Clone the repository:
-
-git clone https://github.com/<your-username>/ekthau.git
-cd ekthau
-
-Install dependencies:
-
+### 2. Install dependencies
+```bash
 npm install
+```
 
-Environment Variables
+### 3. Configure environment variables
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SECRET_KEY=your-supabase-service-role-key
 
-Create a local environment file:
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_BUCKET_NAME=ekthau-media
+R2_ACCESS_KEY_ID=your-r2-access-key
+R2_SECRET_ACCESS_KEY=your-r2-secret-key
+NEXT_PUBLIC_R2_PUBLIC_DOMAIN=your-r2-custom-domain.com
+```
 
-cp .env.example .env.local
+### 4. Run database migrations
+Execute the consolidated SQL script in your Supabase SQL Editor:
+```bash
+supabase/migrations/combined_migration.sql
+```
 
-Configure the required values.
-
-Example:
-
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-
-R2_ACCOUNT_ID=
-R2_BUCKET_NAME=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-
-Keep R2 credentials server-side. Never expose R2_SECRET_ACCESS_KEY through a NEXT_PUBLIC_* variable.
-
-Supabase Edge Function secrets should be configured separately using the Supabase CLI or dashboard.
-
-Development
-
-Start the development server:
-
+### 5. Start development server
+```bash
 npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Open:
+---
 
-http://localhost:3000
+## 🔒 Privacy & Security
 
-Database
+- **Private Event Access**: Every event has a unique, cryptographically generated public slug (e.g. `sita-ramesh-2026`).
+- **Encrypted Storage**: Media is uploaded directly to secure Cloudflare R2 storage using temporary 15-minute signed authorizations.
+- **Zero Exposed Keys**: Storage credentials never reach the guest's browser.
 
-Run Supabase migrations according to the project's migration workflow.
+---
 
-The database is responsible for:
+## 📄 License
 
-Events
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-Guest sessions
-
-Media metadata
-
-Upload status
-
-Moderation state
-
-Event relationships
-
-The database should never be used as the primary store for large photo/video binaries.
-
-R2 Setup
-
-Create a Cloudflare R2 bucket and configure credentials for the server-side upload authorization function.
-
-The R2 bucket should remain private unless a deliberate public-delivery strategy is configured.
-
-The application should expose media through controlled URLs or the chosen R2 delivery layer rather than exposing the entire bucket.
-
-Production Upload Flow
-
-The production flow is:
-
-Guest
-  │
-  ├── Capture original
-  │
-  ▼
-Local Queue
-  │
-  ├── Retry
-  ├── Resume
-  └── Background upload
-  │
-  ▼
-Supabase Edge Function
-  │
-  └── Temporary authorization
-  │
-  ▼
-Cloudflare R2
-  │
-  ├── Original
-  ├── Preview
-  └── Thumbnail
-  │
-  ▼
-Supabase PostgreSQL
-  │
-  └── Media metadata
-  │
-  ▼
-Supabase Realtime
-  │
-  ▼
-Live Wall
-
-Design Principles
-
-1. Large media bypasses the backend
-
-Application servers should handle application logic, not proxy 20 MB photos.
-
-2. Preserve originals
-
-Network problems should not force destructive quality reduction.
-
-3. Upload asynchronously
-
-Taking a photo should never require waiting for an upload.
-
-4. Resume instead of restart
-
-Temporary network failures should not waste already-uploaded bytes.
-
-5. Keep the Live Wall lightweight
-
-Use thumbnails and previews instead of full-resolution originals.
-
-6. Treat retries as normal
-
-Mobile networks fail. The system should be designed around that reality.
-
-7. Keep the architecture simple
-
-Use managed infrastructure where it solves the problem. Avoid unnecessary microservices and infrastructure.
-
-Scalability
-
-The architecture separates media traffic from application traffic.
-
-Instead of:
-
-500 guests
-    ↓
-Application Server
-    ↓
-Storage
-
-Ekthau uses:
-
-500 guests
-    │
-    ├────────────────► R2
-    ├────────────────► R2
-    ├────────────────► R2
-    ├────────────────► R2
-    └────────────────► R2
-
-Supabase
-    │
-    ├── Authorization
-    ├── Metadata
-    └── Realtime
-
-This means increasing the number of guests does not automatically turn the application server into the media-upload bottleneck.
-
-Roadmap
-
-Potential future improvements:
-
-Automatic image optimization pipeline
-
-Advanced video transcoding
-
-AI event highlights
-
-Face-based photo search
-
-Duplicate photo detection
-
-Offline-first camera experience
-
-Advanced host moderation
-
-Custom event domains
-
-Event analytics
-
-Downloadable event archives
-
-Multi-day events
-
-Multi-album events
-
-Contributing
-
-Contributions, issues, and feature requests are welcome.
-
-Before submitting a pull request:
-
-Keep changes focused.
-
-Do not expose credentials or secrets.
-
-Do not route large media through the application server without a documented reason.
-
-Preserve upload idempotency.
-
-Test failure and retry scenarios.
-
-Test the guest experience on mobile networks.
-
-Security
-
-If you discover a security vulnerability, do not open a public issue with sensitive details.
-
-Report it privately through the project's designated security contact.
-
-License
-
-This project is licensed under the MIT License.
+<br />
 
 <div align="center">
 
-Built for moments that shouldn't be lost.
+**Built with ❤️ for moments that shouldn't be lost.**
 
-Ekthau
+[Create Your Free Event](https://ekthau.com) • [Join an Event](https://ekthau.com/join)
 
 </div>
