@@ -1,18 +1,19 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+// Supabase Edge Function: upload-url
+// Generates presigned upload URLs for Cloudflare R2 / S3 storage
+// @ts-nocheck - Deno Edge Runtime Environment
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3"
-import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3@3.540.0"
+import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner@3.540.0"
+import { createClient } from "npm:@supabase/supabase-js@2.42.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
+  // Handle CORS Preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -21,12 +22,15 @@ serve(async (req) => {
     const { event_id, filename, content_type, session_token_hash } = await req.json()
 
     if (!event_id || !filename || !content_type || !session_token_hash) {
-      throw new Error('Missing required fields')
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: event_id, filename, content_type, session_token_hash' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Verify the guest session against the event
+    // 1. Verify Guest Session against Event in Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_SECRET_KEY') ?? ''
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { data: sessionData, error: sessionError } = await supabase
@@ -34,57 +38,70 @@ serve(async (req) => {
       .select('id, expires_at')
       .eq('event_id', event_id)
       .eq('session_token_hash', session_token_hash)
-      .single()
+      .maybeSingle()
 
     if (sessionError || !sessionData) {
-      throw new Error('Invalid guest session')
+      return new Response(
+        JSON.stringify({ error: 'Invalid or missing guest session' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     if (new Date(sessionData.expires_at) < new Date()) {
-      throw new Error('Event or session has expired')
+      return new Response(
+        JSON.stringify({ error: 'Event or guest session has expired' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Initialize R2 client
+    // 2. Initialize Cloudflare R2 / S3 Client
+    const accountId = Deno.env.get('R2_ACCOUNT_ID') || ''
+    const accessKeyId = Deno.env.get('R2_ACCESS_KEY_ID') || ''
+    const secretAccessKey = Deno.env.get('R2_SECRET_ACCESS_KEY') || ''
+    const bucketName = Deno.env.get('R2_BUCKET_NAME') || 'ekthau-media'
+
     const S3 = new S3Client({
-      region: "auto",
-      endpoint: `https://${Deno.env.get('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID') || '',
-        secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY') || '',
+        accessKeyId,
+        secretAccessKey,
       },
     })
 
-    // Generate unique storage path
-    const fileExt = filename.split('.').pop()
+    // 3. Generate unique storage key path
+    const fileExt = filename.split('.').pop() || 'jpg'
     const uniqueId = crypto.randomUUID()
-    const storage_path = `events/${event_id}/media/${uniqueId}/original.${fileExt}`
-
-    const bucketName = Deno.env.get('R2_BUCKET_NAME')
+    const storagePath = `events/${event_id}/media/${uniqueId}/original.${fileExt}`
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
-      Key: storage_path,
+      Key: storagePath,
       ContentType: content_type,
     })
 
-    // URL expires in 15 minutes
+    // URL valid for 15 minutes (900 seconds)
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 900 })
 
     return new Response(
-      JSON.stringify({ 
-        signedUrl, 
-        storagePath: storage_path, 
-        mediaId: uniqueId 
+      JSON.stringify({
+        signedUrl,
+        storagePath,
+        mediaId: uniqueId,
       }),
-      { 
+      {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
       }
     )
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    console.error('Upload URL generation error:', error)
+    return new Response(
+      JSON.stringify({ error: error?.message || 'Internal Server Error' }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
   }
 })
