@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useGuest } from '@/features/guest/GuestContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowLeft, QrCode, Sparkles } from 'lucide-react'
 import { MOCK_MODE, mockEvents } from '@/lib/mockData'
 
 async function generateSessionHash() {
@@ -40,7 +41,8 @@ export default function JoinEventPage() {
 
         if (MOCK_MODE) {
           data =
-            mockEvents.find((e) => e.public_slug === slug) || mockEvents[0]
+            mockEvents.find((e) => e.public_slug.toLowerCase() === slug.toLowerCase()) ||
+            mockEvents[0]
         } else {
           const { data: rpcData, error } = await supabase.rpc(
             'get_public_event_info',
@@ -60,7 +62,7 @@ export default function JoinEventPage() {
           return
         }
       } catch (err: any) {
-        setError(err?.message || 'Event not found')
+        setError(err?.message || 'Event not found or has expired.')
       } finally {
         setLoading(false)
       }
@@ -121,31 +123,41 @@ export default function JoinEventPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col h-screen items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground font-medium">Opening event space...</p>
       </div>
     )
   }
 
   if (error || !eventInfo) {
     return (
-      <div className="flex h-screen items-center justify-center p-4 text-center">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-bold">Oops</h1>
-          <p className="text-muted-foreground">
-            {error || 'Event not found or has expired.'}
-          </p>
+      <div className="flex min-h-screen items-center justify-center p-6 text-center bg-background">
+        <div className="w-full max-w-sm space-y-5 bg-card border p-8 rounded-3xl shadow-lg">
+          <div className="h-12 w-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+            <QrCode className="h-6 w-6" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold">Event Not Found</h1>
+            <p className="text-sm text-muted-foreground">{error || 'This event link is invalid or has expired.'}</p>
+          </div>
+          <Button asChild className="w-full rounded-xl font-semibold">
+            <Link href="/join">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Enter Code or Scan QR
+            </Link>
+          </Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center p-6 bg-gray-50 dark:bg-zinc-950">
-      <div className="w-full max-w-sm mt-8 space-y-8">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center p-6 bg-gradient-to-b from-background via-muted/20 to-background">
+      <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-3">
           {eventInfo.cover_image_path ? (
-            <div className="w-full h-48 rounded-2xl bg-gray-200 overflow-hidden mb-6">
+            <div className="w-full h-44 rounded-3xl bg-muted overflow-hidden shadow-md">
               <img
                 src={eventInfo.cover_image_path}
                 alt="Cover"
@@ -153,56 +165,64 @@ export default function JoinEventPage() {
               />
             </div>
           ) : (
-            <div className="w-20 h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center mb-6">
-              <span className="text-3xl font-bold text-primary">
-                {eventInfo.name?.charAt(0)}
-              </span>
+            <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl mx-auto flex items-center justify-center shadow-sm">
+              <span className="text-3xl font-black">{eventInfo.name?.charAt(0)}</span>
             </div>
           )}
-          <h1 className="text-3xl font-bold tracking-tight">{eventInfo.name}</h1>
-          <p className="text-muted-foreground">
-            {new Date(eventInfo.event_date).toLocaleDateString()}{' '}
-            {eventInfo.location && `• ${eventInfo.location}`}
-          </p>
+
+          <div className="space-y-1 pt-2">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{eventInfo.name}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              {new Date(eventInfo.event_date).toLocaleDateString()} {eventInfo.location && `• ${eventInfo.location}`}
+            </p>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border space-y-6">
+        <div className="bg-card p-6 sm:p-7 rounded-3xl shadow-xl border space-y-5">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">
+              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 What should we call you?
               </Label>
               <Input
                 id="name"
-                placeholder="Your name"
+                placeholder="e.g. Alex"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 text-lg"
+                autoFocus
+                className="h-12 text-base rounded-2xl bg-background"
               />
             </div>
 
             <Button
-              className="w-full h-12 text-base font-semibold rounded-xl"
+              className="w-full h-12 text-base font-bold rounded-2xl shadow-md shadow-primary/20 hover:shadow-lg transition-all"
               onClick={() => handleJoin(false)}
               disabled={
                 joining || (!displayName.trim() && !eventInfo.allow_anonymous)
               }
             >
               {joining && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Continue
+              Join Live Stream
             </Button>
 
             {eventInfo.allow_anonymous && (
               <Button
                 variant="ghost"
-                className="w-full h-12 text-base font-medium"
+                className="w-full h-11 text-sm font-semibold rounded-2xl"
                 onClick={() => handleJoin(true)}
                 disabled={joining}
               >
-                Continue as guest
+                Join as Anonymous Guest
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Change event link */}
+        <div className="text-center">
+          <Link href="/join" className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-4">
+            Looking for a different event?
+          </Link>
         </div>
       </div>
     </div>
