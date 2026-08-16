@@ -23,7 +23,7 @@
     --border: 225 9% 20%;
     --input: 225 9% 20%;
     --ring: 13 67% 47%;
-    --radius: 0.375rem;
+    --radius: 0.5rem;
   }
 }
 
@@ -36,6 +36,33 @@
     color: #F7F4EE;
     font-family: var(--font-sans), sans-serif;
   }
+
+  /* Clean up default HTML date picker indicators */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) sepia(50%) saturate(500%) hue-rotate(350deg);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+}
+
+/* Custom Scrollbar for Popovers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #15171A;
+}
+::-webkit-scrollbar-thumb {
+  background: #2E333A;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
 }
 
 /* Bespoke Studio Utilities */

@@ -84,20 +84,20 @@ Start with **1 GB completely free**. Upgrade whenever you need more storage, lon
 
 | Plan | Storage | Price | Retention Duration | Guest Limit | Key Highlights |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Starter** | **1 GB** | **Free** | **30 Days** (1 Month) | Up to 30 Guests | Standard in-browser camera, live mobile web gallery, printable QR pass (PNG), 1-click ZIP download. |
-| **Mini Event** | **5 GB** | **Rs. 99** | **60 Days** (2 Months) | Up to 100 Guests | Original HD uploads, short video clips (up to 30s), host moderation panel, venue customization. |
-| **Celebration** | **10 GB** | **Rs. 499** | **90 Days** (3 Months) | Up to 250 Guests | Extended video uploads (up to 60s), live TV/projector slideshow mode, priority upload queue. |
-| **Grand Celebration** 🔥 | **30 GB** | **Rs. 999** | **180 Days** (6 Months) | Up to 600 Guests | Full 4K uploads, custom monogram QR stand, live wall with guest reactions, top contributor leaderboard. |
-| **Mega Festival** ✨ | **100 GB** | **Rs. 1,999** | **1 Year** (365 Days) | Up to 2,000 Guests | **✨ AI Smart Photo Scan & Face Match** (guests snap a selfie to find all their photos across thousands of uploads), Google Drive sync. |
-| **Royal Wedding & Multi-Day** 👑 | **250 GB** | **Rs. 4,999** | **2 Years** (Permanent) | **Unlimited** | **✨ Advanced AI Face Match + Auto-Highlights Album Generator**, Multi-Day Sub-Events (*Haldi, Sangeet, Wedding, Reception*), dedicated concierge support. |
+| **Starter** | **1 GB** | **Free** | **2 Days** (Backup) | Up to 30 Guests | Standard in-browser camera, live mobile web gallery, printable QR pass (PNG), 1-click ZIP download. |
+| **Mini Event** | **5 GB** | **Rs. 99** | **30 Days** (1 Month) | Up to 100 Guests | Original HD uploads, short video clips (up to 30s), host moderation panel, venue customization. |
+| **Celebration** | **10 GB** | **Rs. 499** | **30 Days** (1 Month) | Up to 250 Guests | Extended video uploads (up to 60s), live TV/projector slideshow mode, priority upload queue. |
+| **Grand Celebration** 🔥 | **30 GB** | **Rs. 999** | **30 Days** (1 Month) | Up to 600 Guests | Full 4K uploads, custom monogram QR stand, live wall with guest reactions, top contributor leaderboard. |
+| **Mega Festival** ✨ | **100 GB** | **Rs. 1,999** | **90 Days** (3 Months) | Up to 2,000 Guests | **✨ AI Smart Photo Scan & Face Match (Coming Soon)**, multi-screen live sync, Google Drive sync. |
+| **Royal Wedding & Multi-Day** 👑 | **250 GB** | **Rs. 4,999** | **1 Year** (365 Days) | **Unlimited** | **✨ Advanced AI Face Match + Auto-Highlights Album (Coming Soon)**, Multi-Day Sub-Events (*Haldi, Sangeet, Wedding, Reception*), dedicated concierge support. |
 
 ---
 
-## 🤖 ✨ AI Smart Photo Scan (100GB & 250GB Plans)
+## 🤖 ✨ AI Smart Photo Scan (Coming Soon for 100GB & 250GB Plans)
 
 Ever attended a 500-person wedding and spent 40 minutes scrolling through thousands of photos just to find the 3 pictures you appear in?
 
-With **Ekthau AI Photo Scan**:
+With **Ekthau AI Photo Scan (Coming Soon)**:
 1. Guests tap **"Find My Photos"** and snap a quick 1-second selfie.
 2. Our private AI facial clustering scans all event uploads.
 3. Guests instantly see a personalized album containing only the photos & videos they appear in!

@@ -38,7 +38,7 @@ export default function LandingPage() {
       tier: 'Starter',
       capacity: '30 Guests',
       storage: '1 GB',
-      retention: '30 Days',
+      retention: '2 Days Backup',
       price: 'Free',
       period: 'forever',
       description: 'For intimate dinners and birthday brunches.',
@@ -57,7 +57,7 @@ export default function LandingPage() {
       tier: 'Mini Event',
       capacity: '100 Guests',
       storage: '5 GB',
-      retention: '60 Days',
+      retention: '1 Month',
       price: 'Rs. 99',
       period: 'event',
       description: 'For engagements and anniversary parties.',
@@ -76,7 +76,7 @@ export default function LandingPage() {
       tier: 'Celebration',
       capacity: '250 Guests',
       storage: '10 GB',
-      retention: '90 Days',
+      retention: '1 Month',
       price: 'Rs. 499',
       period: 'event',
       description: 'For milestone birthdays and family reunions.',
@@ -95,7 +95,7 @@ export default function LandingPage() {
       tier: 'Grand Celebration',
       capacity: '600 Guests',
       storage: '30 GB',
-      retention: '180 Days',
+      retention: '1 Month',
       price: 'Rs. 999',
       period: 'event',
       description: 'The favorite for Nepali weddings & receptions.',
@@ -114,12 +114,12 @@ export default function LandingPage() {
       tier: 'Mega Festival',
       capacity: '2,000 Guests',
       storage: '100 GB',
-      retention: '1 Year',
+      retention: '90 Days',
       price: 'Rs. 1,999',
       period: 'event',
       description: 'For conventions, college fests, and multi-hall events.',
       highlights: [
-        '✨ AI Selfie Scan (Find all your photos)',
+        '✨ AI Selfie Scan (Coming Soon)',
         'Multi-screen live projector sync',
         'Automatic duplicate filtering',
         'Google Drive cloud backup',
@@ -134,13 +134,13 @@ export default function LandingPage() {
       tier: 'Royal Multi-Day',
       capacity: 'Unlimited',
       storage: '250 GB',
-      retention: '2 Years',
+      retention: '1 Year',
       price: 'Rs. 4,999',
       period: 'multi-day',
       description: 'Full multi-day package (Haldi, Sangeet, Wedding, Reception).',
       highlights: [
         'Sub-event folders & separate QR stands',
-        '✨ Advanced AI Face Match + Auto-Highlights',
+        '✨ Advanced AI Face Match + Auto-Highlights (Coming Soon)',
         'White-label signage & custom domain',
         'Dedicated setup concierge',
       ],
@@ -532,10 +532,10 @@ export default function LandingPage() {
               <div className="border border-[#2E333A] bg-[#15171A] p-5 space-y-2">
                 <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#D49B35]">
                   <Sparkles className="h-3.5 w-3.5" />
-                  ✨ AI Selfie Face Scan (100GB+ Plans)
+                  ✨ AI Selfie Face Scan (Coming Soon)
                 </div>
                 <p className="text-xs sm:text-sm text-[#A0A5AC]">
-                  Guests snap a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads.
+                  Guests will be able to snap a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads.
                 </p>
               </div>
 
@@ -591,7 +591,7 @@ export default function LandingPage() {
                         <h3 className="font-display font-bold text-lg text-[#F7F4EE]">{plan.tier}</h3>
                         {plan.ai && (
                           <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#D49B35]/15 border border-[#D49B35]/30 text-[#D49B35]">
-                            AI SCAN
+                            AI (COMING SOON)
                           </span>
                         )}
                       </div>

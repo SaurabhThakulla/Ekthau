@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import CustomSelect from '@/components/ui/custom-select'
 import JoinEventModal from '@/components/JoinEventModal'
 import {
   Loader2,
@@ -259,35 +260,36 @@ export default function OverviewPage() {
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground shrink-0">
-              <ArrowUpDown className="h-3.5 w-3.5" />
-              <span>Sort:</span>
+            <div className="flex items-center gap-1.5 text-xs font-mono uppercase text-[#A0A5AC] shrink-0">
+              <ArrowUpDown className="h-3.5 w-3.5 text-[#D49B35]" />
+              <span className="hidden sm:inline">Sort:</span>
             </div>
-            <select
+            <CustomSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-11 rounded-xl border border-input bg-background px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="date">Event Date Soonest</option>
-              <option value="name">Alphabetical (A-Z)</option>
-            </select>
+              onChange={(val) => setSortBy(val as any)}
+              options={[
+                { value: 'newest', label: 'Newest First' },
+                { value: 'oldest', label: 'Oldest First' },
+                { value: 'date', label: 'Event Date Soonest' },
+                { value: 'name', label: 'Alphabetical (A-Z)' },
+              ]}
+              className="w-44"
+            />
           </div>
         </div>
 
         {/* Status Tabs and Type Filter */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#262A30] text-xs">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-[#1A1C20] p-1 rounded-xl border border-[#2E333A]">
             {(['all', 'active', 'draft', 'completed'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setStatusFilter(tab)}
-                className={`px-3 py-1.5 rounded-lg font-semibold capitalize transition-all ${
+                className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider capitalize transition-all ${
                   statusFilter === tab
-                    ? 'bg-background shadow-xs text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-[#C84B28] shadow-xs text-white font-bold'
+                    : 'text-[#A0A5AC] hover:text-[#F7F4EE]'
                 }`}
               >
                 {tab}
@@ -297,20 +299,17 @@ export default function OverviewPage() {
 
           {/* Type Filter */}
           {eventTypes.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-muted-foreground font-medium">Type:</span>
-              <select
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase text-[#A0A5AC]">Type:</span>
+              <CustomSelect
                 value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs font-medium focus-visible:ring-primary"
-              >
-                <option value="all">All Types</option>
-                {eventTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setTypeFilter(val)}
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  ...eventTypes.map((type) => ({ value: type, label: type })),
+                ]}
+                className="w-40"
+              />
             </div>
           )}
         </div>
