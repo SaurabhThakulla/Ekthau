@@ -19,7 +19,41 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ["var(--font-display)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+      },
       colors: {
+        terracotta: {
+          DEFAULT: "#C84B28",
+          dark: "#9E3416",
+          light: "#E86542",
+          subtle: "rgba(200, 75, 40, 0.08)",
+          glow: "rgba(200, 75, 40, 0.25)",
+        },
+        ochre: {
+          DEFAULT: "#D49B35",
+          dark: "#A6741F",
+          light: "#E5B65E",
+          subtle: "rgba(212, 155, 53, 0.12)",
+        },
+        parchment: {
+          DEFAULT: "#F7F4EE",
+          warm: "#EFEAE0",
+          dim: "#E5DEC9",
+        },
+        asphalt: {
+          DEFAULT: "#121316",
+          surface: "#1A1C20",
+          card: "#22262B",
+          border: "#2E333A",
+        },
+        sage: {
+          DEFAULT: "#5C6B5E",
+          light: "#78877A",
+          subtle: "rgba(92, 107, 94, 0.15)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

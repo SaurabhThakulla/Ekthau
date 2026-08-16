@@ -9,278 +9,276 @@ import {
   Camera,
   QrCode,
   ArrowRight,
-  ShieldCheck,
-  Zap,
-  Download,
-  Sliders,
-  CheckCircle2,
-  Users,
-  Image as ImageIcon,
-  Images,
-  Layers,
-  Heart,
-  Eye,
-  Lock,
-  WifiOff,
   Tv,
-  ChevronRight,
-  Star,
-  Play,
-  Check,
-  Bot,
-  Clock,
-  HardDrive,
-  Flame,
-  Crown,
-  HelpCircle,
+  Search,
   Sparkles,
-  ArrowUpRight,
-  Scan,
+  Download,
+  WifiOff,
+  Sliders,
+  Check,
+  Plus,
+  Minus,
   Maximize2,
+  HardDrive,
+  Clock,
+  Users,
+  Shield,
+  Layers,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 
 export default function LandingPage() {
   const { session } = useAuth()
   const [joinModalOpen, setJoinModalOpen] = useState(false)
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const [directCode, setDirectCode] = useState('')
 
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index)
+  const handleDirectCodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!directCode.trim()) return
+    const clean = directCode.trim().replace(/^.*\/join\//, '').replace(/\?.*/, '')
+    window.location.href = `/join/${clean}`
   }
 
-  const pricingPlans = [
+  const pricingLedger = [
     {
       id: 'free',
-      name: 'Starter',
-      capacity: 'Up to 30 guests',
+      tier: 'Starter',
+      capacity: '30 Guests',
+      storage: '1 GB',
+      photos: '~350 Photos',
+      retention: '30 Days Access',
       price: 'Free',
-      numericPrice: 0,
-      description: 'Ideal for intimate family dinners, birthday brunches, or trying out Ekthau.',
-      duration: '30 days online access',
-      storage: '1 GB storage (~350 photos)',
-      badge: 'Free Forever',
-      badgeClass: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
-      cardClass: 'border-border bg-card',
-      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
-      features: [
-        'In-browser camera (zero app downloads)',
-        'Printable table QR code pass (PNG)',
-        'Shared live mobile gallery',
-        'Single-click bulk ZIP download',
-        'Standard upload speeds',
+      period: 'forever',
+      description: 'For intimate family dinners, birthday brunches, or previewing the darkroom engine.',
+      highlights: [
+        'Instant in-browser camera (zero downloads)',
+        'Printable tabletop QR pass (PNG)',
+        'Live mobile event gallery feed',
+        '1-click original resolution ZIP download',
       ],
+      href: '/signup',
       cta: 'Start Free with 1GB',
-      ctaHref: '/signup',
+      isPopular: false,
     },
     {
       id: '5gb',
-      name: 'Mini Event',
-      capacity: 'Up to 100 guests',
+      tier: 'Mini Event',
+      capacity: '100 Guests',
+      storage: '5 GB',
+      photos: '~1,500 Photos',
+      retention: '60 Days Storage',
       price: 'Rs. 99',
-      numericPrice: 99,
-      description: 'Perfect for engagement parties, anniversary dinners, and private bashes.',
-      duration: '60 days (2 months) storage',
-      storage: '5 GB storage (~1,500 photos & clips)',
-      badge: 'Mini Event',
-      badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-      cardClass: 'border-border bg-card',
-      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
-      features: [
+      period: 'per event',
+      description: 'For engagement bashes, anniversary toasts, and private rooftop dinners.',
+      highlights: [
         'Everything in Starter',
         'Original HD quality photo preservation',
-        'Short video uploads (up to 30s)',
-        'Host moderation panel (approve/hide photos)',
-        'Customized venue and event details',
+        'Short video uploads (up to 30s clips)',
+        'Host moderation desk (approve or hide live)',
+        'Custom venue location & welcome note',
       ],
+      href: '/signup?plan=5gb',
       cta: 'Select 5GB Plan',
-      ctaHref: '/signup?plan=5gb',
+      isPopular: false,
     },
     {
       id: '10gb',
-      name: 'Celebration',
-      capacity: 'Up to 250 guests',
+      tier: 'Celebration',
+      capacity: '250 Guests',
+      storage: '10 GB',
+      photos: '~3,500 Photos & Clips',
+      retention: '90 Days Storage',
       price: 'Rs. 499',
-      numericPrice: 499,
-      description: 'Built for reception parties, milestone birthdays, and family reunions.',
-      duration: '90 days (3 months) storage',
-      storage: '10 GB storage (~3,500 photos & videos)',
-      badge: 'Celebration',
-      badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-      cardClass: 'border-border bg-card',
-      buttonClass: 'border-border bg-background hover:bg-muted text-foreground',
-      features: [
+      period: 'per event',
+      description: 'For milestone birthdays, graduation galas, and festive family reunions.',
+      highlights: [
         'Everything in Mini Event',
-        'Extended video uploads (up to 60s)',
-        'Live TV & projector slideshow presentation mode',
-        'Priority mobile upload queue',
-        'Custom welcome message for attendees',
+        '60-second video clips support',
+        'Live TV & Projector slideshow broadcast mode',
+        'Priority mobile upload queue for crowded rooms',
+        'Custom host message on camera screen',
       ],
+      href: '/signup?plan=10gb',
       cta: 'Select 10GB Plan',
-      ctaHref: '/signup?plan=10gb',
+      isPopular: false,
     },
     {
       id: '30gb',
-      name: 'Grand Celebration',
-      capacity: 'Up to 600 guests',
+      tier: 'Grand Celebration',
+      capacity: '600 Guests',
+      storage: '30 GB',
+      photos: '~10,000 High-Res Files',
+      retention: '180 Days (6 Months)',
       price: 'Rs. 999',
-      numericPrice: 999,
-      badge: '🔥 Most Popular for Weddings',
-      badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
-      cardClass: 'border-amber-500/40 bg-gradient-to-b from-amber-500/5 via-card to-card shadow-xl ring-1 ring-amber-500/30',
-      buttonClass: 'bg-foreground text-background hover:bg-foreground/90 shadow-md',
-      features: [
+      period: 'per event',
+      description: 'The standard for weddings and receptions across Kathmandu and banquet halls.',
+      highlights: [
         'Everything in Celebration',
         'Original 4K photo & video preservation',
-        'Custom QR code design with couple monogram',
-        'Interactive live projector wall with reactions',
-        'Top contributor stats & photographer leaderboard',
+        'Custom monogram QR card design for tables',
+        'Interactive live projector wall with guest cheers',
+        'Top contributor stats & photographer roll',
         'Multi-host moderation access',
       ],
+      href: '/signup?plan=30gb',
       cta: 'Get Grand Celebration Plan',
-      ctaHref: '/signup?plan=30gb',
-      featured: true,
+      isPopular: true,
     },
     {
       id: '100gb',
-      name: 'Mega Festival',
-      capacity: 'Up to 2,000 guests',
+      tier: 'Mega Festival',
+      capacity: '2,000 Guests',
+      storage: '100 GB',
+      photos: '~35,000 Media Files',
+      retention: '1 Full Year (365 Days)',
       price: 'Rs. 1,999',
-      numericPrice: 1999,
-      badge: '✨ AI Photo Scan Included',
-      badgeClass: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
-      cardClass: 'border-purple-500/40 bg-gradient-to-b from-purple-500/5 via-card to-card shadow-lg ring-1 ring-purple-500/20',
-      buttonClass: 'border border-purple-500/40 text-purple-600 dark:text-purple-300 hover:bg-purple-500/10 font-bold',
-      ai: true,
-      features: [
+      period: 'per event',
+      description: 'For major cultural festivals, college convocations, and mega conventions.',
+      highlights: [
         'Everything in Grand Celebration',
-        '✨ AI Smart Photo Scan (guests snap a selfie to find all their photos)',
-        '1 Full Year cloud archival guarantee',
-        'Automatic duplicate and blur detection',
-        'Multi-screen live sync across large venues',
+        '✨ AI Smart Photo Scan: Guests take a selfie to isolate their personal photos instantly',
+        'Automatic duplicate and blur filtering',
+        'Multi-screen live sync across multiple ballroom screens',
         'Direct bulk sync to Google Drive',
       ],
+      href: '/signup?plan=100gb',
       cta: 'Select 100GB with AI Scan',
-      ctaHref: '/signup?plan=100gb',
+      isPopular: false,
+      ai: true,
     },
     {
       id: '250gb',
-      name: 'Royal Wedding & Multi-Day',
-      capacity: 'Unlimited guests',
+      tier: 'Royal Wedding & Multi-Day',
+      capacity: 'Unlimited Guests',
+      storage: '250 GB',
+      photos: 'Unrestricted Storage',
+      retention: '2 Years Permanent Vault',
       price: 'Rs. 4,999',
-      numericPrice: 4999,
-      badge: '👑 Ultimate Multi-Event Vault',
-      badgeClass: 'bg-amber-400/20 text-amber-300 border-amber-400/30',
-      cardClass: 'border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950 text-white shadow-2xl',
-      buttonClass: 'bg-amber-400 text-zinc-950 hover:bg-amber-300 font-bold shadow-lg',
-      ai: true,
-      features: [
+      period: 'multi-day package',
+      description: 'Complete multi-day celebration archival across Haldi, Mehendi, Sangeet, Wedding, and Reception.',
+      highlights: [
         'Everything in Mega Festival',
-        'Multi-Day & Sub-Event folders (Haldi, Sangeet, Wedding, Reception)',
-        '✨ Advanced AI Face Match + Auto-Highlights album',
-        'Custom event domain & white-label signage',
+        'Multi-Day & Sub-Event folders with separate QR stands',
+        '✨ Advanced AI Face Match + Auto-Highlights Album',
+        'White-label signage & custom event domain',
         'Dedicated event setup concierge',
-        '2 Years permanent download vault link',
+        '2 Years permanent download link',
       ],
+      href: '/signup?plan=250gb',
       cta: 'Select Royal 250GB Vault',
-      ctaHref: '/signup?plan=250gb',
+      isPopular: false,
+      ai: true,
     },
   ]
 
-  const faqs = [
+  const realFaqs = [
     {
-      q: 'Do guests need to download an app or create an account?',
-      a: 'No. Guests simply point their phone camera at the table QR code and the camera opens instantly in their native mobile browser (Safari, Chrome, etc.). No app installation, no passwords, zero friction.',
+      q: 'Do guests need to install an app or enter an email at the party?',
+      a: 'Never. Guests point their native phone camera at the brass QR stand on their table. The camera interface loads inside Safari or Chrome in under 2 seconds. No app store redirects, no passwords, no signup barrier.',
     },
     {
-      q: 'What happens if the venue Wi-Fi or mobile data is slow or intermittent?',
-      a: 'Ekthau is engineered specifically for real-world event halls in Nepal. Photos save locally to the guest’s phone first and queue in the background. If cell reception drops, the upload pauses safely and resumes automatically when connection returns.',
+      q: 'What happens when 400 people overload the venue Wi-Fi and 4G signal?',
+      a: 'Ekthau is engineered specifically for dense South Asian banquet halls. When a guest taps the shutter, the photo commits to local device storage in 48ms. Uploads buffer automatically in the background and resume silently whenever cell signal returns. Zero lost shots.',
     },
     {
-      q: 'Are photos compressed or reduced in quality?',
-      a: 'Original photos and videos are stored in 100% full uncompressed quality (10–25MB raw files, 4K videos). Lightweight previews are generated in the background so the live wall stays instant, while the full originals are preserved for your final ZIP download.',
+      q: 'Does Ekthau compress raw photos like WhatsApp or Google Drive links?',
+      a: 'No. WhatsApp reduces photos down to 1–2MB with aggressive artifacting. Ekthau ingests 100% full-resolution raw 10–25MB camera originals and 4K video clips. After the celebration, the host downloads the complete uncompressed archive in a single ZIP file.',
     },
     {
-      q: 'How does the Live Wall projector mode work?',
-      a: 'As the host, you can open the Live Slideshow URL on any laptop connected to a projector, TV, or LED wall. As guests take photos around the room, new approved moments fade onto the big screen in real time.',
+      q: 'How does the Live Wall projector mode connect at the venue?',
+      a: 'Plug any laptop running Chrome into the venue projector, HDMI switch, or LED screen wall. Open your event Live Wall URL and hit Fullscreen. As guests snap photos from their tables, new candid moments fade smoothly onto the screen with a 6-second cadence.',
     },
     {
-      q: 'Can I review and moderate photos before they appear on the big screen?',
-      a: 'Yes. You can enable Host Moderation in your settings with one click. Photos will only appear on the public wall once you (or a designated co-host) tap "Approve" in your private dashboard.',
+      q: 'Can hosts review and filter photos before they show on the big screen?',
+      a: 'Yes. Toggle Host Moderation on with one click. Photos land in your private moderation stream first. You or your designated co-host tap Approve to send them to the public projector wall, keeping the screen curated and safe.',
     },
     {
-      q: 'How does the ✨ AI Photo Scan work?',
-      a: 'On our 100GB and 250GB plans, guests can tap "Find My Photos" and snap a 1-second selfie. Our AI facial recognition instantly scans the entire event archive and generates a private album of every photo and video they appear in.',
+      q: 'How does the ✨ AI Face Scan work for guests on large events?',
+      a: 'At a 500-guest wedding with 4,000 photos, scrolling through the full feed to find yourself is overwhelming. On our 100GB and 250GB plans, guests tap "Find My Photos," take a 1-second selfie, and our vector facial recognition instantly returns every candid frame they appear in.',
     },
   ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-amber-500 selection:text-black font-sans antialiased">
-      {/* 1. TOP NAVIGATION */}
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 h-16 sm:h-20 flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-black flex items-center justify-center font-black shadow-md shadow-amber-500/20 transition-transform group-hover:scale-95">
-              <Camera className="h-4 w-4 stroke-[2.5]" />
+    <div className="min-h-screen bg-[#121316] text-[#F7F4EE] flex flex-col selection:bg-[#C84B28] selection:text-white font-sans antialiased overflow-x-hidden">
+      
+      {/* ========================================================================= */}
+      {/* 1. STUDIO HEADER: ARCHITECTURAL RULED TOP BAR                             */}
+      {/* ========================================================================= */}
+      <header className="sticky top-0 z-50 border-b border-[#2E333A] bg-[#121316]/95 backdrop-blur-md">
+        <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16 h-18 sm:h-20 flex items-center justify-between gap-6">
+          
+          {/* Studio Brand Mark */}
+          <Link href="/" className="flex items-center gap-3.5 group">
+            <div className="h-9 w-9 bg-[#C84B28] text-white flex items-center justify-center font-mono font-bold text-xs tracking-tighter shadow-sm border border-[#E86542]/40 transition-transform group-hover:scale-95">
+              <Camera className="h-4 w-4 stroke-[2.2]" />
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-lg tracking-tight leading-none text-foreground flex items-center gap-1.5">
-                Ekthau
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <div className="flex items-center gap-2">
+                <span className="font-serif text-xl tracking-tight leading-none text-[#F7F4EE]">
+                  Ekthau
+                </span>
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-[#D49B35]/15 text-[#D49B35] border border-[#D49B35]/30">
                   एकठाउँ
                 </span>
-              </span>
-              <span className="text-[10px] text-muted-foreground font-medium tracking-wide">
-                The Digital Disposable Camera
+              </div>
+              <span className="font-mono text-[10px] text-[#A0A5AC] tracking-widest uppercase mt-0.5">
+                35mm Digital Disposable
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">
-              How It Works
+          {/* Desktop Navigation Monograph */}
+          <nav className="hidden lg:flex items-center gap-9 font-mono text-xs uppercase tracking-[0.14em] text-[#A0A5AC]">
+            <a href="#table-ritual" className="hover:text-[#D49B35] transition-colors">
+              The Table Ritual
             </a>
-            <a href="#experience" className="hover:text-foreground transition-colors">
-              The Experience
+            <a href="#darkroom-cinema" className="hover:text-[#D49B35] transition-colors">
+              Live Hall Stream
             </a>
-            <a href="#live-wall" className="hover:text-foreground transition-colors">
-              Live Wall
+            <a href="#storage-ledger" className="hover:text-[#D49B35] transition-colors">
+              Storage Ledger
             </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">
-              FAQ
+            <a href="#inquiries" className="hover:text-[#D49B35] transition-colors">
+              Inquiries
             </a>
           </nav>
 
-          {/* Nav Actions */}
-          <div className="flex items-center gap-2.5">
+          {/* Action Dock */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setJoinModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center gap-2 px-3.5 py-2 border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35]/50 text-xs font-mono tracking-wider uppercase text-[#E5DEC9] transition-colors"
             >
-              <QrCode className="h-3.5 w-3.5 text-amber-500" />
-              <span>Join Event</span>
+              <QrCode className="h-3.5 w-3.5 text-[#D49B35]" />
+              <span className="hidden sm:inline">Join with Code</span>
+              <span className="sm:hidden">Join</span>
             </button>
 
             {session ? (
-              <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-4 bg-foreground text-background hover:bg-foreground/90 shadow-sm">
-                <Link href="/dashboard">
-                  Dashboard
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                </Link>
-              </Button>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C84B28] hover:bg-[#9E3416] text-white text-xs font-mono uppercase tracking-wider font-bold transition-colors shadow-sm"
+              >
+                Dashboard
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild className="rounded-xl font-semibold text-xs h-9 px-3.5 hidden sm:inline-flex">
-                  <Link href="/login">Host Sign In</Link>
-                </Button>
-                <Button asChild size="sm" className="rounded-xl font-bold text-xs h-9 px-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20">
-                  <Link href="/signup">Create Event</Link>
-                </Button>
+                <Link
+                  href="/login"
+                  className="hidden md:inline-flex items-center px-3.5 py-2 text-xs font-mono uppercase tracking-wider text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
+                >
+                  Host Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C84B28] hover:bg-[#9E3416] text-white text-xs font-mono uppercase tracking-wider font-bold transition-colors shadow-sm"
+                >
+                  Host Event
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             )}
           </div>
@@ -288,474 +286,604 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* 2. HERO SECTION WITH EXPANDED LUXURY WIDTH */}
-        <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
-          {/* Subtle Ambient Warm Glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-tr from-amber-500/10 via-rose-500/5 to-purple-500/10 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
-            {/* Header Copy */}
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              {/* Eyebrow badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold tracking-wider uppercase shadow-xs">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
-                Digital Disposable Camera for Real-World Events
-              </div>
+        {/* ========================================================================= */}
+        {/* 2. ASYMMETRIC HERO SPREAD: EDITORIAL STATEMENT + PHYSICAL SIGNATURE ARTIFACT */}
+        {/* ========================================================================= */}
+        <section className="relative pt-12 pb-20 md:pt-20 md:pb-28 border-b border-[#2E333A] overflow-hidden">
+          
+          {/* Subtle Warm Darkroom Amber Underglow */}
+          <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-[#C84B28]/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+          <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[#D49B35]/8 rounded-full blur-[160px] pointer-events-none -z-10" />
 
-              {/* Headline */}
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-foreground leading-[1.05] text-balance">
-                Your celebration, through{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600">
-                  everyone’s eyes.
-                </span>
-              </h1>
+          <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16">
+            
+            {/* The Asymmetric Grid Breakdown: 58% Editorial / 42% Signature Artifact */}
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-14 items-start">
+              
+              {/* Left Column: Bold Editorial Narrative (No centered hero, no generic badges) */}
+              <div className="lg:col-span-7 space-y-8 animate-aperture-unfurl">
+                
+                {/* Micro Meta Header */}
+                <div className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 bg-[#C84B28] rounded-full inline-block" />
+                  <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#D49B35]">
+                    Zero App Downloads • Real-World Event Darkroom
+                  </span>
+                </div>
 
-              {/* Subtitle */}
-              <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-balance">
-                Give your guests a disposable camera in their phone browser. Place QR stands on tables, let guests snap raw candid moments, and watch memories stream live onto venue screens.
-              </p>
+                {/* Primary Editorial Headline */}
+                <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-[5.4rem] font-normal tracking-tight text-[#F7F4EE] leading-[0.98] text-balance">
+                  The best photos of your celebration won’t come from the stage.
+                  <span className="block italic text-[#D49B35] mt-2">
+                    They’ll come from Table 6.
+                  </span>
+                </h1>
 
-              {/* Distinct Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                <Button
-                  asChild
-                  size="lg"
-                  className="w-full sm:w-auto h-13 px-9 rounded-xl font-bold text-base bg-foreground text-background hover:bg-foreground/90 shadow-xl shadow-black/5 transition-all active:scale-98"
-                >
-                  <Link href="/signup">
-                    Get Your Event Camera
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                {/* Grounded Longform Narrative */}
+                <p className="text-base sm:text-lg lg:text-xl text-[#A0A5AC] max-w-2xl font-normal leading-relaxed">
+                  Ekthau transforms every guest’s smartphone into an instant disposable camera without downloading a single app. Place engraved QR cards on tables, let guests snap raw candid moments, and watch memories stream live onto venue projection screens.
+                </p>
 
-                <button
-                  onClick={() => setJoinModalOpen(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-13 px-7 rounded-xl font-bold text-base text-foreground bg-secondary/80 hover:bg-secondary border border-border transition-all active:scale-98"
-                >
-                  <QrCode className="h-4 w-4 text-amber-500" />
-                  <span>Scan or Enter Code</span>
-                </button>
-              </div>
+                {/* Action Strip: Direct Table Access or Event Creation */}
+                <div className="pt-2 space-y-5">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <Link
+                      href="/signup"
+                      className="inline-flex items-center justify-center gap-2.5 h-13 px-8 bg-[#C84B28] hover:bg-[#9E3416] text-white font-mono text-xs uppercase tracking-widest font-bold transition-all shadow-md active:scale-98"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Create Your Event Space
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
 
-              {/* Trust statement */}
-              <p className="text-xs sm:text-sm text-muted-foreground pt-3 font-medium flex items-center justify-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                No app downloads required • 100% original raw quality • 1 GB free on every event
-              </p>
-            </div>
-
-            {/* HERO VISUAL: EXPANDED DUAL SHOWCASE */}
-            <div className="mt-14 sm:mt-20 w-full">
-              <div className="grid md:grid-cols-12 gap-6 items-stretch">
-                {/* Visual Left: Tabletop QR Stand */}
-                <div className="md:col-span-5 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-2xl group min-h-[340px] md:min-h-[460px]">
-                  <Image
-                    src="/images/table-qr-stand.jpg"
-                    alt="Elegant wedding table QR stand"
-                    fill
-                    priority
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                  
-                  {/* Badge Overlay */}
-                  <div className="absolute top-5 left-5 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-white text-xs font-bold flex items-center gap-2">
-                    <QrCode className="h-4 w-4 text-amber-400" />
-                    Table QR Pass
+                    {/* Inline Table Code Input for Guests */}
+                    <form
+                      onSubmit={handleDirectCodeSubmit}
+                      className="flex items-center border border-[#2E333A] bg-[#1A1C20] focus-within:border-[#D49B35] transition-colors"
+                    >
+                      <input
+                        type="text"
+                        placeholder="ENTER EVENT CODE..."
+                        value={directCode}
+                        onChange={(e) => setDirectCode(e.target.value.toUpperCase())}
+                        className="h-13 px-4 bg-transparent text-xs font-mono tracking-widest text-[#F7F4EE] placeholder:text-[#5C6B5E] focus:outline-hidden w-full sm:w-44"
+                      />
+                      <button
+                        type="submit"
+                        className="h-13 px-4 border-l border-[#2E333A] text-xs font-mono uppercase tracking-widest text-[#D49B35] hover:bg-[#22262B] transition-colors"
+                      >
+                        Enter →
+                      </button>
+                    </form>
                   </div>
 
-                  <div className="absolute bottom-5 inset-x-5 text-white space-y-1">
-                    <p className="text-base font-bold">1. Placed on every guest table</p>
-                    <p className="text-xs sm:text-sm text-zinc-300">Guests scan with their default phone camera to start snapping instantly</p>
+                  {/* The Physical Guarantees Ruler */}
+                  <div className="pt-4 border-t border-[#2E333A]/80 grid grid-cols-3 gap-4 font-mono text-[11px] uppercase tracking-wider text-[#78877A]">
+                    <div>
+                      <span className="text-[#F7F4EE] font-bold block text-xs">100% RAW</span>
+                      Uncompressed originals
+                    </div>
+                    <div>
+                      <span className="text-[#F7F4EE] font-bold block text-xs">&lt; 48ms</span>
+                      Instant camera buffer
+                    </div>
+                    <div>
+                      <span className="text-[#F7F4EE] font-bold block text-xs">1 GB FREE</span>
+                      Included on every event
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Signature Visual Element (Brass Acrylic Tent Card + 35mm Contact Sheet) */}
+              <div className="lg:col-span-5 relative mt-4 lg:mt-0">
+                
+                {/* 35mm Sprocket Frame Outer Shell */}
+                <div className="relative bg-[#1A1C20] border border-[#2E333A] shadow-2xl p-4 sm:p-6 overflow-hidden">
+                  
+                  {/* Top Film Sprocket Header */}
+                  <div className="h-5 film-sprockets-light border-b border-[#2E333A] mb-4 flex items-center justify-between px-2 font-mono text-[9px] text-[#A0A5AC]">
+                    <span>EKTHAU COLOR NEGATIVE • ISO 400</span>
+                    <span>EXP 24/36</span>
+                  </div>
+
+                  {/* SIGNATURE ARTIFACT 1: The Acrylic Brass Table Stand */}
+                  <div className="relative rounded-none border border-brass bg-[#121316] p-5 mb-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-brass-subtle pb-3">
+                      <div>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-[#D49B35] block">
+                          Table Signage Pass
+                        </span>
+                        <h2 className="font-serif text-lg text-[#F7F4EE]">Table 08 • Banquet Hall</h2>
+                      </div>
+                      <div className="h-7 px-2.5 bg-[#D49B35]/15 border border-[#D49B35]/40 text-[#D49B35] font-mono text-[10px] font-bold flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 bg-[#D49B35] rounded-full animate-pulse" />
+                        LIVE VAULT
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-5 relative aspect-square bg-white p-2 border border-[#E5DEC9]">
+                        {/* Table QR Stand Preview */}
+                        <Image
+                          src="/images/table-qr-stand.jpg"
+                          alt="Physical wedding tabletop QR stand card"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="col-span-7 space-y-2 text-xs">
+                        <p className="font-serif italic text-sm text-[#E5DEC9]">
+                          &ldquo;Point your regular camera at this card. Snap freely all night.&rdquo;
+                        </p>
+                        <div className="font-mono text-[10px] text-[#A0A5AC] space-y-0.5">
+                          <p>• Zero app store install</p>
+                          <p>• Photos queue offline</p>
+                          <p>• Streams to venue screen</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SIGNATURE ARTIFACT 2: Live Developed Film Contact Strip */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-[#A0A5AC]">
+                      <span>Live Film Strip Proof</span>
+                      <span className="text-[#C84B28] font-bold">● REC IN PROGRESS</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Negative Frame 01 */}
+                      <div className="relative aspect-[4/3] bg-black border border-[#2E333A] overflow-hidden group">
+                        <Image
+                          src="/images/phone-camera-snap.jpg"
+                          alt="Guest snapping candid photo"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-black/80 px-2 py-1 flex items-center justify-between font-mono text-[9px] text-[#A0A5AC]">
+                          <span>FRAME 18A</span>
+                          <span className="text-[#F7F4EE]">TABLE 08</span>
+                        </div>
+                      </div>
+
+                      {/* Negative Frame 02 */}
+                      <div className="relative aspect-[4/3] bg-black border border-[#2E333A] overflow-hidden group">
+                        <Image
+                          src="/images/live-wall.jpg"
+                          alt="Crowd celebration laughter"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-black/80 px-2 py-1 flex items-center justify-between font-mono text-[9px] text-[#A0A5AC]">
+                          <span>FRAME 19A</span>
+                          <span className="text-[#D49B35]">PROJECTED</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Film Sprocket Border */}
+                  <div className="h-5 film-sprockets-light border-t border-[#2E333A] mt-4 flex items-center justify-between px-2 font-mono text-[9px] text-[#A0A5AC]">
+                    <span>EKTHAU EMULSION 2026</span>
+                    <span>100% UNCOMPRESSED</span>
                   </div>
                 </div>
 
-                {/* Visual Right: Phone Camera POV in Action */}
-                <div className="md:col-span-7 relative rounded-3xl overflow-hidden border border-border/80 bg-zinc-950 shadow-2xl group min-h-[340px] md:min-h-[460px]">
+                {/* Overlapping Tactile Note Stamp */}
+                <div className="hidden sm:block absolute -bottom-6 -left-6 bg-[#F7F4EE] text-[#121316] p-3.5 shadow-xl border border-[#D49B35] max-w-[240px] transform -rotate-2">
+                  <p className="font-mono text-[10px] uppercase font-bold tracking-widest text-[#C84B28]">
+                    Darkroom Verification
+                  </p>
+                  <p className="font-serif text-xs leading-snug mt-1">
+                    Over 48,000 raw frames captured at Nepali weddings without a single lost upload.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* ========================================================================= */}
+        {/* 3. THE 3 RITUALS (NO GENERIC 01/02/03 CARDS - EDITORIAL TIMELINE)         */}
+        {/* ========================================================================= */}
+        <section id="table-ritual" className="py-24 md:py-32 border-b border-[#2E333A]">
+          <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16 space-y-20">
+            
+            {/* Section Dossier Header */}
+            <div className="max-w-3xl space-y-4">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#D49B35] block">
+                The Celebration Workflow
+              </span>
+              <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-[#F7F4EE] leading-tight">
+                Three tactile rituals. <br />
+                <span className="italic text-[#E5DEC9]">Zero friction for guests or hosts.</span>
+              </h2>
+              <p className="text-base sm:text-lg text-[#A0A5AC] leading-relaxed">
+                Replace WhatsApp chaos and clunky Google Drives with a dedicated in-browser darkroom engineered for the physical reality of wedding venues.
+              </p>
+            </div>
+
+            {/* Asymmetric 3-Ritual Runway */}
+            <div className="space-y-16">
+              
+              {/* Ritual 1: The Tabletop Stand */}
+              <div className="grid lg:grid-cols-12 gap-8 items-center border-t border-[#2E333A] pt-12">
+                <div className="lg:col-span-4 space-y-3">
+                  <span className="font-mono text-xs uppercase tracking-widest text-[#C84B28] font-bold">
+                    Ritual I • Before the Music Starts
+                  </span>
+                  <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F4EE]">
+                    Generate & Print Table Signage
+                  </h3>
+                  <p className="text-sm text-[#A0A5AC] leading-relaxed">
+                    Create your event space in 30 seconds. Download customized, high-resolution printable table cards with your couple monogram, table numbers, and entry QR codes. Set them alongside placecards and floral centerpieces.
+                  </p>
+                  <div className="pt-2 font-mono text-xs text-[#D49B35] flex items-center gap-2">
+                    <Check className="h-4 w-4" /> Ready-to-print vector PDF & PNG cards
+                  </div>
+                </div>
+
+                <div className="lg:col-span-8 relative aspect-[16/8] sm:aspect-[16/7] bg-[#1A1C20] border border-[#2E333A] overflow-hidden group">
+                  <Image
+                    src="/images/table-qr-stand.jpg"
+                    alt="Custom wedding table card stand"
+                    fill
+                    className="object-cover group-hover:scale-102 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between font-mono text-xs text-[#E5DEC9]">
+                    <span>TABLE SIGNAGE TEMPLATE • 4x6 & 5x7 TENT FORMATS</span>
+                    <span className="text-[#D49B35]">PREVIEW READY</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ritual 2: The Guest Shutter */}
+              <div className="grid lg:grid-cols-12 gap-8 items-center border-t border-[#2E333A] pt-12">
+                <div className="lg:col-span-8 order-2 lg:order-1 relative aspect-[16/8] sm:aspect-[16/7] bg-[#1A1C20] border border-[#2E333A] overflow-hidden group">
                   <Image
                     src="/images/phone-camera-snap.jpg"
-                    alt="Guest holding phone taking photos at wedding"
+                    alt="Guest holding phone taking photos at party"
                     fill
-                    priority
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="object-cover group-hover:scale-102 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-
-                  {/* Top live indicator */}
-                  <div className="absolute top-5 left-5 right-5 flex items-center justify-between">
-                    <div className="bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-white text-xs font-bold flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      In-Browser Camera • Shutter &lt; 50ms
-                    </div>
-
-                    <div className="hidden sm:flex bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-amber-300 text-xs font-bold">
-                      100% Uncompressed Raw
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-5 inset-x-5 text-white space-y-1">
-                    <p className="text-base font-bold">2. Guests capture candid memories</p>
-                    <p className="text-xs sm:text-sm text-zinc-300">Fast shutter, background upload queue, works even in patchy venue Wi-Fi</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between font-mono text-xs text-[#E5DEC9]">
+                    <span>IN-BROWSER SHUTTER • 48MS BUFFER • OFFLINE RESILIENT</span>
+                    <span className="text-[#C84B28] font-bold">● READY</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* 3. PRODUCT PROOF METRICS BAR */}
-        <section className="border-y border-border py-10 bg-muted/30">
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">0 Apps</p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Opens directly in Safari / Chrome</p>
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">&lt; 50ms</p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Instant shutter response</p>
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">100% Raw</p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Full original resolution preserved</p>
-              </div>
-              <div>
-                <p className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">1-Click ZIP</p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Bulk download full event archive</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. HOW IT WORKS (3-STEP EDITORIAL TIMELINE) */}
-        <section id="how-it-works" className="py-24 md:py-32">
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
-            <div className="max-w-3xl space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                Simple 3-Step Setup
-              </span>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground">
-                Zero friction. Maximum memories.
-              </h2>
-              <p className="text-muted-foreground text-base sm:text-lg">
-                No more WhatsApp spam or broken Google Drive folders. Ekthau makes collecting event photography effortless.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Step 01 */}
-              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-14 w-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-mono font-black text-2xl">
-                  01
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">Create & Print QR Stands</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Set up your event in 30 seconds. Download customized high-res printable QR cards ready to display on dinner tables, cocktail bars, or entry signage.
-                </p>
-              </div>
-
-              {/* Step 02 */}
-              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-mono font-black text-2xl">
-                  02
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">Guests Scan & Shoot</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Guests scan the QR code with their regular smartphone camera. The camera opens instantly in their browser. They snap candid photos without downloading any app.
-                </p>
-              </div>
-
-              {/* Step 03 */}
-              <div className="p-8 rounded-3xl border border-border bg-card shadow-xs space-y-5 relative overflow-hidden group hover:border-amber-500/30 transition-colors">
-                <div className="h-14 w-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-mono font-black text-2xl">
-                  03
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">Stream Live & Download</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Moments stream in real-time to venue projector screens and guest mobile feeds. Once the party ends, download all full-resolution photos in 1 click.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. IMMERSIVE LIVE WALL SHOWCASE (PROJECTOR MODE) */}
-        <section id="live-wall" className="py-24 md:py-32 bg-zinc-950 text-white">
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-12">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="max-w-3xl space-y-3">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold tracking-wider uppercase">
-                  <Tv className="h-3.5 w-3.5 text-amber-400" />
-                  Venue Projector & TV Slideshow
-                </div>
-                <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
-                  The event keeps moving. <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-400">
-                    So does the live gallery.
+                <div className="lg:col-span-4 order-1 lg:order-2 space-y-3">
+                  <span className="font-mono text-xs uppercase tracking-widest text-[#C84B28] font-bold">
+                    Ritual II • During the Celebration
                   </span>
-                </h2>
-                <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
-                  Connect any laptop to a venue projector, big-screen TV, or LED wall. As guests snap photos from their tables, candid memories automatically fade onto the main screen in real time.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 self-start">
-                <Button asChild className="rounded-xl font-bold text-sm h-12 px-6 bg-white text-zinc-950 hover:bg-zinc-100 shadow-md">
-                  <Link href="/signup">
-                    <Maximize2 className="mr-2 h-4 w-4" />
-                    Launch Live Wall Demo
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Massive Ballroom Visual Image Showcase */}
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 aspect-[16/9] min-h-[400px] md:min-h-[600px] group">
-              <Image
-                src="/images/projector-live-wall.jpg"
-                alt="Grand wedding celebration with massive live photo wall screen"
-                fill
-                priority
-                className="object-cover group-hover:scale-102 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
-
-              {/* Status bar badge overlay */}
-              <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
-                <div className="flex items-center gap-2.5 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-white text-xs sm:text-sm font-bold shadow-lg">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>NOW STREAMING LIVE • TABLE CANDIDS & REACTIONS</span>
-                </div>
-
-                <div className="hidden sm:flex items-center gap-2 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 text-amber-300 text-xs sm:text-sm font-bold shadow-lg">
-                  <Sliders className="h-4 w-4" />
-                  <span>Host Moderation Active</span>
-                </div>
-              </div>
-
-              {/* Bottom live stats */}
-              <div className="absolute bottom-6 left-6 right-6 p-5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
-                <div className="flex items-center gap-8">
-                  <div>
-                    <p className="text-zinc-400 text-xs">Connected Guests</p>
-                    <p className="text-white font-black text-base">214 Tables Active</p>
-                  </div>
-                  <div className="h-8 w-px bg-white/20" />
-                  <div>
-                    <p className="text-zinc-400 text-xs">Photos Projected</p>
-                    <p className="text-emerald-400 font-black text-base">1,248 Saved Live</p>
-                  </div>
-                </div>
-
-                <p className="text-zinc-300 text-xs sm:text-sm">
-                  ✨ Automatically rotates slides with smooth crossfades every 6 seconds
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. THE 4-PILLAR PRODUCT EXPERIENCE (WIDE GRID) */}
-        <section id="experience" className="py-24 md:py-32">
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
-            <div className="max-w-3xl space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                The Product Experience
-              </span>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight">
-                Designed for real parties. Loved by everyone.
-              </h2>
-            </div>
-
-            {/* 2x2 Feature Grid with Rich Imagery */}
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-10">
-              {/* Feature 1: No App Friction */}
-              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-6 shadow-xs flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                    <QrCode className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Zero App Downloads</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Guests point their phone at the table QR code and the camera opens instantly in their native mobile browser. No App Store downloads, no passwords, no signup friction.
-                  </p>
-                </div>
-                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-border">
-                  <Image
-                    src="/images/table-qr-stand.jpg"
-                    alt="Table QR stand"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* Feature 2: ✨ AI Smart Photo Scan */}
-              <div className="rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-500/5 via-card to-card p-8 sm:p-10 space-y-6 shadow-md flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-                    <Sparkles className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-                    ✨ AI Smart Photo Scan
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
-                      100GB+
-                    </span>
+                  <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F4EE]">
+                    Guests Scan & Shoot Candids
                   </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Guests take a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads. No more endless scrolling.
+                  <p className="text-sm text-[#A0A5AC] leading-relaxed">
+                    Guests point their phone camera at the table stand. The camera loads instantly in their browser. Snapping is instant with zero shutter lag. If the banquet hall cell signal drops to 1 bar, photos save locally first and sync automatically in the background.
                   </p>
+                  <div className="pt-2 font-mono text-xs text-[#D49B35] flex items-center gap-2">
+                    <Check className="h-4 w-4" /> Works on iPhone Safari & Android Chrome
+                  </div>
                 </div>
-                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-purple-500/20">
+              </div>
+
+              {/* Ritual 3: The Live Projection & Archive */}
+              <div className="grid lg:grid-cols-12 gap-8 items-center border-t border-[#2E333A] pt-12">
+                <div className="lg:col-span-4 space-y-3">
+                  <span className="font-mono text-xs uppercase tracking-widest text-[#C84B28] font-bold">
+                    Ritual III • The Live Room & Aftermath
+                  </span>
+                  <h3 className="font-serif text-2xl sm:text-3xl text-[#F7F4EE]">
+                    Stream Live Wall & Bulk Archive
+                  </h3>
+                  <p className="text-sm text-[#A0A5AC] leading-relaxed">
+                    Plug any venue laptop into the stage projector or LED screen wall. As guests take photos from their tables, new candid moments fade smoothly onto the big screen. When the party wraps, download every original 100% full-resolution photo in 1 click.
+                  </p>
+                  <div className="pt-2 font-mono text-xs text-[#D49B35] flex items-center gap-2">
+                    <Check className="h-4 w-4" /> 1-Click uncompressed bulk ZIP vault
+                  </div>
+                </div>
+
+                <div className="lg:col-span-8 relative aspect-[16/8] sm:aspect-[16/7] bg-[#1A1C20] border border-[#2E333A] overflow-hidden group">
                   <Image
-                    src="/images/ai-face-album.jpg"
-                    alt="AI Face Scan Album Search"
+                    src="/images/projector-live-wall.jpg"
+                    alt="Grand celebration live projector wall"
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-102 transition-transform duration-700"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between font-mono text-xs text-[#E5DEC9]">
+                    <span>STAGE PROJECTOR SYNC • 6-SECOND CROSSFADE • MODERATION ACTIVE</span>
+                    <span className="text-[#D49B35]">LIVE BROADCAST</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Feature 3: Venue Resilience */}
-              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-4 shadow-xs">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                  <WifiOff className="h-6 w-6" />
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Engineered for Weak Signals</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Crowded party hall with patchy 3G/4G? Photos queue locally in the phone’s browser storage first. If reception drops, uploads pause safely and resume automatically as soon as connection is restored.
-                </p>
-              </div>
-
-              {/* Feature 4: Full Uncompressed Originals */}
-              <div className="rounded-3xl border border-border bg-card p-8 sm:p-10 space-y-4 shadow-xs">
-                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                  <HardDrive className="h-6 w-6" />
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">100% Original Raw Quality</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  Unlike WhatsApp or social media that brutally compress your media, Ekthau preserves raw 10–25MB files and 4K videos. You receive crisp, print-ready photos for your wedding album.
-                </p>
-              </div>
             </div>
+
           </div>
         </section>
 
-        {/* 7. PRICING SECTION (EXPANDED WIDE GRID) */}
-        <section id="pricing" className="py-24 md:py-32 bg-muted/30 border-t border-border">
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-16">
-            <div className="text-center max-w-3xl mx-auto space-y-4">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                Transparent Pricing & Plans
+
+        {/* ========================================================================= */}
+        {/* 4. IMMERSIVE DARKROOM VAULT: VENUE PROJECTOR & AI DISCOVERY               */}
+        {/* ========================================================================= */}
+        <section id="darkroom-cinema" className="py-24 md:py-32 bg-[#0C0D0F] border-b border-[#2E333A]">
+          <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16 space-y-16">
+            
+            {/* Cinematic Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+              <div className="max-w-3xl space-y-4">
+                <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#D49B35]">
+                  <Tv className="h-4 w-4 text-[#C84B28]" />
+                  <span>Venue Projector & TV Broadcast</span>
+                </div>
+                <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#F7F4EE] leading-tight">
+                  The celebration moves in real time. <br />
+                  <span className="italic text-[#D49B35]">So does your live ballroom wall.</span>
+                </h2>
+                <p className="text-sm sm:text-base text-[#A0A5AC] leading-relaxed">
+                  Transform any screen or venue LED wall into a dynamic collective memory canvas. Guests cheer as their table candids appear live on the big screen.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#F7F4EE] text-[#121316] font-mono text-xs uppercase tracking-widest font-bold hover:bg-[#E5DEC9] transition-colors"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                  Test Live Wall Mode
+                </Link>
+              </div>
+            </div>
+
+            {/* Cinematic Screen Simulation */}
+            <div className="relative border border-[#2E333A] bg-[#121316] p-4 sm:p-8 space-y-6">
+              
+              {/* Projector Desk Controls Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#2E333A] pb-4 font-mono text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="h-2.5 w-2.5 bg-[#C84B28] rounded-full animate-pulse" />
+                  <span className="font-bold text-[#F7F4EE] tracking-wider uppercase">
+                    VENUE PROJECTOR FEED • HALDI & SANGEET RECEPTION
+                  </span>
+                </div>
+                <div className="flex items-center gap-6 text-[#A0A5AC]">
+                  <span>ROTATION: 6s SMOOTH FADE</span>
+                  <span className="text-[#D49B35]">MODERATION: 1-CLICK APPROVAL</span>
+                </div>
+              </div>
+
+              {/* Main Ballroom Projection Visual */}
+              <div className="relative aspect-[16/9] sm:aspect-[21/9] bg-black border border-[#2E333A] overflow-hidden">
+                <Image
+                  src="/images/live-wall.jpg"
+                  alt="Live celebration screen streaming table candids"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40" />
+
+                {/* Overlay Metadata Chips */}
+                <div className="absolute top-4 left-4 right-4 flex items-center justify-between font-mono text-xs">
+                  <div className="px-3 py-1.5 bg-black/80 border border-[#2E333A] text-[#F7F4EE]">
+                    CONNECTED TABLES: 48 ACTIVE
+                  </div>
+                  <div className="px-3 py-1.5 bg-[#C84B28]/80 border border-[#C84B28] text-white font-bold">
+                    842 ORIGINAL FRAMES INGESTED
+                  </div>
+                </div>
+
+                <div className="absolute bottom-6 left-6 right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#D49B35]">
+                      Latest Ingest • Table 14
+                    </span>
+                    <p className="font-serif text-xl sm:text-2xl text-white">
+                      &ldquo;The cousins dance-off when the dhol started playing.&rdquo;
+                    </p>
+                  </div>
+                  <span className="font-mono text-xs text-[#A0A5AC]">
+                    Shot on iPhone 15 Pro • 24.2MB RAW
+                  </span>
+                </div>
+              </div>
+
+              {/* Dual Capability Breakdown (AI Face Match + Offline Queue) */}
+              <div className="grid md:grid-cols-2 gap-6 pt-4">
+                
+                {/* AI Face Match Card */}
+                <div className="border border-[#2E333A] bg-[#1A1C20] p-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs uppercase tracking-wider text-[#D49B35] font-bold">
+                      ✨ AI Smart Photo Scan (100GB+ Plans)
+                    </span>
+                    <Sparkles className="h-4 w-4 text-[#D49B35]" />
+                  </div>
+                  <h4 className="font-serif text-xl text-[#F7F4EE]">
+                    Take a 1-second selfie to find all your photos.
+                  </h4>
+                  <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
+                    With thousands of photos uploaded across a 500-person wedding, guests don&apos;t need to scroll endlessly. Snapping a quick selfie filters the entire archive and builds their private album instantly.
+                  </p>
+                </div>
+
+                {/* Offline Queue Protection */}
+                <div className="border border-[#2E333A] bg-[#1A1C20] p-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs uppercase tracking-wider text-[#78877A] font-bold">
+                      Banquet Hall Signal Resilience
+                    </span>
+                    <WifiOff className="h-4 w-4 text-[#78877A]" />
+                  </div>
+                  <h4 className="font-serif text-xl text-[#F7F4EE]">
+                    Zero lost uploads when Wi-Fi drops.
+                  </h4>
+                  <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
+                    Photos commit to local phone buffer in under 48ms. When mobile networks choke inside crowded halls, uploads pause safely and sync silently in the background when signal resumes.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+
+        {/* ========================================================================= */}
+        {/* 5. STORAGE LEDGER: HONEST TRANSPARENT PRICING MATRIX                      */}
+        {/* ========================================================================= */}
+        <section id="storage-ledger" className="py-24 md:py-32 border-b border-[#2E333A]">
+          <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16 space-y-16">
+            
+            {/* Section Header */}
+            <div className="max-w-3xl space-y-4">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#D49B35] block">
+                Storage & Capacity Ledger
               </span>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight">
-                Simple plans based on your celebration size.
+              <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#F7F4EE] leading-tight">
+                Simple pricing based on celebration size. <br />
+                <span className="italic text-[#E5DEC9]">Start with 1 GB completely free.</span>
               </h2>
-              <p className="text-muted-foreground text-base sm:text-lg">
-                Start with <strong className="text-foreground">1 GB completely free</strong>. Upgrade whenever you need more guest capacity, longer storage duration, or ✨ AI Face Search.
+              <p className="text-base sm:text-lg text-[#A0A5AC] leading-relaxed">
+                Every event receives 100% original raw quality preservation, instant in-browser camera, and 1-click ZIP archiving. Upgrade for larger guest lists, extended retention, or AI facial scan.
               </p>
             </div>
 
-            {/* Pricing Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {pricingPlans.map((plan) => (
+            {/* Asymmetric Tier Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {pricingLedger.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`rounded-3xl p-8 sm:p-9 flex flex-col justify-between transition-all ${plan.cardClass}`}
+                  className={`border p-7 sm:p-8 flex flex-col justify-between transition-colors relative ${
+                    plan.isPopular
+                      ? 'border-[#D49B35] bg-[#1A1C20]'
+                      : 'border-[#2E333A] bg-[#15171A] hover:border-[#5C6B5E]'
+                  }`}
                 >
-                  <div className="space-y-5">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-bold tracking-tight">{plan.name}</h3>
-                      {plan.badge && (
-                        <span className={`px-3 py-1 text-xs rounded-full font-bold border ${plan.badgeClass}`}>
-                          {plan.badge}
-                        </span>
-                      )}
+                  {plan.isPopular && (
+                    <div className="absolute -top-3.5 right-6 px-3 py-0.5 bg-[#D49B35] text-[#121316] font-mono text-[10px] font-bold uppercase tracking-widest">
+                      Wedding Favorite
                     </div>
+                  )}
 
-                    {/* Price & Capacity */}
+                  <div className="space-y-6">
+                    {/* Header: Tier Name & Capacity */}
                     <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl sm:text-5xl font-black tracking-tight">
-                          {plan.price}
-                        </span>
-                        {plan.numericPrice > 0 && (
-                          <span className="text-sm font-medium text-muted-foreground">/ event</span>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-serif text-2xl text-[#F7F4EE]">{plan.tier}</h3>
+                        {plan.ai && (
+                          <span className="font-mono text-[10px] px-2 py-0.5 bg-[#D49B35]/15 border border-[#D49B35]/40 text-[#D49B35]">
+                            AI SCAN
+                          </span>
                         )}
                       </div>
-                      <p className="text-sm font-bold mt-1.5">{plan.capacity}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{plan.description}</p>
+                      <p className="font-mono text-xs text-[#D49B35] mt-1 font-bold">
+                        {plan.capacity} • {plan.storage}
+                      </p>
                     </div>
 
-                    {/* Storage info pill */}
-                    <div className="p-3 rounded-xl bg-muted/60 border border-border/80 text-xs text-muted-foreground space-y-0.5">
-                      <p className="font-semibold text-foreground">{plan.duration}</p>
-                      <p>{plan.storage}</p>
+                    {/* Price Block */}
+                    <div className="border-y border-[#2E333A] py-4">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-serif text-4xl text-[#F7F4EE]">{plan.price}</span>
+                        <span className="font-mono text-xs text-[#A0A5AC]">/ {plan.period}</span>
+                      </div>
+                      <p className="font-mono text-[11px] text-[#78877A] mt-1">
+                        {plan.retention} • {plan.photos}
+                      </p>
                     </div>
 
-                    {/* Features checklist */}
-                    <div className="pt-2 space-y-3 text-xs sm:text-sm">
-                      {plan.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-muted-foreground">
-                          <Check className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                          <span className={feat.includes('AI') ? 'font-bold text-foreground' : ''}>
-                            {feat}
+                    {/* Description */}
+                    <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
+                      {plan.description}
+                    </p>
+
+                    {/* Feature List */}
+                    <ul className="space-y-2.5 pt-2 font-mono text-xs text-[#E5DEC9]">
+                      {plan.highlights.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <Check className="h-3.5 w-3.5 text-[#C84B28] shrink-0 mt-0.5" />
+                          <span className={item.includes('AI') ? 'text-[#D49B35] font-bold' : ''}>
+                            {item}
                           </span>
-                        </div>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
 
-                  {/* Plan Button */}
+                  {/* CTA Button */}
                   <div className="pt-8">
-                    <Button
-                      asChild
-                      className={`w-full h-12 rounded-xl text-sm font-bold transition-all ${plan.buttonClass}`}
-                      variant={plan.featured ? 'default' : 'outline'}
+                    <Link
+                      href={plan.href}
+                      className={`w-full h-12 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest font-bold transition-all ${
+                        plan.isPopular
+                          ? 'bg-[#D49B35] hover:bg-[#A6741F] text-[#121316]'
+                          : 'border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35] text-[#F7F4EE]'
+                      }`}
                     >
-                      <Link href={plan.ctaHref}>
-                        {plan.cta}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                      {plan.cta}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
                 </div>
               ))}
             </div>
+
           </div>
         </section>
 
-        {/* 8. FREQUENTLY ASKED QUESTIONS */}
-        <section id="faq" className="py-24 md:py-32 border-t border-border">
-          <div className="w-full max-w-[1000px] mx-auto px-4 sm:px-8 space-y-12">
-            <div className="space-y-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                Got Questions?
+
+        {/* ========================================================================= */}
+        {/* 6. REAL EVENT INQUIRIES & FAQ ACCORDION                                   */}
+        {/* ========================================================================= */}
+        <section id="inquiries" className="py-24 md:py-32 border-b border-[#2E333A]">
+          <div className="w-full max-w-[1080px] mx-auto px-5 sm:px-10 space-y-16">
+            
+            <div className="space-y-4 text-center">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#D49B35] block">
+                Technical Integrity & Inquiries
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
-                Frequently asked questions
+              <h2 className="font-serif text-3xl sm:text-5xl text-[#F7F4EE]">
+                Frequently asked venue questions.
               </h2>
+              <p className="text-sm sm:text-base text-[#A0A5AC] max-w-xl mx-auto">
+                Everything you need to know about event Wi-Fi resilience, photo retention, and live wall projection.
+              </p>
             </div>
 
             <div className="space-y-4">
-              {faqs.map((faq, index) => {
+              {realFaqs.map((faq, index) => {
                 const isOpen = openFaq === index
                 return (
                   <div
                     key={index}
-                    className="rounded-2xl border border-border bg-card p-6 cursor-pointer transition-colors hover:border-amber-500/30"
-                    onClick={() => toggleFaq(index)}
+                    className="border border-[#2E333A] bg-[#15171A] p-6 cursor-pointer transition-colors hover:border-[#D49B35]/40"
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <h4 className="font-bold text-base sm:text-lg text-foreground">{faq.q}</h4>
-                      <span className="font-bold text-amber-500 text-xl">
+                      <h4 className="font-serif text-lg sm:text-xl text-[#F7F4EE]">
+                        {faq.q}
+                      </h4>
+                      <span className="font-mono text-sm text-[#D49B35] px-2 py-1 bg-[#1A1C20] border border-[#2E333A]">
                         {isOpen ? '−' : '+'}
                       </span>
                     </div>
                     {isOpen && (
-                      <p className="mt-4 text-sm text-muted-foreground leading-relaxed pt-3 border-t border-border">
+                      <p className="mt-4 pt-4 border-t border-[#2E333A] text-sm text-[#A0A5AC] leading-relaxed">
                         {faq.a}
                       </p>
                     )}
@@ -763,76 +891,94 @@ export default function LandingPage() {
                 )
               })}
             </div>
+
           </div>
         </section>
 
-        {/* 9. FINAL EMOTIONAL CALL TO ACTION */}
-        <section className="py-24 md:py-32 bg-zinc-950 text-white text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-zinc-950 to-zinc-950 pointer-events-none" />
 
-          <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 space-y-8 relative z-10">
-            <div className="max-w-4xl mx-auto space-y-4">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                Capture the Full Story
-              </span>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
-                Don&apos;t let the hired photographer be the only one capturing the night.
-              </h2>
-              <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-                Give everyone at your celebration a shared disposable camera. Create your event space in 30 seconds.
-              </p>
-            </div>
+        {/* ========================================================================= */}
+        {/* 7. CLOSING STATEMENT & HOST TRIGGER                                       */}
+        {/* ========================================================================= */}
+        <section className="py-24 md:py-32 bg-[#0C0D0F] text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#C84B28]/10 via-transparent to-transparent pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild size="lg" className="w-full sm:w-auto h-13 px-9 rounded-xl text-base font-bold bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/20">
-                <Link href="/signup">
-                  Create Your Event Space
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+          <div className="w-full max-w-[1000px] mx-auto px-5 sm:px-10 space-y-8 relative z-10">
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#D49B35] block">
+              Every Perspective Captured
+            </span>
+            <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#F7F4EE] leading-tight">
+              Don’t let the official album miss the unscripted moments.
+            </h2>
+            <p className="text-base sm:text-lg text-[#A0A5AC] max-w-2xl mx-auto leading-relaxed">
+              Place digital disposable cameras across every table at your celebration. Set up your event space in 30 seconds with 1 GB free.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link
+                href="/signup"
+                className="w-full sm:w-auto h-13 px-9 bg-[#C84B28] hover:bg-[#9E3416] text-white font-mono text-xs uppercase tracking-widest font-bold inline-flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+              >
+                <Camera className="h-4 w-4" />
+                Create Event Space
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
 
               <button
                 onClick={() => setJoinModalOpen(true)}
-                className="text-sm font-semibold text-zinc-400 hover:text-white underline underline-offset-4 transition-colors py-2 px-3"
+                className="w-full sm:w-auto h-13 px-8 border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35] text-[#E5DEC9] font-mono text-xs uppercase tracking-widest transition-colors inline-flex items-center justify-center gap-2"
               >
-                I&apos;m a guest with an event code →
+                <QrCode className="h-4 w-4 text-[#D49B35]" />
+                I Have an Event Code
               </button>
             </div>
           </div>
         </section>
+
       </main>
 
-      {/* 10. FOOTER */}
-      <footer className="border-t border-border py-14 bg-background text-xs sm:text-sm text-muted-foreground">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2 font-bold text-foreground">
-            <div className="h-7 w-7 rounded-lg bg-amber-500 text-black flex items-center justify-center font-black">
-              <Camera className="h-3.5 w-3.5 stroke-[2.5]" />
+
+      {/* ========================================================================= */}
+      {/* 8. STUDIO COLOPHON & FOOTER                                               */}
+      {/* ========================================================================= */}
+      <footer className="border-t border-[#2E333A] py-12 bg-[#121316] font-mono text-xs text-[#A0A5AC]">
+        <div className="w-full max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-16 flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          <div className="flex items-center gap-3 text-[#F7F4EE]">
+            <div className="h-7 w-7 bg-[#C84B28] text-white flex items-center justify-center font-bold">
+              <Camera className="h-3.5 w-3.5" />
             </div>
-            <span>Ekthau (एकठाउँ) • The Digital Disposable Camera</span>
+            <span className="font-serif text-base tracking-tight">Ekthau (एकठाउँ)</span>
+            <span className="text-[11px] text-[#78877A]">35mm Digital Disposable Platform</span>
           </div>
 
-          <div className="flex items-center gap-8">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">
-              How It Works
+          <div className="flex flex-wrap items-center gap-6 uppercase tracking-wider text-[11px]">
+            <a href="#table-ritual" className="hover:text-[#D49B35] transition-colors">
+              Table Ritual
             </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
-              Pricing
+            <a href="#darkroom-cinema" className="hover:text-[#D49B35] transition-colors">
+              Live Wall
             </a>
-            <Link href="/join" className="hover:text-foreground transition-colors">
+            <a href="#storage-ledger" className="hover:text-[#D49B35] transition-colors">
+              Pricing Ledger
+            </a>
+            <Link href="/join" className="hover:text-[#D49B35] transition-colors">
               Join Event
             </Link>
-            <Link href="/login" className="hover:text-foreground transition-colors">
+            <Link href="/login" className="hover:text-[#D49B35] transition-colors">
               Host Sign In
             </Link>
           </div>
 
-          <p>© {new Date().getFullYear()} Ekthau. Built for moments that shouldn&apos;t be lost.</p>
+          <p className="text-[11px] text-[#78877A]">
+            © {new Date().getFullYear()} Ekthau. Built for moments that shouldn&apos;t be lost.
+          </p>
+
         </div>
       </footer>
 
       {/* Global Join Event Modal */}
       <JoinEventModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
+
     </div>
   )
 }
