@@ -20,9 +20,9 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        serif: ["var(--font-display)", "Georgia", "serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "monospace"],
       },
       colors: {
         terracotta: {
