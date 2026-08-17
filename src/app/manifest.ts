@@ -15,18 +15,17 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       {
         src: brand.logoMark,
-        sizes: '512x512',
+        sizes: `${brand.logoMarkSize}x${brand.logoMarkSize}`,
         type: 'image/png',
         purpose: 'any',
       },
       {
         src: brand.logoMark,
-        sizes: '512x512',
+        sizes: `${brand.logoMarkSize}x${brand.logoMarkSize}`,
         type: 'image/png',
-        // Lets Android crop the square mark into its own icon shapes.
+        // Lets Android crop the mark into its own icon shapes.
         purpose: 'maskable',
       },
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
     ],
   }
 }

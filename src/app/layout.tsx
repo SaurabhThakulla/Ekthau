@@ -44,16 +44,16 @@ export const metadata: Metadata = {
     title: `${site.name} — ${site.tagline}`,
     description: site.shortDescription,
   },
-  icons: {
-    // Nothing referenced an icon before, so browsers asked for /favicon.ico and
-    // got a 404 on every page load. The square brand mark is used throughout.
-    icon: [
-      { url: brand.logoMark, type: 'image/png', sizes: '512x512' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
-    apple: [{ url: brand.logoMark, sizes: '180x180' }],
-    shortcut: [{ url: brand.logoMark }],
-  },
+  /**
+   * No `icons` block here on purpose. The icons come from `src/app/icon.png` and
+   * `src/app/apple-icon.png` via Next's file convention, which serves them with
+   * a content hash — so a changed logo actually replaces the cached favicon
+   * instead of the browser holding on to the old one. Declaring `icons` in
+   * metadata would override that convention and lose the cache busting.
+   *
+   * The previous version also listed the legacy `/favicon.svg` alongside the
+   * PNG; browsers prefer SVG, so the old generic icon kept winning.
+   */
   manifest: '/manifest.webmanifest',
   robots: {
     index: true,

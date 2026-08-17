@@ -44,9 +44,9 @@ export function Logo({
           width={markSize}
           height={markSize}
           priority
-          // Crops into the artwork so the lockup reads as the camera mark at
-          // small sizes instead of shrinking the whole wordmark into mush.
-          className="size-full scale-[1.45] object-cover object-[50%_38%]"
+          // The asset is already cropped to the camera mark, so it just fills
+          // the badge — no CSS zoom, and no wordmark to accidentally include.
+          className="size-full object-cover"
         />
       </span>
 

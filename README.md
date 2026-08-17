@@ -106,25 +106,27 @@ With **Ekthau AI Photo Scan (Coming Soon)**:
 
 ## 🖼️ Brand assets
 
-The logo is referenced from exactly one place — `src/lib/brand.ts` — which feeds
-the header, footer, favicon, Apple touch icon, web manifest, Open Graph card and
-the `Organization` structured data.
+All logo references resolve through `src/lib/brand.ts` — the header, footer,
+favicon, Apple touch icon, web manifest, Open Graph card and `Organization`
+structured data all read from it.
 
 | File | Purpose |
 | --- | --- |
-| `public/brand/ekthau-logo.png` | **Required.** Square logo lockup. Used as the in-app mark and as the favicon source. |
-| `public/favicon.svg` | Legacy fallback icon, kept as a secondary `<link rel="icon">`. |
+| `public/brand/ekthau-logo.png` | **Master.** Master logo image. The only file you replace by hand. |
+| `public/brand/ekthau-mark.png` | Generated. Optimized camera mark, 512px square. |
+| `src/app/icon.png` · `src/app/apple-icon.png` | Generated copies of the mark for Next.js favicon & Apple touch icon conventions. |
+| `public/favicon.ico` · `public/favicon.svg` | Generated standard multi-res ICO and vector SVG favicons. |
 
-To swap the logo, replace that one PNG. Two flags in `src/lib/brand.ts` control
-how it is presented:
+### Replacing the logo
 
-- `logoHasOpaqueBackground` — `true` frames the mark in a dark rounded badge so
-  artwork with a solid backdrop still looks deliberate on the light canvas. Set
-  it to `false` when the file has a transparent background.
-- `logoMarkSize` — the artwork's intrinsic pixel size, published in the
-  structured data.
+```bash
+# 1. Overwrite public/brand/ekthau-logo.png, then run:
+node scripts/build-brand-assets.mjs
+```
 
-Nothing hard-codes an image path, so no component needs editing.
+`scripts/build-brand-assets.mjs` automatically generates all optimized derivative assets (`public/brand/ekthau-mark.png`, `src/app/icon.png`, `src/app/apple-icon.png`, `public/favicon.ico`, and `public/favicon.svg`).
+
+Icons come from Next's `app/icon.png` and `app/apple-icon.png` file conventions with automatic cache-busting hashes.
 
 ---
 

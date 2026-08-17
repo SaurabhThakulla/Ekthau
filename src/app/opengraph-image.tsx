@@ -15,7 +15,10 @@ export const contentType = 'image/png'
  * card on every platform.
  */
 /**
- * Reads the logo off disk and inlines it as a data URI. `ImageResponse` cannot
+ * Reads the mark off disk and inlines it as a data URI. The mark (not the full
+ * lockup) is used because it renders at 76px here — the lockup would put a
+ * second, unreadable "Ekthau" inside the badge next to the real one.
+ * `ImageResponse` cannot
  * resolve site-relative paths at build time, and the card must still generate if
  * the file is missing — so a failure falls back to no mark rather than failing
  * the build.
