@@ -104,6 +104,30 @@ With **Ekthau AI Photo Scan (Coming Soon)**:
 
 ---
 
+## 🖼️ Brand assets
+
+The logo is referenced from exactly one place — `src/lib/brand.ts` — which feeds
+the header, footer, favicon, Apple touch icon, web manifest, Open Graph card and
+the `Organization` structured data.
+
+| File | Purpose |
+| --- | --- |
+| `public/brand/ekthau-logo.png` | **Required.** Square logo lockup. Used as the in-app mark and as the favicon source. |
+| `public/favicon.svg` | Legacy fallback icon, kept as a secondary `<link rel="icon">`. |
+
+To swap the logo, replace that one PNG. Two flags in `src/lib/brand.ts` control
+how it is presented:
+
+- `logoHasOpaqueBackground` — `true` frames the mark in a dark rounded badge so
+  artwork with a solid backdrop still looks deliberate on the light canvas. Set
+  it to `false` when the file has a transparent background.
+- `logoMarkSize` — the artwork's intrinsic pixel size, published in the
+  structured data.
+
+Nothing hard-codes an image path, so no component needs editing.
+
+---
+
 ## 🎨 Design System
 
 Shared visual language lives in three places, and every screen is built from

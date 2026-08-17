@@ -222,7 +222,12 @@
     scroll-behavior: auto;
   }
 
-  *,
+  /*
+   * The marquee is excluded from the blanket reset. Overriding only its duration
+   * further down was not enough — this rule also pinned
+   * `animation-iteration-count: 1`, which ended the loop after a single pass.
+   */
+  *:not(.animate-marquee),
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
@@ -231,12 +236,25 @@
     scroll-behavior: auto !important;
   }
 
-  /* The marquee and floating badges are decorative motion — stop them outright
-     rather than running them at 0.001ms, which would leave the track shifted. */
-  .animate-marquee,
+  /*
+   * The floating hero badges are stopped outright rather than run at 0.001ms,
+   * which would leave them mid-bob.
+   */
   .animate-float,
   .animate-float-slow {
     animation: none !important;
     transform: none !important;
+  }
+
+  /*
+   * The feature marquee is a deliberate exception and keeps scrolling: it is the
+   * product owner's intended treatment, and freezing it left the track visibly
+   * clipped mid-strip. It is slowed right down here so the motion is gentle
+   * rather than absent.
+   */
+  .animate-marquee {
+    /* Clearly in motion, but a calmer pace than the default 38s cycle. */
+    animation-duration: 55s !important;
+    animation-iteration-count: infinite !important;
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Outfit, Plus_Jakarta_Sans } from 'next/font/google'
 import '@/index.css'
 import Providers from '@/components/Providers'
+import { brand } from '@/lib/brand'
 import { absoluteUrl, site, siteUrl } from '@/lib/site'
 
 const outfit = Outfit({
@@ -44,10 +45,14 @@ export const metadata: Metadata = {
     description: site.shortDescription,
   },
   icons: {
-    // The favicon existed in /public but nothing referenced it, so browsers
-    // asked for /favicon.ico and got a 404 on every page load.
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-    apple: [{ url: '/favicon.svg' }],
+    // Nothing referenced an icon before, so browsers asked for /favicon.ico and
+    // got a 404 on every page load. The square brand mark is used throughout.
+    icon: [
+      { url: brand.logoMark, type: 'image/png', sizes: '512x512' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [{ url: brand.logoMark, sizes: '180x180' }],
+    shortcut: [{ url: brand.logoMark }],
   },
   manifest: '/manifest.webmanifest',
   robots: {
@@ -78,7 +83,9 @@ const organisationSchema = {
   description: site.shortDescription,
   logo: {
     '@type': 'ImageObject',
-    url: absoluteUrl('/favicon.svg'),
+    url: absoluteUrl(brand.logoMark),
+    width: brand.logoMarkSize,
+    height: brand.logoMarkSize,
   },
 }
 

@@ -19,7 +19,12 @@ const FEATURES = [
 export function FeatureMarquee() {
   return (
     <div className="marquee-mask overflow-hidden border-y border-white/60 bg-white/40 py-4 backdrop-blur-sm">
-      <div className="flex w-max animate-marquee gap-3 motion-reduce:animate-none">
+      {/*
+        No `motion-reduce:animate-none` here: the strip is meant to keep moving.
+        The reduced-motion block in index.css slows it to a 90s cycle instead of
+        stopping it, so it never sits frozen mid-track.
+      */}
+      <div className="flex w-max animate-marquee gap-3">
         {[0, 1].map((copy) => (
           <ul
             key={copy}

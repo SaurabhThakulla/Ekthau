@@ -1,4 +1,7 @@
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { ImageResponse } from 'next/og'
+import { brand } from '@/lib/brand'
 import { site } from '@/lib/site'
 
 export const runtime = 'nodejs'
@@ -11,7 +14,24 @@ export const contentType = 'image/png'
  * `summary_large_image` with no image attached, so shares rendered as a blank
  * card on every platform.
  */
-export default function OpengraphImage() {
+/**
+ * Reads the logo off disk and inlines it as a data URI. `ImageResponse` cannot
+ * resolve site-relative paths at build time, and the card must still generate if
+ * the file is missing — so a failure falls back to no mark rather than failing
+ * the build.
+ */
+async function loadLogo(): Promise<string | null> {
+  try {
+    const bytes = await readFile(join(process.cwd(), 'public', brand.logoMark))
+    return `data:image/png;base64,${bytes.toString('base64')}`
+  } catch {
+    return null
+  }
+}
+
+export default async function OpengraphImage() {
+  const logo = await loadLogo()
+
   return new ImageResponse(
     (
       <div
@@ -35,15 +55,28 @@ export default function OpengraphImage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 68,
-              height: 68,
-              borderRadius: 20,
+              width: 76,
+              height: 76,
+              borderRadius: 22,
+              overflow: 'hidden',
               background: 'rgba(255,255,255,0.12)',
               border: '1px solid rgba(255,255,255,0.22)',
-              fontSize: 34,
+              fontSize: 36,
             }}
           >
-            📸
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- satori only
+              // renders plain <img> inside ImageResponse.
+              <img
+                src={logo}
+                alt=""
+                width={76}
+                height={76}
+                style={{ width: 76, height: 76, objectFit: 'cover' }}
+              />
+            ) : (
+              '📸'
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>

@@ -13,6 +13,10 @@ dist-ssr
 .next/
 out/
 *.local
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
 .env
 .env.*
 !.env.example
