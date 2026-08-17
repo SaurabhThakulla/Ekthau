@@ -104,6 +104,25 @@ With **Ekthau AI Photo Scan (Coming Soon)**:
 
 ---
 
+## 🎨 Design System
+
+Shared visual language lives in three places, and every screen is built from
+them rather than one-off values:
+
+| Concern | Source of truth |
+| --- | --- |
+| Colour ramp, spacing, radii, shadows, motion | `tailwind.config.ts` |
+| CSS variables, base layer, focus rings, reduced-motion | `src/index.css` |
+| Buttons, inputs, cards, badges, alerts, modal, skeletons, empty states | `src/components/ui/*` |
+| Header, footer, page gutter, auth split layout | `src/components/layout/*` |
+| Pricing tiers, FAQ copy, site naming and nav | `src/lib/plans.ts`, `src/lib/faqs.ts`, `src/lib/site.ts` |
+
+Pricing, FAQ text and navigation are defined once and reused by both the
+rendered page and its structured data, so the markup can never disagree with
+what a visitor reads.
+
+---
+
 ## 🎪 Perfect For Every Special Gathering
 
 - 💍 **Weddings & Receptions**: Collect raw candid emotions from every guest table that the hired photographer missed.
@@ -136,23 +155,39 @@ npm install
 ```
 
 ### 3. Configure environment variables
-Create a `.env.local` file in the root directory:
+Copy `.env.example` to `.env.local` and fill it in:
 ```env
+# Public — read by the browser
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SECRET_KEY=your-supabase-service-role-key
+NEXT_PUBLIC_R2_PUBLIC_DOMAIN=media.your-domain.com
 
+# The canonical public origin. Drives canonical URLs, sitemap.xml, robots.txt
+# and Open Graph tags — set this to your real domain before deploying.
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# Server-only — never prefix these with NEXT_PUBLIC_
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 R2_ACCOUNT_ID=your-cloudflare-account-id
 R2_BUCKET_NAME=ekthau-media
 R2_ACCESS_KEY_ID=your-r2-access-key
 R2_SECRET_ACCESS_KEY=your-r2-secret-key
-NEXT_PUBLIC_R2_PUBLIC_DOMAIN=your-r2-custom-domain.com
 ```
 
+> `NEXT_PUBLIC_R2_PUBLIC_DOMAIN` is also the only remote host allowed through
+> the Next.js image optimiser. Any other domain is rejected, so remember to add
+> new storage domains here.
+
 ### 4. Run database migrations
-Execute the consolidated SQL script in your Supabase SQL Editor:
+**Required before anything works.** Without the schema, the app loads but every
+event lookup, join and upload fails. Paste the consolidated script into the
+Supabase SQL Editor and run it:
 ```bash
 supabase/migrations/combined_migration.sql
+```
+Then deploy the upload edge function:
+```bash
+supabase functions deploy upload-url
 ```
 
 ### 5. Start development server
@@ -160,6 +195,17 @@ supabase/migrations/combined_migration.sql
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+With no `NEXT_PUBLIC_SUPABASE_URL` set, the app runs in demo mode against
+`src/lib/mockData.ts` so the interface can be explored without a backend.
+
+### Useful scripts
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Production build (also type-checks every route) |
+| `npm start` | Serve the production build |
+| `npm run lint` | Lint with oxlint |
 
 ---
 

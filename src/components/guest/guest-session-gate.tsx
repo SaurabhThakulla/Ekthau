@@ -34,8 +34,8 @@ export function GuestSessionGate({
 
   if (!session || session.event_slug !== slug) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-brand-sheen p-6">
-        <div className="w-full max-w-sm rounded-2xl border border-border bg-white p-7 text-center shadow-card">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-canvas p-6">
+        <div className="w-full max-w-sm rounded-3xl border border-white/70 bg-white/95 p-7 text-center shadow-float backdrop-blur-sm">
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
             <Camera className="size-7" aria-hidden="true" />
           </div>

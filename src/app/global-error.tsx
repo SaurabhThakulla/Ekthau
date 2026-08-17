@@ -28,7 +28,7 @@ export default function GlobalError({
           justifyContent: 'center',
           padding: '24px',
           fontFamily: 'system-ui, sans-serif',
-          color: '#0B132B',
+          color: '#1B1145',
           background: '#ffffff',
         }}
       >
@@ -48,7 +48,7 @@ export default function GlobalError({
               padding: '0 1.5rem',
               borderRadius: '12px',
               border: 'none',
-              background: '#1E3A8A',
+              background: '#4A24B8',
               color: '#ffffff',
               fontSize: '0.9375rem',
               fontWeight: 600,

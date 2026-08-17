@@ -23,9 +23,9 @@ export default function ErrorBoundary({
   }, [error])
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-border">
-        <Container className="flex h-16 items-center">
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <header className="pt-3 sm:pt-4">
+        <Container className="flex h-16 items-center rounded-2xl border border-white/70 bg-white/80 px-4 shadow-pill backdrop-blur-xl sm:px-6">
           <Logo />
         </Container>
       </header>
@@ -33,7 +33,7 @@ export default function ErrorBoundary({
       <main id="main" className="flex flex-1 items-center py-16">
         <Container width="narrow" className="text-center">
           <p className="eyebrow">Something went wrong</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-[-0.03em] text-ink sm:text-5xl">
             This page ran into a problem
           </h1>
           <p className="mx-auto mt-4 max-w-prose text-base leading-relaxed text-ink-muted">

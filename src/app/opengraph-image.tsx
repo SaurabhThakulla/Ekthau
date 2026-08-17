@@ -22,9 +22,9 @@ export default function OpengraphImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '72px',
-          backgroundColor: '#0B132B',
+          backgroundColor: '#1B1145',
           backgroundImage:
-            'linear-gradient(135deg, #0B132B 0%, #16264F 55%, #1E3A8A 100%)',
+            'linear-gradient(135deg, #1B1145 0%, #3A1C92 52%, #6D28D9 100%)',
           color: '#ffffff',
           fontFamily: 'sans-serif',
         }}
@@ -49,7 +49,7 @@ export default function OpengraphImage() {
             <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>
               {site.name}
             </span>
-            <span style={{ fontSize: 22, color: '#BFD0FE' }}>{site.nameLocal}</span>
+            <span style={{ fontSize: 22, color: '#CFC4FF' }}>{site.nameLocal}</span>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export default function OpengraphImage() {
           >
             Every guest photo from your event, in one place.
           </span>
-          <span style={{ fontSize: 30, color: '#C7D6FF', maxWidth: 900 }}>
+          <span style={{ fontSize: 30, color: '#DDD3FF', maxWidth: 900 }}>
             Print a QR code. Guests scan, shoot and upload from any phone browser.
             No app to download.
           </span>
@@ -76,7 +76,7 @@ export default function OpengraphImage() {
             display: 'flex',
             gap: 16,
             fontSize: 22,
-            color: '#93B0FD',
+            color: '#AE9BFF',
           }}
         >
           <span>Full-resolution originals</span>

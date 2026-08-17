@@ -20,7 +20,7 @@ export function AuthShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen bg-canvas lg:grid-cols-2">
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink p-10 text-white lg:flex">
         <Image
           src="/images/auth-hero.jpg"
@@ -33,7 +33,7 @@ export function AuthShell({
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ink via-ink/80 to-ink/40"
+          className="absolute inset-0 bg-gradient-to-t from-ink via-brand-900/85 to-brand-700/50"
         />
 
         <div className="relative">

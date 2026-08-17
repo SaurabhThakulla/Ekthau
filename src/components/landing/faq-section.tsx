@@ -10,23 +10,23 @@ import { FAQS } from '@/lib/faqs'
  */
 export function FaqSection() {
   return (
-    <section id="faq" className="section-y border-t border-border bg-white">
+    <section id="faq" className="section-y">
       <Container width="narrow">
         <div className="text-center">
           <p className="eyebrow">Questions</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-[-0.02em] text-ink sm:text-4xl lg:text-[2.75rem]">
             Everything hosts ask before their first event
           </h2>
         </div>
 
-        <div className="mt-10 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-white shadow-card">
+        <div className="mt-10 divide-y divide-border overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-card backdrop-blur-sm">
           {FAQS.map((faq) => (
             <details key={faq.question} className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-medium text-ink transition-colors hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-medium text-ink transition-colors hover:bg-brand-50/60 [&::-webkit-details-marker]:hidden">
                 <h3 className="text-base font-semibold">{faq.question}</h3>
                 <span
                   aria-hidden="true"
-                  className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-ink-muted transition-transform group-open:rotate-45"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-brand-50 text-brand-700 transition-transform group-open:rotate-45"
                 >
                   <Plus className="size-4" />
                 </span>

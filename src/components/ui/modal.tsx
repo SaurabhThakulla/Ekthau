@@ -64,23 +64,44 @@ export function Modal({
     }
   }, [open])
 
-  // Move focus in on open, restore it to the trigger on close.
+  /**
+   * Move focus in on open, restore it to the trigger on close.
+   *
+   * `mounted` has to be a dependency: the portal is not rendered on the first
+   * pass (it waits for the mount effect), so without it this ran while
+   * `panelRef` was still null and focus was left behind on the trigger.
+   */
   React.useEffect(() => {
-    if (!open) return
+    if (!open || !mounted) return
     previouslyFocused.current = document.activeElement as HTMLElement | null
 
-    const frame = requestAnimationFrame(() => {
+    const focusFirst = () => {
       const panel = panelRef.current
-      if (!panel) return
+      if (!panel || panel.contains(document.activeElement)) return
       const first = panel.querySelector<HTMLElement>(FOCUSABLE)
       ;(first ?? panel).focus()
-    })
+    }
+
+    // Focus synchronously — the portal is already committed by the time effects
+    // run. A zero-delay retry covers children that mount a tick later (lazy
+    // panels). `requestAnimationFrame` is deliberately not used: it never fires
+    // while the document is hidden, which would leave the dialog open with focus
+    // stranded on the page behind it.
+    focusFirst()
+    const retry = window.setTimeout(focusFirst, 0)
 
     return () => {
-      cancelAnimationFrame(frame)
-      previouslyFocused.current?.focus?.()
+      window.clearTimeout(retry)
+      const target = previouslyFocused.current
+      // Deferred: React detaches the dialog after this cleanup runs, and
+      // removing the focused node resets focus to <body>, which would undo an
+      // immediate restore. Running a tick later puts focus back on the control
+      // that opened the dialog, where a keyboard user expects to resume.
+      window.setTimeout(() => {
+        if (target?.isConnected) target.focus()
+      }, 0)
     }
-  }, [open])
+  }, [open, mounted])
 
   // Escape to dismiss, Tab cycles inside the panel.
   React.useEffect(() => {

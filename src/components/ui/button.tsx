@@ -16,11 +16,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        /* The dominant action: indigo→violet gradient with a coloured lift. */
         primary:
-          'bg-brand-700 text-white shadow-sm hover:bg-brand-800 active:bg-brand-900',
+          'bg-cta-gradient text-white shadow-cta hover:brightness-110 active:brightness-95',
+        /* Flat brand fill for dense UI (dashboard toolbars, inline actions). */
+        solid: 'bg-brand-700 text-white shadow-sm hover:bg-brand-800',
         ink: 'bg-ink text-white shadow-sm hover:bg-ink-soft',
         secondary:
-          'border border-border bg-white text-ink shadow-xs hover:border-brand-200 hover:bg-brand-50',
+          'border border-border bg-white text-ink shadow-pill hover:border-brand-200 hover:bg-brand-50',
         subtle: 'bg-muted text-ink hover:bg-secondary',
         ghost: 'text-ink-muted hover:bg-muted hover:text-ink',
         destructive:
@@ -28,10 +31,9 @@ const buttonVariants = cva(
         outlineDestructive:
           'border border-destructive/30 bg-white text-destructive hover:bg-destructive/5',
         link: 'text-brand-700 underline-offset-4 hover:underline',
-        onDark:
-          'bg-white text-ink shadow-sm hover:bg-brand-50',
+        onDark: 'bg-white text-ink shadow-sm hover:bg-brand-50',
         onDarkGhost:
-          'border border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20',
+          'border border-white/25 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20',
       },
       size: {
         // Every size clears 40px so nothing becomes a fiddly tap target on a
@@ -39,8 +41,14 @@ const buttonVariants = cva(
         sm: 'h-10 px-3.5 text-[13px] [&_svg]:size-4',
         md: 'h-11 px-5 [&_svg]:size-4',
         lg: 'h-12 px-6 text-base [&_svg]:size-5',
+        /* Hero-scale action. */
+        xl: 'h-14 px-8 text-base [&_svg]:size-5',
         icon: 'h-10 w-10 [&_svg]:size-4',
         iconLg: 'h-11 w-11 [&_svg]:size-5',
+      },
+      shape: {
+        /** Fully rounded capsule, matching the header and chip language. */
+        pill: 'rounded-full',
       },
       block: {
         true: 'w-full',
@@ -68,6 +76,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
+      shape,
       block,
       asChild = false,
       loading = false,
@@ -82,7 +91,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <Slot
-          className={cn(buttonVariants({ variant, size, block, className }))}
+          className={cn(buttonVariants({ variant, size, shape, block, className }))}
           ref={ref}
           {...props}
         >
@@ -95,7 +104,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         // Defaulting to "button" stops buttons inside forms submitting by accident.
         type={type ?? 'button'}
-        className={cn(buttonVariants({ variant, size, block, className }))}
+        className={cn(buttonVariants({ variant, size, shape, block, className }))}
         ref={ref}
         disabled={disabled || loading}
         aria-busy={loading || undefined}

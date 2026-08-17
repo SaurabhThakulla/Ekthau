@@ -1,20 +1,18 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { AuthShell } from '@/components/layout/auth-shell'
+import { pageMetadata } from '@/lib/metadata'
 import { SignupForm } from './signup-form'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Create a free event',
   description:
     'Set up an Ekthau event in under a minute. Get a printable QR code, collect full-resolution photos from every guest, and start with 1 GB free.',
-  alternates: { canonical: '/signup' },
-  openGraph: {
-    title: 'Create a free event photo gallery | Ekthau',
-    description:
-      'Set up an event in under a minute, print your QR card, and collect full-resolution photos from every guest. 1 GB free.',
-    url: '/signup',
-  },
-}
+  path: '/signup',
+  socialTitle: 'Create a free event photo gallery | Ekthau',
+  socialDescription:
+    'Set up an event in under a minute, print your QR card, and collect full-resolution photos from every guest. 1 GB free.',
+})
 
 export default function SignupPage() {
   return (

@@ -18,28 +18,34 @@ const config: Config = {
 
       colors: {
         /**
-         * Brand ramp. 700 (#1E3A8A) is the primary action colour and 950
-         * (#0B132B) is the "ink" used for headings and dark surfaces. Both
-         * were the original brand values — the ramp just makes the in-between
-         * steps available instead of hand-written hex literals.
+         * Brand ramp — deep indigo through violet. 700 is the primary action
+         * colour, 950 is the "ink" used for headings and dark surfaces. Every
+         * component references these steps, so retuning the ramp restyles the
+         * whole product without touching a single component.
          */
         brand: {
-          50: "#EFF4FF",
-          100: "#DBE5FF",
-          200: "#BFD0FE",
-          300: "#93B0FD",
-          400: "#6086FA",
-          500: "#3B60F6",
-          600: "#2542EB",
-          700: "#1E3A8A",
-          800: "#1A2F6D",
-          900: "#16264F",
-          950: "#0B132B",
+          50: "#F2EFFF",
+          100: "#E6E0FF",
+          200: "#CFC4FF",
+          300: "#AE9BFF",
+          400: "#8D70FB",
+          500: "#7048F2",
+          600: "#5B2FD9",
+          700: "#4A24B8",
+          800: "#3A1C92",
+          900: "#2B1470",
+          950: "#1B1145",
+        },
+        /** Violet used for gradient accents and highlight text. */
+        violet: {
+          400: "#A78BFA",
+          500: "#8B5CF6",
+          600: "#7C3AED",
         },
         ink: {
-          DEFAULT: "#0B132B",
-          soft: "#1C2541",
-          muted: "#475569",
+          DEFAULT: "#1B1145",
+          soft: "#2B1470",
+          muted: "#5C5580",
         },
 
         border: "hsl(var(--border))",
@@ -114,13 +120,19 @@ const config: Config = {
       },
 
       boxShadow: {
-        xs: "0 1px 2px 0 rgb(11 19 43 / 0.05)",
-        sm: "0 1px 3px 0 rgb(11 19 43 / 0.08), 0 1px 2px -1px rgb(11 19 43 / 0.06)",
-        DEFAULT: "0 2px 6px -1px rgb(11 19 43 / 0.09), 0 1px 3px -1px rgb(11 19 43 / 0.06)",
-        md: "0 6px 16px -4px rgb(11 19 43 / 0.10), 0 2px 6px -2px rgb(11 19 43 / 0.06)",
-        lg: "0 14px 32px -10px rgb(11 19 43 / 0.16), 0 4px 10px -4px rgb(11 19 43 / 0.06)",
-        xl: "0 26px 56px -18px rgb(11 19 43 / 0.24), 0 8px 18px -8px rgb(11 19 43 / 0.08)",
-        card: "0 1px 2px 0 rgb(11 19 43 / 0.04), 0 8px 24px -16px rgb(11 19 43 / 0.18)",
+        // Shadows are tinted with the brand ink rather than neutral black, which
+        // is what keeps surfaces looking seated on the lavender canvas.
+        xs: "0 1px 2px 0 rgb(27 17 69 / 0.05)",
+        sm: "0 1px 3px 0 rgb(27 17 69 / 0.07), 0 1px 2px -1px rgb(27 17 69 / 0.05)",
+        DEFAULT: "0 2px 6px -1px rgb(27 17 69 / 0.08), 0 1px 3px -1px rgb(27 17 69 / 0.05)",
+        md: "0 8px 20px -6px rgb(27 17 69 / 0.10), 0 2px 6px -2px rgb(27 17 69 / 0.05)",
+        lg: "0 18px 40px -12px rgb(27 17 69 / 0.14), 0 4px 12px -4px rgb(27 17 69 / 0.05)",
+        xl: "0 32px 70px -20px rgb(27 17 69 / 0.22), 0 10px 24px -10px rgb(27 17 69 / 0.07)",
+        card: "0 1px 2px 0 rgb(27 17 69 / 0.03), 0 10px 30px -18px rgb(27 17 69 / 0.16)",
+        /** Detached floating surfaces: the pill navbar and hero product card. */
+        float: "0 24px 60px -22px rgb(27 17 69 / 0.28), 0 8px 20px -12px rgb(27 17 69 / 0.12)",
+        pill: "0 4px 16px -6px rgb(27 17 69 / 0.14), 0 1px 3px 0 rgb(27 17 69 / 0.06)",
+        cta: "0 12px 28px -10px rgb(74 36 184 / 0.50), 0 4px 10px -4px rgb(74 36 184 / 0.30)",
       },
 
       maxWidth: {
@@ -148,12 +160,26 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        /** Continuous feature strip. Travels exactly half the track, which holds
+         *  a duplicated list, so the loop is seamless. */
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+        /** Gentle bob for the callout badges pinned around the hero card. */
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-7px)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
         "fade-in": "fade-in 0.3s ease-out both",
         "scale-in": "scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both",
         "slide-up": "slide-up 0.24s cubic-bezier(0.16, 1, 0.3, 1) both",
+        marquee: "marquee 38s linear infinite",
+        float: "float 5s ease-in-out infinite",
+        "float-slow": "float 7s ease-in-out infinite",
       },
     },
   },

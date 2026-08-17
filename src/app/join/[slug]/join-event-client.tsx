@@ -400,9 +400,9 @@ export function JoinEventClient({ slug }: { slug: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-brand-sheen">
-      <header className="border-b border-border/70">
-        <Container className="flex h-16 items-center justify-between">
+    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+      <header className="pt-3 sm:pt-4">
+        <Container className="flex h-16 items-center justify-between rounded-2xl border border-white/70 bg-white/80 px-4 shadow-pill backdrop-blur-xl sm:px-6">
           <Logo />
           <Link
             href="/join"

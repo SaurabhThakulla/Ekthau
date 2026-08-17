@@ -1,17 +1,18 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { AuthShell } from '@/components/layout/auth-shell'
+import { pageMetadata } from '@/lib/metadata'
 import { LoginForm } from './login-form'
 
-export const metadata: Metadata = {
+// A sign-in form has no content worth ranking, but the page should still be
+// crawled so its links are followed.
+export const metadata: Metadata = pageMetadata({
   title: 'Host sign in',
   description:
     'Sign in to your Ekthau host account to manage events, moderate guest uploads and download full-resolution photo albums.',
-  alternates: { canonical: '/login' },
-  // A sign-in form has no content worth ranking, but the page should still be
-  // crawled so its links are followed.
-  robots: { index: false, follow: true },
-}
+  path: '/login',
+  noindex: true,
+})
 
 export default function LoginPage() {
   return (

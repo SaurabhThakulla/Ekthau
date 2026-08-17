@@ -231,7 +231,7 @@ export default function DashboardPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-card"
+              className="flex items-center gap-3 rounded-3xl border border-white/70 bg-white/90 p-4 shadow-card backdrop-blur-sm"
             >
               <span
                 className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${stat.tone}`}
@@ -274,7 +274,7 @@ export default function DashboardPage() {
       {!loading && events.length > 1 && (
         <section
           aria-label="Filter events"
-          className="space-y-4 rounded-2xl border border-border bg-white p-4 shadow-card"
+          className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-4 shadow-card backdrop-blur-sm"
         >
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full lg:max-w-sm">
@@ -347,9 +347,9 @@ export default function DashboardPage() {
                 role="tab"
                 aria-selected={statusFilter === tab.key}
                 onClick={() => setStatusFilter(tab.key)}
-                className={`shrink-0 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                   statusFilter === tab.key
-                    ? 'bg-brand-700 text-white shadow-sm'
+                    ? 'bg-cta-gradient text-white shadow-cta'
                     : 'text-ink-muted hover:bg-muted hover:text-ink'
                 }`}
               >
@@ -368,7 +368,7 @@ export default function DashboardPage() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="overflow-hidden rounded-2xl border border-border bg-white shadow-card"
+              className="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-card backdrop-blur-sm"
             >
               <Skeleton className="h-36 rounded-none" />
               <div className="space-y-3 p-5">
@@ -428,7 +428,7 @@ export default function DashboardPage() {
 
               return (
                 <li key={event.id} className="flex">
-                  <article className="group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-card transition-shadow hover:shadow-md">
+                  <article className="group flex w-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-card backdrop-blur-sm transition-shadow hover:shadow-md">
                     <div className="relative h-36 overflow-hidden bg-ink-gradient">
                       {coverUrl ? (
                         <Image

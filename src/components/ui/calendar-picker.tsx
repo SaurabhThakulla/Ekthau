@@ -137,9 +137,13 @@ export default function CalendarPicker({
       pushCell(new Date(year, month, day), true)
     }
 
-    // Pad to whole weeks so the grid never reflows between months.
+    // Pad to whole weeks so the grid never reflows between months. The offset is
+    // counted independently of `cells.length` — deriving it from the row
+    // remainder skipped the 1st of the following month.
+    let trailing = 1
     while (cells.length % 7 !== 0) {
-      pushCell(new Date(year, month, daysInMonth + (cells.length % 7)), false)
+      pushCell(new Date(year, month, daysInMonth + trailing), false)
+      trailing += 1
     }
 
     return cells

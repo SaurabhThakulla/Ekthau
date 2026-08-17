@@ -111,9 +111,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const initial = (user?.email?.charAt(0) || 'H').toUpperCase()
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
-        <Container width="wide" className="flex h-16 items-center justify-between gap-4">
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <header className="sticky top-0 z-40 pt-3">
+        <Container width="wide" className="flex h-16 items-center justify-between gap-4 rounded-2xl border border-white/70 bg-white/85 px-4 shadow-pill backdrop-blur-xl sm:px-6">
           <div className="flex items-center gap-6">
             <Logo href="/dashboard" showLocalName={false} />
             <nav aria-label="Dashboard" className="hidden md:block">

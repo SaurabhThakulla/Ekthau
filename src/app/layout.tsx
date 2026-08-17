@@ -63,7 +63,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Not capped at 1, so pinch-to-zoom keeps working for low-vision users.
   maximumScale: 5,
-  themeColor: '#0B132B',
+  themeColor: '#1B1145',
   colorScheme: 'light',
 }
 

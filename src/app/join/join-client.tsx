@@ -42,11 +42,11 @@ export function JoinClient() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
+    <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/95 shadow-float backdrop-blur-sm">
       <div
         role="tablist"
         aria-label="How would you like to join?"
-        className="grid grid-cols-2 gap-1.5 border-b border-border bg-muted/60 p-2"
+        className="grid grid-cols-2 gap-1.5 border-b border-border bg-brand-50/70 p-2"
       >
         {(
           [
@@ -62,9 +62,9 @@ export function JoinClient() {
             aria-selected={mode === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => setMode(tab.id)}
-            className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors ${
+            className={`flex min-h-11 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors ${
               mode === tab.id
-                ? 'bg-white text-ink shadow-sm'
+                ? 'bg-white text-ink shadow-pill'
                 : 'text-ink-muted hover:text-ink'
             }`}
           >

@@ -225,9 +225,9 @@ export default function ModerationPage() {
               role="tab"
               aria-selected={filter === tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
+              className={`flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                 filter === tab.key
-                  ? 'bg-brand-700 text-white shadow-sm'
+                  ? 'bg-cta-gradient text-white shadow-cta'
                   : 'text-ink-muted hover:bg-muted hover:text-ink'
               }`}
             >
@@ -341,7 +341,7 @@ function MediaCard({
     item.status === 'approved' ? 'Approved' : item.status === 'rejected' ? 'Hidden' : 'Waiting'
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-card">
+    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-card backdrop-blur-sm">
       <div className="relative aspect-square bg-muted">
         {!url || failed ? (
           // A real placeholder instead of a browser-broken-image icon.

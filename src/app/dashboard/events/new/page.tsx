@@ -205,7 +205,7 @@ function CreateEventForm() {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="mt-6 space-y-8 rounded-2xl border border-border bg-white p-5 shadow-card sm:p-7"
+        className="mt-6 space-y-8 rounded-3xl border border-white/70 bg-white/90 p-5 shadow-card backdrop-blur-sm sm:p-7"
       >
         {formError && (
           <Alert tone="error" title="We couldn't create the event">

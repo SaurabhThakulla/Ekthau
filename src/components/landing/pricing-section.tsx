@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils'
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="section-y border-t border-border bg-brand-sheen">
+    <section id="pricing" className="section-y">
       <Container>
         <div className="max-w-2xl">
           <p className="eyebrow">Pricing</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-[-0.02em] text-ink sm:text-4xl lg:text-[2.75rem]">
             Pay once per event. Start free.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-ink-muted">
@@ -29,10 +29,10 @@ export function PricingSection() {
             <li key={plan.id} className="flex">
               <article
                 className={cn(
-                  'relative flex w-full flex-col rounded-2xl border bg-white p-6 transition-shadow',
+                  'relative flex w-full flex-col rounded-3xl border p-6 backdrop-blur-sm transition-all hover:-translate-y-1',
                   plan.popular
-                    ? 'border-brand-700 shadow-lg ring-1 ring-brand-700/15'
-                    : 'border-border shadow-card hover:shadow-md'
+                    ? 'border-brand-300 bg-white shadow-float ring-1 ring-brand-700/15'
+                    : 'border-white/70 bg-white/90 shadow-card hover:shadow-lg'
                 )}
               >
                 {plan.popular && (
@@ -66,7 +66,7 @@ export function PricingSection() {
                   <span className="text-sm text-ink-muted">/ {plan.period}</span>
                 </p>
 
-                <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl border border-border bg-muted/50 p-3 text-center">
+                <dl className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-border bg-brand-50/60 p-3 text-center">
                   {[
                     { label: 'Storage', value: plan.storageLabel },
                     { label: 'Guests', value: plan.guestLimit >= 10_000 ? '∞' : plan.guestLimit },
@@ -100,11 +100,11 @@ export function PricingSection() {
                     plan.id === 'free' ? '/signup' : `/signup?plan=${plan.id}`
                   }
                   className={cn(
-                    'mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors',
+                    'mt-6 inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-sm font-semibold transition-all',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     plan.popular
-                      ? 'bg-brand-700 text-white hover:bg-brand-800'
-                      : 'border border-border bg-white text-ink hover:border-brand-200 hover:bg-brand-50'
+                      ? 'bg-cta-gradient text-white shadow-cta hover:brightness-110'
+                      : 'border border-border bg-white text-ink shadow-pill hover:border-brand-200 hover:bg-brand-50'
                   )}
                 >
                   {plan.priceValue === 0

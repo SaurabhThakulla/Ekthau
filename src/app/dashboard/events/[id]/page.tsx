@@ -317,7 +317,7 @@ export default function EventDetailPage() {
         {/* ── Share panel ────────────────────────────────────────────── */}
         <section
           aria-labelledby="share-heading"
-          className="rounded-2xl border border-border bg-white p-6 shadow-card lg:col-span-7 sm:p-8"
+          className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-card backdrop-blur-sm lg:col-span-7 sm:p-8"
         >
           <div className="text-center">
             <h2 id="share-heading" className="text-lg font-semibold text-ink">
@@ -430,7 +430,7 @@ export default function EventDetailPage() {
         <div className="space-y-6 lg:col-span-5">
           <section
             aria-labelledby="details-heading"
-            className="rounded-2xl border border-border bg-white p-6 shadow-card"
+            className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-card backdrop-blur-sm"
           >
             <h2 id="details-heading" className="text-base font-semibold text-ink">
               Event settings
@@ -466,7 +466,7 @@ export default function EventDetailPage() {
 
           <section
             aria-labelledby="preview-heading"
-            className="rounded-2xl border border-border bg-white p-6 shadow-card"
+            className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-card backdrop-blur-sm"
           >
             <h2 id="preview-heading" className="text-base font-semibold text-ink">
               Check what guests see

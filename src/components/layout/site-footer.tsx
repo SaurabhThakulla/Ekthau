@@ -9,7 +9,7 @@ import { footerNav, site } from '@/lib/site'
  */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-muted/40">
+    <footer className="border-t border-white/70 bg-white/50 backdrop-blur-sm">
       <Container className="py-12 lg:py-16">
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
           <div className="max-w-xs space-y-4">
