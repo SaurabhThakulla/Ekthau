@@ -1,115 +1,137 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useGuest } from '@/features/guest/GuestContext'
-import { Button } from '@/components/ui/button'
 import {
-  Camera as CameraIcon,
-  SwitchCamera,
-  Image as ImageIcon,
-  UploadCloud,
-  CheckCircle2,
   AlertCircle,
+  Camera as CameraIcon,
+  CheckCircle2,
+  ChevronUp,
+  Images,
   RefreshCw,
-  X,
+  SwitchCamera,
+  UploadCloud,
   WifiOff,
-  Sparkles,
-  ChevronDown,
-  Layers,
 } from 'lucide-react'
-import {
-  uploadQueueManager,
-  UploadQueueItem,
-} from '@/lib/upload/uploadQueue'
+import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/modal'
+import { GuestSessionGate } from '@/components/guest/guest-session-gate'
+import type { GuestSession } from '@/features/guest/GuestContext'
+import { uploadQueueManager, type UploadQueueItem } from '@/lib/upload/uploadQueue'
+import { formatBytes } from '@/lib/media-url'
 
 export default function GuestCameraPage() {
   const params = useParams()
-  const slug = params?.slug as string
-  const { session } = useGuest()
+  const slug = typeof params?.slug === 'string' ? params.slug : ''
 
+  return (
+    <GuestSessionGate slug={slug}>
+      {(session) => <CameraScreen slug={slug} session={session} />}
+    </GuestSessionGate>
+  )
+}
+
+function CameraScreen({ slug, session }: { slug: string; session: GuestSession }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const flashTimerRef = useRef<number | null>(null)
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
-  const [permissionError, setPermissionError] = useState(false)
+  const [cameraState, setCameraState] = useState<'starting' | 'live' | 'blocked'>('starting')
   const [queue, setQueue] = useState<UploadQueueItem[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [flashEffect, setFlashEffect] = useState(false)
+  const [flash, setFlash] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
-  // Bind session to UploadQueueManager
   useEffect(() => {
-    if (session?.event_id && session?.session_token_hash) {
-      uploadQueueManager.setSession(session.event_id, session.session_token_hash)
-    }
-  }, [session])
+    uploadQueueManager.setSession(session.event_id, session.session_token_hash)
+  }, [session.event_id, session.session_token_hash])
 
-  // Subscribe to queue changes
-  useEffect(() => {
-    const unsubscribe = uploadQueueManager.subscribe((items) => {
-      setQueue(items)
-    })
-    return () => unsubscribe()
+  useEffect(() => uploadQueueManager.subscribe(setQueue), [])
+
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
   }, [])
 
-  // Camera stream controls
-  const stopCurrentStream = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        try {
-          track.stop()
-        } catch {
-          // ignore
-        }
-      })
-      streamRef.current = null
-    }
-  }, [])
+  /**
+   * The <video> element stays mounted in every state. Previously it was
+   * unmounted whenever permission was denied, so `videoRef.current` was null on
+   * retry and the stream had nowhere to attach — granting access never worked
+   * without a full reload.
+   */
+  useEffect(() => {
+    let cancelled = false
 
-  const startCamera = useCallback(
-    async (mode: 'environment' | 'user') => {
-      if (typeof window === 'undefined' || !navigator?.mediaDevices) return
+    const start = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraState('blocked')
+        return
+      }
+      setCameraState('starting')
+      stopStream()
+
       try {
-        stopCurrentStream()
-        const newStream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: mode,
+            facingMode,
             width: { ideal: 1920 },
             height: { ideal: 1080 },
           },
           audio: false,
         })
-        streamRef.current = newStream
-        if (videoRef.current) {
-          videoRef.current.srcObject = newStream
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
         }
-        setPermissionError(false)
-      } catch (err) {
-        console.error('Camera access denied', err)
-        setPermissionError(true)
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          await videoRef.current.play().catch(() => {})
+        }
+        setCameraState('live')
+      } catch {
+        if (!cancelled) setCameraState('blocked')
       }
-    },
-    [stopCurrentStream]
-  )
-
-  useEffect(() => {
-    startCamera(facingMode)
-    return () => {
-      stopCurrentStream()
     }
-  }, [facingMode, startCamera, stopCurrentStream])
 
-  // Instant shutter capture (< 50ms)
+    start()
+    return () => {
+      cancelled = true
+      stopStream()
+    }
+  }, [facingMode, attempt, stopStream])
+
+  // Release the camera when the guest switches apps, and pick it back up after.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        stopStream()
+      } else {
+        setAttempt((value) => value + 1)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [stopStream])
+
+  // Clear the shutter-flash timer so it cannot fire after unmount.
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current !== null) window.clearTimeout(flashTimerRef.current)
+    }
+  }, [])
+
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !streamRef.current || !session) return
-
-    // Trigger visual shutter flash
-    setFlashEffect(true)
-    setTimeout(() => setFlashEffect(false), 120)
-
     const video = videoRef.current
+    if (!video || !streamRef.current || cameraState !== 'live') return
+
+    setFlash(true)
+    if (flashTimerRef.current !== null) window.clearTimeout(flashTimerRef.current)
+    flashTimerRef.current = window.setTimeout(() => setFlash(false), 130)
+
     const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth || 1920
     canvas.height = video.videoHeight || 1080
@@ -117,300 +139,294 @@ export default function GuestCameraPage() {
     if (!ctx) return
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    // Capture full resolution raw JPEG without downscaling
     canvas.toBlob(
       (blob) => {
-        if (blob) {
-          const rawFile = new File([blob], `capture-${Date.now()}.jpg`, {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          })
-          // Send straight to background queue
-          uploadQueueManager.addFile(rawFile, 'photo', session.event_id)
-        }
+        if (!blob) return
+        const file = new File([blob], `ekthau-${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: Date.now(),
+        })
+        uploadQueueManager.addFile(file, 'photo', session.event_id)
       },
       'image/jpeg',
-      0.98 // High original quality preservation
+      0.98
     )
-  }, [session])
+  }, [cameraState, session.event_id])
 
-  // File Picker Upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || !session) return
-
-    Array.from(files).forEach((file) => {
-      const type = file.type.startsWith('video') ? 'video' : 'photo'
-      uploadQueueManager.addFile(file, type, session.event_id)
-    })
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+  const handleFilePick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      Array.from(files).forEach((file) => {
+        uploadQueueManager.addFile(
+          file,
+          file.type.startsWith('video') ? 'video' : 'photo',
+          session.event_id
+        )
+      })
     }
+    // Reset so choosing the same file twice still fires a change event.
+    event.target.value = ''
   }
 
   const stats = uploadQueueManager.getStats()
-  const activeUpload = queue.find((q) => q.status === 'uploading' || q.status === 'registering')
+  const active = queue.find(
+    (item) => item.status === 'uploading' || item.status === 'registering'
+  )
 
-  if (!session) {
-    return (
-      <div className="flex h-screen items-center justify-center flex-col gap-4 p-4 text-center bg-background">
-        <p className="text-muted-foreground font-medium">Please join the celebration first.</p>
-        <Button asChild className="rounded-xl font-bold">
-          <Link href={`/join/${slug}`}>Join Event</Link>
-        </Button>
-      </div>
-    )
-  }
+  const statusLabel = !stats.isOnline
+    ? 'Offline — photos are saved and will send later'
+    : stats.failed > 0
+      ? `${stats.failed} upload${stats.failed > 1 ? 's' : ''} need retrying`
+      : stats.pending > 0
+        ? `Sending ${stats.pending} photo${stats.pending > 1 ? 's' : ''}${active ? ` · ${active.progress}%` : ''}`
+        : `All ${stats.completed} photo${stats.completed === 1 ? '' : 's'} saved`
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-black text-white overflow-hidden relative select-none">
-      {/* Shutter White Flash Animation */}
-      {flashEffect && (
-        <div className="absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 opacity-80" />
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-black text-white">
+      {flash && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-50 bg-white opacity-80"
+        />
       )}
 
-      {/* Top Header Bar */}
-      <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+      {/* ── Top bar ──────────────────────────────────────────────────── */}
+      <div className="pt-safe absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-3 bg-gradient-to-b from-black/75 to-transparent px-4 pb-6">
         <Link
-          href={`/e/${slug}/gallery`}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-bold border border-white/10 active:scale-95 transition-transform"
+          href={`/e/${encodeURIComponent(slug)}/gallery`}
+          className="flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/15 px-3.5 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/25"
         >
-          <Layers className="h-3.5 w-3.5" />
-          <span>Live Gallery</span>
+          <Images className="size-4" aria-hidden="true" />
+          Gallery
         </Link>
 
-        {/* Floating Upload Status Pill */}
         {queue.length > 0 && (
           <button
+            type="button"
             onClick={() => setDrawerOpen(true)}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold backdrop-blur-md border shadow-lg transition-all active:scale-95 ${
+            className={`flex min-h-10 items-center gap-2 rounded-full border px-3.5 text-xs font-semibold backdrop-blur-md transition-colors ${
               !stats.isOnline
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                ? 'border-amber-400/30 bg-amber-500/25 text-amber-100'
                 : stats.failed > 0
-                ? 'bg-red-500/20 text-red-300 border-red-500/30'
-                : stats.pending > 0
-                ? 'bg-primary/25 text-white border-primary/40'
-                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                  ? 'border-red-400/30 bg-red-500/25 text-red-100'
+                  : stats.pending > 0
+                    ? 'border-white/20 bg-white/20 text-white'
+                    : 'border-emerald-400/30 bg-emerald-500/25 text-emerald-100'
             }`}
           >
             {!stats.isOnline ? (
-              <>
-                <WifiOff className="h-3.5 w-3.5 text-amber-400" />
-                <span>Offline (Paused)</span>
-              </>
+              <WifiOff className="size-4" aria-hidden="true" />
             ) : stats.failed > 0 ? (
-              <>
-                <AlertCircle className="h-3.5 w-3.5 text-red-400" />
-                <span>{stats.failed} failed</span>
-              </>
+              <AlertCircle className="size-4" aria-hidden="true" />
             ) : stats.pending > 0 ? (
-              <>
-                <UploadCloud className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-                <span>
-                  {stats.pending} uploading
-                  {activeUpload && ` • ${activeUpload.progress}%`}
-                </span>
-              </>
+              <UploadCloud className="size-4 animate-pulse" aria-hidden="true" />
             ) : (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span>All {stats.completed} saved</span>
-              </>
+              <CheckCircle2 className="size-4" aria-hidden="true" />
             )}
-            <ChevronDown className="h-3 w-3 opacity-60" />
+            <span className="max-w-[9.5rem] truncate">{statusLabel}</span>
+            <ChevronUp className="size-3.5 opacity-70" aria-hidden="true" />
           </button>
         )}
       </div>
 
-      {/* Camera Viewfinder */}
-      <div className="flex-1 relative bg-zinc-950 flex items-center justify-center overflow-hidden">
-        {permissionError ? (
-          <div className="text-center p-6 space-y-4 max-w-xs">
-            <CameraIcon className="h-12 w-12 mx-auto text-zinc-500" />
-            <h3 className="font-bold text-lg">Camera Access Needed</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Enable camera permissions in your browser settings or choose photos directly from your gallery.
-            </p>
-            <Button
-              variant="secondary"
-              className="rounded-xl font-bold text-xs"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Upload from Device
-            </Button>
+      {/* Announced separately so the badge itself is not a live region. */}
+      <p aria-live="polite" className="sr-only">
+        {statusLabel}
+      </p>
+
+      {/* ── Viewfinder ───────────────────────────────────────────────── */}
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-950">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          aria-label="Camera viewfinder"
+          className={`size-full object-cover transition-opacity duration-300 ${
+            cameraState === 'live' ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        {cameraState !== 'live' && (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            {cameraState === 'starting' ? (
+              <p role="status" className="text-sm text-white/60">
+                Starting the camera…
+              </p>
+            ) : (
+              <div className="max-w-xs space-y-4 text-center">
+                <CameraIcon
+                  className="mx-auto size-10 text-white/40"
+                  aria-hidden="true"
+                />
+                <div className="space-y-1.5">
+                  <h1 className="text-lg font-semibold">Camera access needed</h1>
+                  <p className="text-sm leading-relaxed text-white/65">
+                    Allow camera access in your browser, then tap retry. You can also
+                    pick photos you have already taken.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    variant="onDark"
+                    block
+                    onClick={() => setAttempt((value) => value + 1)}
+                  >
+                    <RefreshCw aria-hidden="true" />
+                    Retry camera
+                  </Button>
+                  <Button
+                    variant="onDarkGhost"
+                    block
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Images aria-hidden="true" />
+                    Choose from my photos
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
         )}
       </div>
 
-      {/* Bottom Controls */}
-      <div className="h-32 bg-black/90 backdrop-blur-md flex items-center justify-around pb-6 px-6 z-20 border-t border-white/5">
-        {/* Gallery Pick Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full h-12 w-12 text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-transform"
+      {/* ── Controls ─────────────────────────────────────────────────── */}
+      <div className="pb-safe z-20 flex items-center justify-around border-t border-white/10 bg-black/90 px-6 pt-5 backdrop-blur-md">
+        <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
-          title="Upload full resolution photo or video"
+          className="flex size-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
         >
-          <ImageIcon className="h-6 w-6" />
-        </Button>
+          <Images className="size-6" aria-hidden="true" />
+          <span className="sr-only">Upload photos or video from your device</span>
+        </button>
         <input
-          type="file"
           ref={fileInputRef}
-          className="hidden"
+          type="file"
           accept="image/*,video/*"
           multiple
-          onChange={handleFileUpload}
+          className="sr-only"
+          onChange={handleFilePick}
+          aria-label="Upload photos or video from your device"
         />
 
-        {/* Shutter Button */}
         <button
+          type="button"
           onClick={capturePhoto}
-          disabled={permissionError}
-          className="h-20 w-20 rounded-full border-4 border-white flex items-center justify-center disabled:opacity-50 active:scale-90 transition-transform shadow-xl shadow-white/10"
-          aria-label="Snap High-Res Photo"
+          disabled={cameraState !== 'live'}
+          className="flex size-20 items-center justify-center rounded-full border-4 border-white transition-transform active:scale-90 disabled:opacity-40"
         >
-          <div className="h-16 w-16 bg-white rounded-full" />
+          <span aria-hidden="true" className="size-16 rounded-full bg-white" />
+          <span className="sr-only">Take a photo</span>
         </button>
 
-        {/* Switch Camera */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full h-12 w-12 text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-transform"
+        <button
+          type="button"
           onClick={() =>
-            setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'))
+            setFacingMode((mode) => (mode === 'environment' ? 'user' : 'environment'))
           }
-          disabled={permissionError}
-          aria-label="Switch Camera"
+          disabled={cameraState === 'blocked'}
+          className="flex size-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 disabled:opacity-40"
         >
-          <SwitchCamera className="h-6 w-6" />
-        </Button>
+          <SwitchCamera className="size-6" aria-hidden="true" />
+          <span className="sr-only">
+            Switch to the {facingMode === 'environment' ? 'front' : 'back'} camera
+          </span>
+        </button>
       </div>
 
-      {/* Upload Queue Popover / Drawer */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end animate-in fade-in-50">
-          <div
-            className="bg-zinc-900 border-t border-zinc-800 rounded-t-3xl p-5 max-h-[70vh] flex flex-col space-y-4 animate-in slide-in-from-bottom-6 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <div>
-                <h3 className="font-bold text-base text-white">Upload Activity</h3>
-                <p className="text-xs text-zinc-400">
-                  {stats.pending > 0
-                    ? `${stats.pending} remaining • Uploading in original quality`
-                    : `All ${stats.completed} uploads completed`}
-                </p>
-              </div>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                className="rounded-full p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Quick Actions */}
+      {/* ── Upload queue ─────────────────────────────────────────────── */}
+      <Modal
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        variant="sheet"
+        title="Your uploads"
+        description={statusLabel}
+        footer={
+          <div className="flex gap-2">
             {stats.failed > 0 && (
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs">
-                <span className="text-red-300 font-medium">
-                  {stats.failed} upload{stats.failed > 1 ? 's' : ''} encountered a network issue
-                </span>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 rounded-xl text-xs font-bold"
-                  onClick={() => uploadQueueManager.retryAllFailed()}
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Retry All
-                </Button>
-              </div>
+              <Button
+                variant="secondary"
+                block
+                onClick={() => uploadQueueManager.retryAllFailed()}
+              >
+                <RefreshCw aria-hidden="true" />
+                Retry all
+              </Button>
             )}
-
-            {/* List of queue items */}
-            <div className="overflow-y-auto space-y-2.5 max-h-[45vh] pr-1">
-              {queue.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-xs"
-                >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="h-10 w-10 rounded-xl bg-zinc-800 shrink-0 flex items-center justify-center font-mono font-bold text-[10px] text-zinc-400">
-                      {item.type === 'video' ? 'VID' : 'RAW'}
-                    </div>
-                    <div className="truncate">
-                      <p className="font-bold text-white truncate">{item.file.name}</p>
-                      <p className="text-[11px] text-zinc-400 font-mono">
-                        {(item.file.size / (1024 * 1024)).toFixed(1)} MB
-                        {item.isMultipart && ' • Multipart'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {item.status === 'completed' && (
-                      <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Saved
-                      </span>
-                    )}
-
-                    {item.status === 'uploading' && (
-                      <div className="flex items-center gap-1.5 text-blue-400 font-bold">
-                        <UploadCloud className="h-4 w-4 animate-pulse" />
-                        <span>{item.progress}%</span>
-                      </div>
-                    )}
-
-                    {item.status === 'registering' && (
-                      <span className="text-purple-400 font-bold animate-pulse">Syncing...</span>
-                    )}
-
-                    {item.status === 'queued' && (
-                      <span className="text-zinc-400 font-medium">Queued</span>
-                    )}
-
-                    {item.status === 'paused' && (
-                      <span className="text-amber-400 font-medium">Paused</span>
-                    )}
-
-                    {item.status === 'failed' && (
-                      <button
-                        onClick={() => uploadQueueManager.retryFailed(item.id)}
-                        className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 font-bold flex items-center gap-1"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                        Retry
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              className="w-full h-11 rounded-xl font-bold"
-              onClick={() => setDrawerOpen(false)}
-            >
-              Continue Snapping
+            <Button block onClick={() => setDrawerOpen(false)}>
+              Keep shooting
             </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        {queue.length === 0 ? (
+          <p className="text-sm text-ink-muted">
+            Nothing in the queue. Every photo you take shows up here while it uploads.
+          </p>
+        ) : (
+          <ul role="list" className="space-y-2">
+            {queue.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-3"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-[10px] font-bold text-ink-muted shadow-xs"
+                  >
+                    {item.type === 'video' ? 'VID' : 'IMG'}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {item.file.name}
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {formatBytes(item.file.size)}
+                      {item.isMultipart && ' · large file'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 text-xs font-semibold">
+                  {item.status === 'completed' && (
+                    <span className="flex items-center gap-1 text-emerald-600">
+                      <CheckCircle2 className="size-4" aria-hidden="true" />
+                      Saved
+                    </span>
+                  )}
+                  {item.status === 'uploading' && (
+                    <span className="text-brand-700">{item.progress}%</span>
+                  )}
+                  {item.status === 'registering' && (
+                    <span className="text-brand-700">Finishing…</span>
+                  )}
+                  {item.status === 'retrying' && (
+                    <span className="text-amber-600">Retrying…</span>
+                  )}
+                  {item.status === 'queued' && (
+                    <span className="text-ink-muted">Waiting</span>
+                  )}
+                  {item.status === 'paused' && (
+                    <span className="text-amber-600">Paused</span>
+                  )}
+                  {item.status === 'failed' && (
+                    <button
+                      type="button"
+                      onClick={() => uploadQueueManager.retryFailed(item.id)}
+                      className="flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-red-700 transition-colors hover:bg-red-100"
+                    >
+                      <RefreshCw className="size-3.5" aria-hidden="true" />
+                      Retry
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
     </div>
   )
 }

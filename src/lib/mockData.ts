@@ -1,7 +1,11 @@
-// Mock data for UI testing without Supabase
+// Demo data so the UI can be explored without a Supabase project attached.
 
-export const MOCK_MODE =
-  !process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.VITE_SUPABASE_URL
+/**
+ * True only when Supabase is genuinely not configured. The `VITE_*` fallback
+ * that used to be checked here was a leftover from the pre-Next build and could
+ * never be set in this app.
+ */
+export const MOCK_MODE = !process.env.NEXT_PUBLIC_SUPABASE_URL
 
 export const mockUser = {
   id: 'mock-user-123',

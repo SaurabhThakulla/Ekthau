@@ -1,335 +1,510 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
 import {
-  Loader2,
-  Copy,
-  ExternalLink,
-  Download,
-  Check,
-  Camera,
-  Images,
   ArrowLeft,
-  Sparkles,
-  ShieldCheck,
+  Calendar,
+  Check,
+  Copy,
+  Download,
+  ExternalLink,
+  Images,
+  MapPin,
+  RefreshCw,
   Users,
 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert } from '@/components/ui/alert'
+import { Skeleton, LoadingRegion } from '@/components/ui/skeleton'
+import { copyToClipboard } from '@/lib/clipboard'
+import { formatEventDateLong } from '@/lib/format'
+import { describeSupabaseError } from '@/lib/supabase-errors'
+import { formatBytes } from '@/lib/media-url'
 import { MOCK_MODE, mockEvents } from '@/lib/mockData'
+import { absoluteUrl } from '@/lib/site'
 
 interface EventDetail {
   id: string
   name: string
   public_slug: string
   status: string
-  guest_limit: number
-  event_date?: string
-  location?: string | null
+  guest_limit: number | null
+  storage_limit_bytes: number | null
+  plan: string | null
+  event_date: string | null
+  location: string | null
+  expires_at: string | null
 }
+
+type LoadState =
+  | { status: 'loading' }
+  | { status: 'ready'; event: EventDetail }
+  | { status: 'not-found' }
+  | { status: 'error'; message: string }
+
+const QR_SIZE = 224
 
 export default function EventDetailPage() {
   const params = useParams()
-  const id = params?.id as string
-  const [event, setEvent] = useState<EventDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [copiedLink, setCopiedLink] = useState(false)
-  const [copiedCode, setCopiedCode] = useState(false)
-  const [origin, setOrigin] = useState('')
-  const [mounted, setMounted] = useState(false)
+  const id = typeof params?.id === 'string' ? params.id : ''
 
+  const [state, setState] = useState<LoadState>({ status: 'loading' })
+  const [copied, setCopied] = useState<'link' | 'code' | null>(null)
+  const [copyError, setCopyError] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
+  const qrWrapperRef = useRef<HTMLDivElement>(null)
+
+  // The QR code must encode an absolute URL, so it is only rendered once the
+  // real origin is known rather than guessed.
   useEffect(() => {
-    setMounted(true)
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin)
-    }
+    setOrigin(window.location.origin)
   }, [])
 
-  useEffect(() => {
-    async function loadEvent() {
-      if (!id) return
+  const load = useCallback(async (): Promise<LoadState> => {
+    if (!id) return { status: 'not-found' }
 
-      if (MOCK_MODE) {
-        setEvent(
-          (mockEvents.find((e) => e.id === id) as unknown as EventDetail) ||
-            (mockEvents[0] as unknown as EventDetail)
-        )
-        setLoading(false)
+    if (MOCK_MODE) {
+      const match = mockEvents.find((event) => event.id === id)
+      return match
+        ? { status: 'ready', event: match as unknown as EventDetail }
+        : { status: 'not-found' }
+    }
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(
+        'id, name, public_slug, status, guest_limit, storage_limit_bytes, plan, event_date, location, expires_at'
+      )
+      .eq('id', id)
+      .maybeSingle()
+
+    if (error) {
+      /**
+       * The old code silently substituted a mock event when the query failed,
+       * so a permissions problem looked like somebody else's wedding. Errors are
+       * now reported as errors.
+       */
+      return {
+        status: 'error',
+        message: describeSupabaseError(
+          error,
+          'We could not load this event. Please try again.'
+        ),
+      }
+    }
+    if (!data) return { status: 'not-found' }
+    return { status: 'ready', event: data as EventDetail }
+  }, [id])
+
+  useEffect(() => {
+    let active = true
+    setState({ status: 'loading' })
+    load()
+      .then((result) => {
+        if (active) setState(result)
+      })
+      .catch(() => {
+        if (active) {
+          setState({
+            status: 'error',
+            message: 'We could not load this event. Check your connection.',
+          })
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [load, reloadKey])
+
+  useEffect(() => {
+    if (!copied && !copyError) return
+    const timer = window.setTimeout(() => {
+      setCopied(null)
+      setCopyError(false)
+    }, 2200)
+    return () => window.clearTimeout(timer)
+  }, [copied, copyError])
+
+  const event = state.status === 'ready' ? state.event : null
+  const joinUrl = event
+    ? `${origin || absoluteUrl('')}/join/${event.public_slug}`
+    : ''
+
+  const handleCopy = async (what: 'link' | 'code') => {
+    if (!event) return
+    const ok = await copyToClipboard(what === 'link' ? joinUrl : event.public_slug)
+    if (ok) setCopied(what)
+    else setCopyError(true)
+  }
+
+  /**
+   * Renders the on-screen SVG to a PNG with a white quiet zone and the event
+   * code printed underneath, so a printed card is scannable and readable.
+   * The previous version used `btoa`, which throws on any non-Latin1 character.
+   */
+  const downloadQr = () => {
+    setDownloadError(null)
+    const svg = qrWrapperRef.current?.querySelector('svg')
+    if (!svg || !event) {
+      setDownloadError('The QR code is still rendering. Try again in a moment.')
+      return
+    }
+
+    const padding = 48
+    const captionHeight = 56
+    const scale = 3
+    const source = new XMLSerializer().serializeToString(svg)
+    // Encode as UTF-8 before base64 so non-ASCII content cannot break it.
+    const encoded = window.btoa(
+      String.fromCharCode(...new TextEncoder().encode(source))
+    )
+
+    const image = new Image()
+    image.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = (QR_SIZE + padding * 2) * scale
+      canvas.height = (QR_SIZE + padding * 2 + captionHeight) * scale
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        setDownloadError('Your browser could not generate the image.')
         return
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('id, name, public_slug, status, guest_limit, event_date, location')
-          .eq('id', id)
-          .single()
+      ctx.scale(scale, scale)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(image, padding, padding, QR_SIZE, QR_SIZE)
 
-        if (!error && data) {
-          setEvent(data)
-        } else {
-          // Fallback to matching in mock
-          const fallback = mockEvents.find((e) => e.id === id || e.public_slug === id)
-          if (fallback) setEvent(fallback as unknown as EventDetail)
-        }
-      } catch (err) {
-        console.error('Error loading event:', err)
-        const fallback = mockEvents.find((e) => e.id === id || e.public_slug === id)
-        if (fallback) setEvent(fallback as unknown as EventDetail)
-      } finally {
-        setLoading(false)
-      }
+      ctx.fillStyle = '#0B132B'
+      ctx.textAlign = 'center'
+      ctx.font = '600 15px system-ui, sans-serif'
+      ctx.fillText('Scan to add your photos', (QR_SIZE + padding * 2) / 2, QR_SIZE + padding + 26)
+      ctx.font = '500 13px ui-monospace, monospace'
+      ctx.fillStyle = '#475569'
+      ctx.fillText(
+        `Code: ${event.public_slug}`,
+        (QR_SIZE + padding * 2) / 2,
+        QR_SIZE + padding + 46
+      )
+
+      const link = document.createElement('a')
+      link.download = `${slugifyFilename(event.name)}-qr.png`
+      link.href = canvas.toDataURL('image/png')
+      // Appending is required for the click to register in Firefox.
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
     }
-    loadEvent()
-  }, [id])
+    image.onerror = () => {
+      setDownloadError('The QR image could not be generated. Try a different browser.')
+    }
+    image.src = `data:image/svg+xml;base64,${encoded}`
+  }
 
-  if (loading) {
+  if (state.status === 'loading') {
     return (
-      <div className="flex flex-col items-center justify-center p-20 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground font-medium">Loading event details...</p>
-      </div>
+      <LoadingRegion label="Loading event details" className="mx-auto max-w-5xl space-y-6">
+        <Skeleton className="h-9 w-64" />
+        <div className="grid gap-6 lg:grid-cols-12">
+          <Skeleton className="h-[26rem] rounded-2xl lg:col-span-7" />
+          <div className="space-y-6 lg:col-span-5">
+            <Skeleton className="h-48 rounded-2xl" />
+            <Skeleton className="h-40 rounded-2xl" />
+          </div>
+        </div>
+      </LoadingRegion>
     )
   }
 
-  if (!event) {
+  if (state.status === 'not-found') {
     return (
-      <div className="text-center p-12 space-y-4">
-        <p className="text-muted-foreground">Event not found or you don&apos;t have permission.</p>
-        <Button asChild variant="outline">
-          <Link href="/dashboard">Return to Dashboard</Link>
+      <div className="mx-auto max-w-md py-12 text-center">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Event not found</h1>
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+          This event may have been deleted, or it belongs to a different account.
+        </p>
+        <Button asChild className="mt-6">
+          <Link href="/dashboard">
+            <ArrowLeft aria-hidden="true" />
+            Back to my events
+          </Link>
         </Button>
       </div>
     )
   }
 
-  // Ensure absolute URL with fallback
-  const baseOrigin = origin || (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
-  const joinUrl = `${baseOrigin}/join/${event.public_slug}`
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(joinUrl)
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2000)
-  }
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(event.public_slug)
-    setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
-  }
-
-  const downloadQR = () => {
-    const svg = document.getElementById('qr-code')
-    if (svg) {
-      const svgData = new XMLSerializer().serializeToString(svg)
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      const img = new Image()
-      img.onload = () => {
-        canvas.width = img.width + 40
-        canvas.height = img.height + 40
-        if (ctx) {
-          ctx.fillStyle = 'white'
-          ctx.fillRect(0, 0, canvas.width, canvas.height)
-          ctx.drawImage(img, 20, 20)
-        }
-        const pngFile = canvas.toDataURL('image/png')
-        const downloadLink = document.createElement('a')
-        downloadLink.download = `${event.name}-QR.png`
-        downloadLink.href = `${pngFile}`
-        downloadLink.click()
-      }
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
-    }
+  if (state.status === 'error') {
+    return (
+      <div className="mx-auto max-w-md py-12">
+        <Alert
+          tone="error"
+          title="We couldn't load this event"
+          action={
+            <Button size="sm" variant="secondary" onClick={() => setReloadKey((k) => k + 1)}>
+              <RefreshCw aria-hidden="true" />
+              Retry
+            </Button>
+          }
+        >
+          <p>{state.message}</p>
+        </Alert>
+        <Button asChild variant="ghost" className="mt-4">
+          <Link href="/dashboard">
+            <ArrowLeft aria-hidden="true" />
+            Back to my events
+          </Link>
+        </Button>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Navigation & Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild className="h-8 px-2 -ml-2 text-muted-foreground hover:text-foreground">
-              <Link href="/dashboard">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                All Events
-              </Link>
-            </Button>
-          </div>
-          <h1 className="text-3xl font-black tracking-tight">{event.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            Share this QR code or event code with your guests to start streaming photos.
-          </p>
-        </div>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div>
+        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-3">
+          <Link href="/dashboard">
+            <ArrowLeft aria-hidden="true" />
+            All events
+          </Link>
+        </Button>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild className="rounded-xl font-semibold">
-            <Link href={`/dashboard/events/${event.id}/moderation`}>
-              <Images className="mr-2 h-4 w-4 text-amber-500" />
-              Moderate Media
+        <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={event!.status === 'active' ? 'success' : 'neutral'} className="capitalize">
+                {event!.status}
+              </Badge>
+              {event!.plan && <Badge tone="brand">{event!.plan}</Badge>}
+            </div>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+              {event!.name}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-muted">
+              {event!.event_date && (
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="size-4" aria-hidden="true" />
+                  <time dateTime={event!.event_date}>
+                    {formatEventDateLong(event!.event_date)}
+                  </time>
+                </span>
+              )}
+              {event!.location && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="size-4" aria-hidden="true" />
+                  {event!.location}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <Button asChild variant="secondary" className="shrink-0">
+            <Link href={`/dashboard/events/${event!.id}/moderation`}>
+              <Images aria-hidden="true" />
+              Review photos
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-12">
-        {/* Left Column: QR Code Display & Sharing (7 cols) */}
-        <div className="md:col-span-7 space-y-6">
-          <div className="border rounded-3xl p-6 sm:p-8 bg-card flex flex-col items-center text-center space-y-5 shadow-sm">
-            <div className="space-y-1">
-              <h3 className="font-bold text-xl">Guest QR Pass</h3>
-              <p className="text-xs text-muted-foreground max-w-xs">
-                Guests can point any smartphone camera at this code to join and upload photos instantly.
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* ── Share panel ────────────────────────────────────────────── */}
+        <section
+          aria-labelledby="share-heading"
+          className="rounded-2xl border border-border bg-white p-6 shadow-card lg:col-span-7 sm:p-8"
+        >
+          <div className="text-center">
+            <h2 id="share-heading" className="text-lg font-semibold text-ink">
+              Your guest QR code
+            </h2>
+            <p className="mx-auto mt-1.5 max-w-sm text-sm text-ink-muted">
+              Print it for the tables. Guests point any phone camera at it and start
+              taking photos — no app, no sign-in.
+            </p>
+          </div>
+
+          <div
+            ref={qrWrapperRef}
+            className="mx-auto mt-6 w-fit rounded-2xl border border-border bg-white p-5 shadow-sm"
+          >
+            {origin ? (
+              <QRCodeSVG
+                value={joinUrl}
+                size={QR_SIZE}
+                level="H"
+                marginSize={0}
+                title={`QR code linking to the ${event!.name} photo gallery`}
+              />
+            ) : (
+              <Skeleton
+                className="rounded-xl"
+                style={{ width: QR_SIZE, height: QR_SIZE }}
+              />
+            )}
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/50 p-3.5">
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+                Event code for manual entry
               </p>
+              <code className="block truncate font-mono text-base font-semibold text-ink">
+                {event!.public_slug}
+              </code>
             </div>
-
-            {/* High-Resolution SVG QR Code */}
-            <div className="bg-white p-5 rounded-3xl shadow-md border mt-2">
-              {mounted ? (
-                <QRCodeSVG
-                  id="qr-code"
-                  value={joinUrl}
-                  size={220}
-                  level="H"
-                  includeMargin={false}
-                />
+            <Button size="sm" variant="secondary" className="shrink-0" onClick={() => handleCopy('code')}>
+              {copied === 'code' ? (
+                <>
+                  <Check className="text-emerald-600" aria-hidden="true" />
+                  Copied
+                </>
               ) : (
-                <div className="w-[220px] h-[220px] bg-muted animate-pulse rounded-2xl flex items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
+                <>
+                  <Copy aria-hidden="true" />
+                  Copy code
+                </>
               )}
-            </div>
+            </Button>
+          </div>
 
-            {/* Event Code Pill with Copy */}
-            <div className="w-full bg-muted/60 p-3.5 rounded-2xl border flex items-center justify-between">
-              <div className="text-left">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                  Event Code for Manual Entry
-                </span>
-                <code className="text-sm font-mono font-bold text-foreground">
-                  {event.public_slug}
-                </code>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyCode}
-                className="rounded-xl h-8 text-xs font-semibold"
-              >
-                {copiedCode ? (
+          <div className="mt-3 space-y-2.5">
+            <div className="flex gap-2">
+              <Button variant="secondary" block onClick={() => handleCopy('link')}>
+                {copied === 'link' ? (
                   <>
-                    <Check className="h-3.5 w-3.5 mr-1 text-emerald-500" />
-                    Copied
+                    <Check className="text-emerald-600" aria-hidden="true" />
+                    Link copied
                   </>
                 ) : (
                   <>
-                    <Copy className="h-3.5 w-3.5 mr-1" />
-                    Copy Code
+                    <Copy aria-hidden="true" />
+                    Copy share link
                   </>
                 )}
               </Button>
-            </div>
-
-            {/* Link Actions */}
-            <div className="flex flex-col w-full gap-2.5 pt-2">
-              <div className="flex gap-2 w-full">
-                <Button variant="outline" className="flex-1 rounded-xl font-semibold h-11" onClick={copyLink}>
-                  {copiedLink ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4 text-emerald-500" />
-                      Link Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copy Shareable Link
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" size="icon" asChild className="rounded-xl h-11 w-11 shrink-0">
-                  <Link href={`/join/${event.public_slug}`} target="_blank" title="Test guest landing page">
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-
-              <Button className="w-full rounded-xl font-bold h-11 shadow-md shadow-primary/20" onClick={downloadQR}>
-                <Download className="mr-2 h-4 w-4" />
-                Download Printable QR Code (PNG)
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Status, Quick Links & Live Info (5 cols) */}
-        <div className="md:col-span-5 space-y-6">
-          {/* Event Status Card */}
-          <div className="border rounded-3xl p-6 bg-card space-y-4 shadow-sm">
-            <h3 className="font-bold text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Event Status
-            </h3>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground">Status</span>
-                <span
-                  className={`px-2.5 py-0.5 text-xs font-bold rounded-full capitalize ${
-                    event.status === 'active'
-                      ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
+              <Button asChild variant="secondary" size="iconLg" className="shrink-0">
+                <Link
+                  href={`/join/${event!.public_slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {event.status}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground">Guest Limit</span>
-                <span className="font-semibold">{event.guest_limit} guests</span>
-              </div>
-
-              {event.location && (
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-muted-foreground">Venue</span>
-                  <span className="font-semibold text-right">{event.location}</span>
-                </div>
-              )}
+                  <ExternalLink aria-hidden="true" />
+                  <span className="sr-only">
+                    Open the guest join page in a new tab
+                  </span>
+                </Link>
+              </Button>
             </div>
+
+            <Button block onClick={downloadQr} disabled={!origin}>
+              <Download aria-hidden="true" />
+              Download printable QR code
+            </Button>
           </div>
 
-          {/* Guest Shortcut View Card */}
-          <div className="border rounded-3xl p-6 bg-card space-y-4 shadow-sm">
-            <h3 className="font-bold text-base flex items-center gap-2">
-              <Camera className="h-4 w-4 text-primary" />
-              Test Guest Experience
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Preview what your guests see when they scan your QR code or open their camera.
+          <p aria-live="polite" className="sr-only">
+            {copied === 'link' ? 'Share link copied to clipboard.' : ''}
+            {copied === 'code' ? 'Event code copied to clipboard.' : ''}
+          </p>
+
+          {copyError && (
+            <p className="mt-3 text-center text-xs text-destructive">
+              Copying is blocked in this browser. Select the code above and copy it
+              manually.
             </p>
+          )}
+          {downloadError && (
+            <p role="alert" className="mt-3 text-center text-xs text-destructive">
+              {downloadError}
+            </p>
+          )}
+        </section>
 
-            <div className="space-y-2 pt-1">
-              <Button variant="secondary" className="w-full rounded-xl text-xs font-semibold h-10" asChild>
-                <Link href={`/join/${event.public_slug}`} target="_blank">
-                  <Users className="mr-2 h-4 w-4" />
-                  Open Guest Join Screen
+        {/* ── Side panels ────────────────────────────────────────────── */}
+        <div className="space-y-6 lg:col-span-5">
+          <section
+            aria-labelledby="details-heading"
+            className="rounded-2xl border border-border bg-white p-6 shadow-card"
+          >
+            <h2 id="details-heading" className="text-base font-semibold text-ink">
+              Event settings
+            </h2>
+            <dl className="mt-4 divide-y divide-border text-sm">
+              {[
+                {
+                  label: 'Guest limit',
+                  value: event!.guest_limit
+                    ? `${event!.guest_limit >= 10_000 ? 'Unlimited' : event!.guest_limit} guests`
+                    : '—',
+                },
+                {
+                  label: 'Storage',
+                  value: event!.storage_limit_bytes
+                    ? formatBytes(event!.storage_limit_bytes, 0)
+                    : '—',
+                },
+                {
+                  label: 'Photos available until',
+                  value: event!.expires_at
+                    ? formatEventDateLong(event!.expires_at)
+                    : '—',
+                },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between gap-3 py-2.5">
+                  <dt className="text-ink-muted">{row.label}</dt>
+                  <dd className="text-right font-medium text-ink">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <section
+            aria-labelledby="preview-heading"
+            className="rounded-2xl border border-border bg-white p-6 shadow-card"
+          >
+            <h2 id="preview-heading" className="text-base font-semibold text-ink">
+              Check what guests see
+            </h2>
+            <p className="mt-1.5 text-sm text-ink-muted">
+              Worth doing once before the event so you know the flow.
+            </p>
+            <div className="mt-4 space-y-2">
+              <Button asChild variant="secondary" block>
+                <Link
+                  href={`/join/${event!.public_slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Users aria-hidden="true" />
+                  Open the guest join screen
                 </Link>
               </Button>
-
-              <Button variant="outline" className="w-full rounded-xl text-xs font-semibold h-10" asChild>
-                <Link href={`/dashboard/events/${event.id}/moderation`}>
-                  <Images className="mr-2 h-4 w-4" />
-                  Go to Media Moderation
+              <Button asChild variant="ghost" block>
+                <Link href={`/dashboard/events/${event!.id}/moderation`}>
+                  <Images aria-hidden="true" />
+                  Go to photo review
                 </Link>
               </Button>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>
+  )
+}
+
+function slugifyFilename(name: string) {
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48) || 'ekthau-event'
   )
 }

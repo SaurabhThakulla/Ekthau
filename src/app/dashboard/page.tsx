@@ -1,506 +1,577 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import {
+  Calendar,
+  Check,
+  Copy,
+  ImageIcon,
+  Layers,
+  MapPin,
+  Plus,
+  QrCode,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Users,
+  X,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Alert } from '@/components/ui/alert'
+import { Skeleton, LoadingRegion } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import CustomSelect from '@/components/ui/custom-select'
-import JoinEventModal from '@/components/JoinEventModal'
-import {
-  Loader2,
-  Calendar,
-  MapPin,
-  Plus,
-  Search,
-  QrCode,
-  Sparkles,
-  Copy,
-  Check,
-  ExternalLink,
-  Users,
-  Image as ImageIcon,
-  SlidersHorizontal,
-  ArrowUpDown,
-  X,
-  Layers,
-  Activity,
-  ChevronRight,
-  ShieldAlert,
-} from 'lucide-react'
+import { JoinEventModalLazy } from '@/components/join-event-modal-lazy'
 import { useAuth } from '@/features/auth/AuthContext'
 import { MOCK_MODE, mockEvents } from '@/lib/mockData'
+import { copyToClipboard } from '@/lib/clipboard'
+import { describeSupabaseError } from '@/lib/supabase-errors'
+import { getMediaUrl } from '@/lib/media-url'
+import { formatEventDate } from '@/lib/format'
+import { absoluteUrl } from '@/lib/site'
 
 interface EventItem {
   id: string
   name: string
-  event_type?: string
+  event_type?: string | null
   event_date: string
   location?: string | null
   status: string
   public_slug: string
   cover_image_path?: string | null
-  guest_limit?: number
-  storage_limit_bytes?: number
-  created_at?: string
+  guest_limit?: number | null
+  storage_limit_bytes?: number | null
+  created_at?: string | null
 }
 
-export default function OverviewPage() {
+type SortKey = 'newest' | 'oldest' | 'date' | 'name'
+type StatusKey = 'all' | 'active' | 'draft' | 'completed'
+
+const STATUS_TABS: { key: StatusKey; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'active', label: 'Active' },
+  { key: 'draft', label: 'Draft' },
+  { key: 'completed', label: 'Completed' },
+]
+
+export default function DashboardPage() {
   const { user } = useAuth()
   const [events, setEvents] = useState<EventItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft' | 'completed'>('all')
-  const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'date' | 'name'>('newest')
+  const [statusFilter, setStatusFilter] = useState<StatusKey>('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [sortBy, setSortBy] = useState<SortKey>('newest')
   const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [joinModalOpen, setJoinModalOpen] = useState(false)
-  const [origin, setOrigin] = useState('')
+  const [copyFailedId, setCopyFailedId] = useState<string | null>(null)
+  const [joinOpen, setJoinOpen] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin)
+  const loadEvents = useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+    setLoadError(null)
+
+    if (MOCK_MODE) {
+      setEvents(mockEvents as unknown as EventItem[])
+      setLoading(false)
+      return
     }
-  }, [])
 
-  useEffect(() => {
-    async function loadEvents() {
-      if (!user) return
+    const { data, error } = await supabase
+      .from('events')
+      .select(
+        'id, name, event_type, event_date, location, status, public_slug, cover_image_path, guest_limit, storage_limit_bytes, created_at'
+      )
+      .eq('owner_id', user.id)
+      .order('created_at', { ascending: false })
 
-      if (MOCK_MODE) {
-        setEvents(mockEvents as unknown as EventItem[])
-        setLoading(false)
-        return
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('id, name, event_type, event_date, location, status, public_slug, cover_image_path, guest_limit, storage_limit_bytes, created_at')
-          .eq('owner_id', user.id)
-          .order('created_at', { ascending: false })
-
-        if (!error && data) {
-          setEvents(data)
-        }
-      } catch (err) {
-        console.error('Error loading events:', err)
-      } finally {
-        setLoading(false)
-      }
+    /**
+     * The previous version logged the error and left an empty array, which is
+     * indistinguishable from "you have no events yet". A failure now says so and
+     * offers a retry.
+     */
+    if (error) {
+      setLoadError(
+        describeSupabaseError(error, 'We could not load your events. Please try again.')
+      )
+    } else {
+      setEvents(data ?? [])
     }
-    loadEvents()
+    setLoading(false)
   }, [user])
 
-  // Extract distinct event types
+  useEffect(() => {
+    let active = true
+    loadEvents().catch(() => {
+      if (active) {
+        setLoadError('We could not load your events. Check your connection.')
+        setLoading(false)
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [loadEvents, reloadKey])
+
+  // Clear the "Copied" confirmation without leaking a timer on unmount.
+  useEffect(() => {
+    if (!copiedId && !copyFailedId) return
+    const timer = window.setTimeout(() => {
+      setCopiedId(null)
+      setCopyFailedId(null)
+    }, 2200)
+    return () => window.clearTimeout(timer)
+  }, [copiedId, copyFailedId])
+
   const eventTypes = useMemo(() => {
     const types = new Set<string>()
-    events.forEach((e) => {
-      if (e.event_type) types.add(e.event_type)
+    events.forEach((event) => {
+      if (event.event_type) types.add(event.event_type)
     })
-    return Array.from(types)
+    return Array.from(types).sort()
   }, [events])
 
-  // Filter and sort events
   const filteredEvents = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
     return events
-      .filter((ev) => {
-        // Status filter
-        if (statusFilter !== 'all' && ev.status?.toLowerCase() !== statusFilter) {
+      .filter((event) => {
+        if (statusFilter !== 'all' && event.status?.toLowerCase() !== statusFilter) {
           return false
         }
-        // Type filter
-        if (typeFilter !== 'all' && ev.event_type !== typeFilter) {
-          return false
-        }
-        // Search query filter (matches name, location, public slug, event type)
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase().trim()
-          const nameMatch = ev.name?.toLowerCase().includes(q)
-          const locationMatch = ev.location?.toLowerCase().includes(q)
-          const slugMatch = ev.public_slug?.toLowerCase().includes(q)
-          const typeMatch = ev.event_type?.toLowerCase().includes(q)
-          return nameMatch || locationMatch || slugMatch || typeMatch
-        }
-        return true
+        if (typeFilter !== 'all' && event.event_type !== typeFilter) return false
+        if (!query) return true
+
+        return [event.name, event.location, event.public_slug, event.event_type]
+          .filter(Boolean)
+          .some((field) => field!.toLowerCase().includes(query))
       })
       .sort((a, b) => {
-        if (sortBy === 'newest') {
-          return new Date(b.created_at || b.event_date).getTime() - new Date(a.created_at || a.event_date).getTime()
+        switch (sortBy) {
+          case 'oldest':
+            return timestamp(a) - timestamp(b)
+          case 'date':
+            return timestamp(a, true) - timestamp(b, true)
+          case 'name':
+            return a.name.localeCompare(b.name)
+          default:
+            return timestamp(b) - timestamp(a)
         }
-        if (sortBy === 'oldest') {
-          return new Date(a.created_at || a.event_date).getTime() - new Date(b.created_at || b.event_date).getTime()
-        }
-        if (sortBy === 'date') {
-          return new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
-        }
-        if (sortBy === 'name') {
-          return a.name.localeCompare(b.name)
-        }
-        return 0
       })
   }, [events, searchQuery, statusFilter, typeFilter, sortBy])
 
-  // Copy event join link
-  const copyLink = (publicSlug: string, eventId: string) => {
-    const url = `${origin || ''}/join/${publicSlug}`
-    navigator.clipboard.writeText(url)
-    setCopiedId(eventId)
-    setTimeout(() => setCopiedId(null), 2000)
+  const handleCopy = async (event: EventItem) => {
+    // Built from the configured site URL, so it is correct even if the copy
+    // happens before any client-side origin lookup has run.
+    const url =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/join/${event.public_slug}`
+        : absoluteUrl(`/join/${event.public_slug}`)
+
+    const ok = await copyToClipboard(url)
+    if (ok) setCopiedId(event.id)
+    else setCopyFailedId(event.id)
   }
 
-  // Dashboard Metrics
-  const activeCount = useMemo(() => events.filter((e) => e.status === 'active').length, [events])
-  const totalGuests = useMemo(() => events.reduce((acc, e) => acc + (e.guest_limit || 30), 0), [events])
+  const activeCount = events.filter((event) => event.status === 'active').length
+  const guestCapacity = events.reduce(
+    (total, event) => total + (event.guest_limit ?? 0),
+    0
+  )
+  const filtersApplied =
+    !!searchQuery.trim() || statusFilter !== 'all' || typeFilter !== 'all'
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-20 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground font-medium">Loading your events...</p>
-      </div>
-    )
+  const resetFilters = () => {
+    setSearchQuery('')
+    setStatusFilter('all')
+    setTypeFilter('all')
   }
 
   return (
-    <div className="space-y-8">
-      {/* Top Header & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Events Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage your event galleries, track live guest uploads, and download original media.
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+            My events
+          </h1>
+          <p className="mt-1.5 max-w-prose text-sm text-ink-muted">
+            Share a QR code, watch photos arrive, and download the originals when the
+            party is over.
           </p>
         </div>
-
-        <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            onClick={() => setJoinModalOpen(true)}
-            className="rounded-xl h-10 font-semibold border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5"
-          >
-            <QrCode className="h-4 w-4 mr-2 text-primary" />
-            Join Event
+        <div className="flex shrink-0 gap-2">
+          <Button variant="secondary" onClick={() => setJoinOpen(true)}>
+            <QrCode aria-hidden="true" />
+            Join event
           </Button>
-
-          <Button asChild className="rounded-xl h-10 font-semibold shadow-md shadow-primary/20">
+          <Button asChild>
             <Link href="/dashboard/events/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Event
+              <Plus aria-hidden="true" />
+              Create event
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* Metrics Overview Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
-          <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Layers className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Events</p>
-            <h3 className="text-2xl font-bold tracking-tight">{events.length}</h3>
-          </div>
-        </div>
-
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
-          <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Spaces</p>
-            <h3 className="text-2xl font-bold tracking-tight">{activeCount}</h3>
-          </div>
-        </div>
-
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
-          <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guest Quota</p>
-            <h3 className="text-2xl font-bold tracking-tight">{totalGuests}</h3>
-          </div>
-        </div>
-
-        <div className="bg-card border rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
-          <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-            <ImageIcon className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Instant QR</p>
-            <h3 className="text-2xl font-bold tracking-tight">Enabled</h3>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Filters Controls */}
-      <div className="bg-card border rounded-2xl p-4 shadow-sm space-y-4">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by event name, code, venue, or type..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-9 h-11 rounded-xl bg-background border-input focus-visible:ring-primary"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      {/* Summary tiles — hidden while empty so a new host is not shown a wall of zeroes. */}
+      {!loading && events.length > 0 && (
+        <dl className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {[
+            { icon: Layers, label: 'Events', value: events.length, tone: 'bg-brand-50 text-brand-700' },
+            { icon: Sparkles, label: 'Active now', value: activeCount, tone: 'bg-emerald-50 text-emerald-600' },
+            { icon: Users, label: 'Guest capacity', value: guestCapacity || '—', tone: 'bg-amber-50 text-amber-600' },
+            { icon: ImageIcon, label: 'Event types', value: eventTypes.length || 1, tone: 'bg-slate-100 text-slate-600' },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-card"
+            >
+              <span
+                className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${stat.tone}`}
               >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-mono uppercase text-[#A0A5AC] shrink-0">
-              <ArrowUpDown className="h-3.5 w-3.5 text-[#D49B35]" />
-              <span className="hidden sm:inline">Sort:</span>
+                <stat.icon className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <dt className="truncate text-xs font-medium uppercase tracking-wide text-ink-muted">
+                  {stat.label}
+                </dt>
+                <dd className="mt-0.5 text-xl font-bold tracking-tight text-ink">
+                  {stat.value}
+                </dd>
+              </div>
             </div>
-            <CustomSelect
-              value={sortBy}
-              onChange={(val) => setSortBy(val as any)}
-              options={[
-                { value: 'newest', label: 'Newest First' },
-                { value: 'oldest', label: 'Oldest First' },
-                { value: 'date', label: 'Event Date Soonest' },
-                { value: 'name', label: 'Alphabetical (A-Z)' },
-              ]}
-              className="w-44"
-            />
-          </div>
-        </div>
+          ))}
+        </dl>
+      )}
 
-        {/* Status Tabs and Type Filter */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#262A30] text-xs">
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-[#1A1C20] p-1 rounded-xl border border-[#2E333A]">
-            {(['all', 'active', 'draft', 'completed'] as const).map((tab) => (
+      {loadError && (
+        <Alert
+          tone="error"
+          title="We couldn't load your events"
+          action={
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              <RefreshCw aria-hidden="true" />
+              Retry
+            </Button>
+          }
+        >
+          <p>{loadError}</p>
+        </Alert>
+      )}
+
+      {/* Filters only make sense once there is more than one event to filter. */}
+      {!loading && events.length > 1 && (
+        <section
+          aria-label="Filter events"
+          className="space-y-4 rounded-2xl border border-border bg-white p-4 shadow-card"
+        >
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-sm">
+              <Search
+                className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+                aria-hidden="true"
+              />
+              <label htmlFor="event-search" className="sr-only">
+                Search your events
+              </label>
+              <Input
+                id="event-search"
+                type="search"
+                placeholder="Search by name, venue or code"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-muted hover:text-ink"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                  <span className="sr-only">Clear search</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {eventTypes.length > 1 && (
+                <CustomSelect
+                  label="Event type"
+                  hideLabel
+                  value={typeFilter}
+                  onChange={setTypeFilter}
+                  options={[
+                    { value: 'all', label: 'All types' },
+                    ...eventTypes.map((type) => ({ value: type, label: type })),
+                  ]}
+                  className="w-40"
+                />
+              )}
+              <CustomSelect
+                label="Sort events by"
+                hideLabel
+                value={sortBy}
+                onChange={(value) => setSortBy(value as SortKey)}
+                options={[
+                  { value: 'newest', label: 'Newest first' },
+                  { value: 'oldest', label: 'Oldest first' },
+                  { value: 'date', label: 'Event date' },
+                  { value: 'name', label: 'Name (A–Z)' },
+                ]}
+                className="w-44"
+              />
+            </div>
+          </div>
+
+          <div
+            role="tablist"
+            aria-label="Filter by status"
+            className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+          >
+            {STATUS_TABS.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setStatusFilter(tab)}
-                className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider capitalize transition-all ${
-                  statusFilter === tab
-                    ? 'bg-[#C84B28] shadow-xs text-white font-bold'
-                    : 'text-[#A0A5AC] hover:text-[#F7F4EE]'
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === tab.key}
+                onClick={() => setStatusFilter(tab.key)}
+                className={`shrink-0 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
+                  statusFilter === tab.key
+                    ? 'bg-brand-700 text-white shadow-sm'
+                    : 'text-ink-muted hover:bg-muted hover:text-ink'
                 }`}
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </div>
-
-          {/* Type Filter */}
-          {eventTypes.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase text-[#A0A5AC]">Type:</span>
-              <CustomSelect
-                value={typeFilter}
-                onChange={(val) => setTypeFilter(val)}
-                options={[
-                  { value: 'all', label: 'All Types' },
-                  ...eventTypes.map((type) => ({ value: type, label: type })),
-                ]}
-                className="w-40"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Events Grid / List */}
-      {filteredEvents.length === 0 ? (
-        events.length === 0 ? (
-          /* Entirely Empty Dashboard */
-          <div className="border-2 border-dashed rounded-3xl p-12 sm:p-16 text-center flex flex-col items-center justify-center bg-card/50">
-            <div className="h-16 w-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-              <Sparkles className="h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold tracking-tight">Create your first event space</h3>
-            <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-sm">
-              Generate instant QR codes, invite wedding or party guests, and start collecting memories in real time.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Button asChild className="rounded-xl h-11 px-6 font-semibold shadow-md shadow-primary/20">
-                <Link href="/dashboard/events/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Event
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setJoinModalOpen(true)}
-                className="rounded-xl h-11 px-5 font-semibold"
-              >
-                <QrCode className="mr-2 h-4 w-4 text-primary" />
-                Join Existing Event
-              </Button>
-            </div>
-          </div>
-        ) : (
-          /* Search / Filter Zero Results */
-          <div className="border rounded-2xl p-12 text-center bg-card space-y-4">
-            <div className="h-12 w-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
-              <Search className="h-6 w-6" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold">No events match your criteria</h3>
-              <p className="text-sm text-muted-foreground">
-                We couldn&apos;t find any events matching &ldquo;{searchQuery || statusFilter}&rdquo;.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery('')
-                setStatusFilter('all')
-                setTypeFilter('all')
-              }}
-              className="rounded-xl text-xs font-semibold"
-            >
-              Reset Search & Filters
-            </Button>
-          </div>
-        )
-      ) : (
-        /* Event Cards Grid */
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => {
-            const isCopied = copiedId === event.id
-            const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })
-
-            return (
-              <div
-                key={event.id}
-                className="border rounded-3xl overflow-hidden bg-card hover:border-primary/50 transition-all hover:shadow-lg flex flex-col group"
-              >
-                {/* Card Top Banner / Cover */}
-                <div className="relative h-36 bg-gradient-to-br from-zinc-800 to-zinc-950 overflow-hidden">
-                  {event.cover_image_path ? (
-                    <Image
-                      src={event.cover_image_path}
-                      alt={event.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-indigo-500/20 to-purple-600/30 flex items-center justify-center">
-                      <span className="text-5xl font-black text-white/20 select-none uppercase">
-                        {event.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-                  {/* Top Badges */}
-                  <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-                    <span className="px-2.5 py-1 text-[11px] font-bold rounded-full backdrop-blur-md bg-black/50 text-white border border-white/10 uppercase tracking-wider">
-                      {event.event_type || 'Event'}
-                    </span>
-                    <span
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-full capitalize backdrop-blur-md border ${
-                        event.status === 'active'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-                          : 'bg-zinc-800/80 text-zinc-300 border-zinc-600/30'
-                      }`}
-                    >
-                      {event.status}
-                    </span>
-                  </div>
-
-                  {/* Bottom Title on Image */}
-                  <div className="absolute bottom-3 inset-x-3 z-10">
-                    <h3 className="font-bold text-lg text-white line-clamp-1 group-hover:text-primary-foreground transition-colors">
-                      {event.name}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Card Info Details */}
-                <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Calendar className="h-4 w-4 text-primary shrink-0" />
-                      <span>{formattedDate}</span>
-                    </div>
-
-                    {event.location && (
-                      <div className="flex items-center gap-2 font-medium">
-                        <MapPin className="h-4 w-4 text-primary shrink-0" />
-                        <span className="line-clamp-1">{event.location}</span>
-                      </div>
-                    )}
-
-                    {/* Event Code Pill */}
-                    <div className="pt-2 flex items-center justify-between bg-muted/50 p-2 rounded-xl border">
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-                          Event Code
-                        </span>
-                        <code className="text-xs font-mono font-bold text-foreground">
-                          {event.public_slug}
-                        </code>
-                      </div>
-
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyLink(event.public_slug, event.id)}
-                        className="h-7 px-2 text-xs rounded-lg hover:bg-background"
-                        title="Copy event join link"
-                      >
-                        {isCopied ? (
-                          <>
-                            <Check className="h-3.5 w-3.5 mr-1 text-emerald-500" />
-                            <span className="text-[11px] text-emerald-600 font-semibold">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                            <span className="text-[11px]">Copy Link</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Card Bottom Actions */}
-                  <div className="pt-2 border-t grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" asChild className="rounded-xl text-xs font-semibold h-9">
-                      <Link href={`/dashboard/events/${event.id}/moderation`}>
-                        <ImageIcon className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
-                        Moderate
-                      </Link>
-                    </Button>
-
-                    <Button size="sm" asChild className="rounded-xl text-xs font-semibold h-9 shadow-xs">
-                      <Link href={`/dashboard/events/${event.id}`}>
-                        <QrCode className="h-3.5 w-3.5 mr-1.5" />
-                        QR & Details
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        </section>
       )}
 
-      {/* Global Join Modal */}
-      <JoinEventModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
+      {loading ? (
+        <LoadingRegion
+          label="Loading your events"
+          className="grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+        >
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-2xl border border-border bg-white shadow-card"
+            >
+              <Skeleton className="h-36 rounded-none" />
+              <div className="space-y-3 p-5">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-14 w-full rounded-xl" />
+                <Skeleton className="h-9 w-full rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </LoadingRegion>
+      ) : events.length === 0 && !loadError ? (
+        <EmptyState
+          icon={Sparkles}
+          title="Create your first event"
+          description="Set it up in under a minute, print the QR card, and your guests can start adding photos straight away."
+          action={
+            <>
+              <Button asChild size="lg">
+                <Link href="/dashboard/events/new">
+                  <Plus aria-hidden="true" />
+                  Create event
+                </Link>
+              </Button>
+              <Button variant="secondary" size="lg" onClick={() => setJoinOpen(true)}>
+                <QrCode aria-hidden="true" />
+                Join someone else&apos;s event
+              </Button>
+            </>
+          }
+        />
+      ) : filteredEvents.length === 0 ? (
+        <EmptyState
+          variant="plain"
+          icon={Search}
+          title="No events match those filters"
+          description="Try a different search term, or clear the filters to see everything again."
+          action={
+            <Button variant="secondary" onClick={resetFilters}>
+              Clear filters
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          {filtersApplied && (
+            <p aria-live="polite" className="text-sm text-ink-muted">
+              Showing {filteredEvents.length} of {events.length} events.
+            </p>
+          )}
+
+          <ul role="list" className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {filteredEvents.map((event) => {
+              const coverUrl = getMediaUrl(event.cover_image_path)
+              const isCopied = copiedId === event.id
+              const copyFailed = copyFailedId === event.id
+
+              return (
+                <li key={event.id} className="flex">
+                  <article className="group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-card transition-shadow hover:shadow-md">
+                    <div className="relative h-36 overflow-hidden bg-ink-gradient">
+                      {coverUrl ? (
+                        <Image
+                          src={coverUrl}
+                          alt={`Cover photo for ${event.name}`}
+                          fill
+                          sizes="(max-width: 768px) 92vw, (max-width: 1280px) 45vw, 380px"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 flex items-center justify-center font-display text-5xl font-bold text-white/15"
+                        >
+                          {event.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent"
+                      />
+
+                      <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
+                        {event.event_type ? (
+                          <Badge tone="onDark">{event.event_type}</Badge>
+                        ) : (
+                          <span />
+                        )}
+                        <Badge
+                          tone={event.status === 'active' ? 'success' : 'neutral'}
+                          className="capitalize"
+                        >
+                          {event.status}
+                        </Badge>
+                      </div>
+
+                      <h2 className="absolute inset-x-4 bottom-3 line-clamp-2 font-display text-lg font-semibold leading-tight text-white">
+                        <Link
+                          href={`/dashboard/events/${event.id}`}
+                          className="rounded outline-none focus-visible:ring-2 focus-visible:ring-white"
+                        >
+                          {event.name}
+                        </Link>
+                      </h2>
+                    </div>
+
+                    <div className="flex flex-1 flex-col gap-4 p-5">
+                      <dl className="space-y-2 text-sm text-ink-muted">
+                        <div className="flex items-center gap-2">
+                          <dt className="sr-only">Event date</dt>
+                          <Calendar
+                            className="size-4 shrink-0 text-brand-700"
+                            aria-hidden="true"
+                          />
+                          <dd>
+                            <time dateTime={event.event_date}>
+                              {formatEventDate(event.event_date)}
+                            </time>
+                          </dd>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <dt className="sr-only">Venue</dt>
+                            <MapPin
+                              className="size-4 shrink-0 text-brand-700"
+                              aria-hidden="true"
+                            />
+                            <dd className="line-clamp-1">{event.location}</dd>
+                          </div>
+                        )}
+                      </dl>
+
+                      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/50 p-3">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+                            Event code
+                          </p>
+                          <code className="block truncate font-mono text-sm font-semibold text-ink">
+                            {event.public_slug}
+                          </code>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="shrink-0"
+                          onClick={() => handleCopy(event)}
+                        >
+                          {isCopied ? (
+                            <>
+                              <Check className="text-emerald-600" aria-hidden="true" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy aria-hidden="true" />
+                              Copy link
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
+                      <p aria-live="polite" className="sr-only">
+                        {isCopied ? 'Join link copied to clipboard' : ''}
+                      </p>
+                      {copyFailed && (
+                        <p className="text-xs text-destructive">
+                          Copying is blocked in this browser. Open the event to see the
+                          full link.
+                        </p>
+                      )}
+
+                      <div className="mt-auto grid grid-cols-2 gap-2">
+                        <Button asChild variant="secondary" size="sm">
+                          <Link href={`/dashboard/events/${event.id}/moderation`}>
+                            <ImageIcon aria-hidden="true" />
+                            Photos
+                          </Link>
+                        </Button>
+                        <Button asChild size="sm">
+                          <Link href={`/dashboard/events/${event.id}`}>
+                            <QrCode aria-hidden="true" />
+                            QR &amp; share
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      )}
+
+      <JoinEventModalLazy open={joinOpen} onClose={() => setJoinOpen(false)} />
     </div>
   )
+}
+
+function timestamp(event: EventItem, preferEventDate = false) {
+  const value = preferEventDate
+    ? event.event_date
+    : event.created_at || event.event_date
+  const time = value ? new Date(value).getTime() : Number.NaN
+  return Number.isNaN(time) ? 0 : time
 }

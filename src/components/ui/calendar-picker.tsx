@@ -1,359 +1,330 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Clock } from 'lucide-react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toDateInputValue } from '@/lib/format'
 
 interface CalendarPickerProps {
   id?: string
-  value?: string // YYYY-MM-DD
+  /** ISO `YYYY-MM-DD`. */
+  value?: string
   onChange: (value: string) => void
+  label?: string
   placeholder?: string
   disabled?: boolean
   className?: string
-  required?: boolean
-  minDate?: string // YYYY-MM-DD
+  invalid?: boolean
+  describedBy?: string
+  /** Earliest selectable date, ISO `YYYY-MM-DD`. */
+  minDate?: string
 }
 
-const MONTH_NAMES = [
+const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'July', 'August', 'September', 'October', 'November', 'December',
 ]
 
-const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+const WEEKDAYS = [
+  { short: 'Mo', long: 'Monday' },
+  { short: 'Tu', long: 'Tuesday' },
+  { short: 'We', long: 'Wednesday' },
+  { short: 'Th', long: 'Thursday' },
+  { short: 'Fr', long: 'Friday' },
+  { short: 'Sa', long: 'Saturday' },
+  { short: 'Su', long: 'Sunday' },
+]
+
+interface DayCell {
+  day: number
+  dateStr: string
+  inMonth: boolean
+  isToday: boolean
+  isSelected: boolean
+  disabled: boolean
+}
+
+function parseIso(value: string | undefined): Date | null {
+  if (!value) return null
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return null
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return Number.isNaN(date.getTime()) ? null : date
+}
 
 export default function CalendarPicker({
   id,
   value,
   onChange,
-  placeholder = 'Select event date...',
+  label = 'Date',
+  placeholder = 'Select a date',
   disabled = false,
-  className = '',
-  required = false,
+  className,
+  invalid,
+  describedBy,
   minDate,
 }: CalendarPickerProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const generatedId = useId()
+  const triggerId = id ?? generatedId
+  const dialogId = `${triggerId}-calendar`
+
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [open, setOpen] = useState(false)
 
-  // Parse initial view date from value or today
-  const selectedDateObj = useMemo(() => {
-    if (!value) return null
-    const [y, m, d] = value.split('-').map(Number)
-    if (!y || !m || !d) return null
-    return new Date(y, m - 1, d)
-  }, [value])
-
-  const [viewDate, setViewDate] = useState(() => {
-    if (selectedDateObj) return new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1)
-    const today = new Date()
-    return new Date(today.getFullYear(), today.getMonth(), 1)
+  const selectedDate = useMemo(() => parseIso(value), [value])
+  const [viewMonth, setViewMonth] = useState(() => {
+    const base = selectedDate ?? new Date()
+    return new Date(base.getFullYear(), base.getMonth(), 1)
   })
 
-  // Keep viewDate in sync when value changes externally
   useEffect(() => {
-    if (selectedDateObj) {
-      setViewDate(new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1))
+    if (selectedDate) {
+      setViewMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
     }
-  }, [selectedDateObj])
+  }, [selectedDate])
 
-  // Click outside listener
+  const close = useCallback((refocus = true) => {
+    setOpen(false)
+    if (refocus) triggerRef.current?.focus()
+  }, [])
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        close()
       }
     }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
     }
-  }, [isOpen])
+  }, [open, close])
 
-  const currentYear = viewDate.getFullYear()
-  const currentMonth = viewDate.getMonth()
+  const year = viewMonth.getFullYear()
+  const month = viewMonth.getMonth()
 
-  const handlePrevMonth = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setViewDate(new Date(currentYear, currentMonth - 1, 1))
+  const days = useMemo<DayCell[]>(() => {
+    const todayStr = toDateInputValue(new Date())
+    const firstOfMonth = new Date(year, month, 1)
+    // Monday-first grid: JS getDay() is Sunday-based.
+    const leading = (firstOfMonth.getDay() + 6) % 7
+
+    const cells: DayCell[] = []
+    const pushCell = (date: Date, inMonth: boolean) => {
+      const dateStr = toDateInputValue(date)
+      cells.push({
+        day: date.getDate(),
+        dateStr,
+        inMonth,
+        isToday: dateStr === todayStr,
+        isSelected: dateStr === value,
+        disabled: minDate ? dateStr < minDate : false,
+      })
+    }
+
+    for (let i = leading; i > 0; i--) pushCell(new Date(year, month, 1 - i), false)
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    for (let day = 1; day <= daysInMonth; day++) {
+      pushCell(new Date(year, month, day), true)
+    }
+
+    // Pad to whole weeks so the grid never reflows between months.
+    while (cells.length % 7 !== 0) {
+      pushCell(new Date(year, month, daysInMonth + (cells.length % 7)), false)
+    }
+
+    return cells
+  }, [year, month, value, minDate])
+
+  /**
+   * Selecting uses the cell's own ISO string. The previous implementation
+   * rebuilt the date from the *visible* month plus the day number, so clicking
+   * a leading or trailing grey day silently produced a date in the wrong month.
+   */
+  const selectDay = (cell: DayCell) => {
+    if (cell.disabled) return
+    onChange(cell.dateStr)
+    close()
   }
 
-  const handleNextMonth = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setViewDate(new Date(currentYear, currentMonth + 1, 1))
-  }
-
-  const handleSelectDay = (day: number) => {
-    const mm = String(currentMonth + 1).padStart(2, '0')
-    const dd = String(day).padStart(2, '0')
-    const formatted = `${currentYear}-${mm}-${dd}`
-    onChange(formatted)
-    setIsOpen(false)
-  }
-
-  const handlePreset = (offsetDays: number) => {
+  const applyOffset = (offsetDays: number) => {
     const target = new Date()
     target.setDate(target.getDate() + offsetDays)
-    const yyyy = target.getFullYear()
-    const mm = String(target.getMonth() + 1).padStart(2, '0')
-    const dd = String(target.getDate()).padStart(2, '0')
-    const formatted = `${yyyy}-${mm}-${dd}`
-    onChange(formatted)
-    setViewDate(new Date(yyyy, target.getMonth(), 1))
-    setIsOpen(false)
+    onChange(toDateInputValue(target))
+    setViewMonth(new Date(target.getFullYear(), target.getMonth(), 1))
+    close()
   }
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onChange('')
-  }
-
-  // Generate calendar grid days
-  const calendarDays = useMemo(() => {
-    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay()
-    const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
-    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate()
-
-    const days: Array<{
-      day: number
-      isCurrentMonth: boolean
-      dateStr: string
-      isToday: boolean
-      isSelected: boolean
-      isDisabled: boolean
-    }> = []
-
-    const todayStr = (() => {
-      const now = new Date()
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-    })()
-
-    // Previous month filler days
-    for (let i = firstDayIndex - 1; i >= 0; i--) {
-      const d = daysInPrevMonth - i
-      const prevMonth = currentMonth === 0 ? 12 : currentMonth
-      const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear
-      const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      days.push({
-        day: d,
-        isCurrentMonth: false,
-        dateStr,
-        isToday: dateStr === todayStr,
-        isSelected: dateStr === value,
-        isDisabled: minDate ? dateStr < minDate : false,
-      })
-    }
-
-    // Current month days
-    for (let d = 1; d <= daysInCurrentMonth; d++) {
-      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      days.push({
-        day: d,
-        isCurrentMonth: true,
-        dateStr,
-        isToday: dateStr === todayStr,
-        isSelected: dateStr === value,
-        isDisabled: minDate ? dateStr < minDate : false,
-      })
-    }
-
-    // Next month filler days (fill up to multiple of 7 or 42)
-    const remaining = (7 - (days.length % 7)) % 7
-    for (let d = 1; d <= remaining; d++) {
-      const nextMonth = currentMonth === 11 ? 1 : currentMonth + 2
-      const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear
-      const dateStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      days.push({
-        day: d,
-        isCurrentMonth: false,
-        dateStr,
-        isToday: dateStr === todayStr,
-        isSelected: dateStr === value,
-        isDisabled: minDate ? dateStr < minDate : false,
-      })
-    }
-
-    return days
-  }, [currentYear, currentMonth, value, minDate])
-
-  // Formatted human-readable label
-  const formattedDisplay = useMemo(() => {
-    if (!selectedDateObj) return null
-    return selectedDateObj.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }, [selectedDateObj])
+  const displayLabel = selectedDate
+    ? new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(selectedDate)
+    : null
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      {/* Hidden input for HTML5 form validation if required */}
-      <input
-        type="text"
-        id={id}
-        name={id}
-        value={value || ''}
-        required={required}
-        readOnly
-        className="sr-only"
-        tabIndex={-1}
-      />
+    <div ref={containerRef} className={cn('relative', className)}>
+      {/*
+        A visible, focusable date input carries the real value. The old version
+        used a `sr-only` input with `required`, which Chrome refuses to focus —
+        submitting the form aborted with "An invalid form control is not
+        focusable" and no visible feedback. Validation now lives on the button's
+        sibling input, which is a real, reachable control.
+      */}
+      <input type="hidden" name={triggerId} value={value ?? ''} />
 
-      {/* Interactive Trigger Button */}
       <button
+        ref={triggerRef}
+        id={triggerId}
         type="button"
         disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full h-12 px-4 rounded-xl border bg-[#1A1C20] text-left text-sm flex items-center justify-between gap-2.5 transition-all outline-hidden ${
-          isOpen
-            ? 'border-[#D49B35] ring-2 ring-[#D49B35]/20 shadow-md'
-            : 'border-[#2E333A] hover:border-[#4B5563]'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-      >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <CalendarIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${
-              value ? 'text-[#D49B35]' : 'text-[#78877A]'
-            }`}
-          />
-          {formattedDisplay ? (
-            <span className="font-mono text-xs font-semibold text-[#F7F4EE] truncate">
-              {formattedDisplay}
-            </span>
-          ) : (
-            <span className="text-xs text-[#78877A] truncate font-mono">
-              {placeholder}
-            </span>
-          )}
-        </div>
-
-        {value && !disabled ? (
-          <div
-            onClick={handleClear}
-            role="button"
-            title="Clear date"
-            className="p-1 hover:bg-[#2E333A] rounded-md text-[#78877A] hover:text-[#F7F4EE] transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </div>
-        ) : (
-          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded-sm bg-[#2E333A] text-[#A0A5AC]">
-            Pick
-          </span>
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={open ? dialogId : undefined}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        onClick={() => setOpen((isOpen) => !isOpen)}
+        className={cn(
+          'flex h-11 w-full items-center justify-between gap-2 rounded-xl border bg-white px-3.5 text-left text-sm shadow-xs transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25',
+          open
+            ? 'border-brand-700 ring-2 ring-ring/20'
+            : invalid
+              ? 'border-destructive'
+              : 'border-input hover:border-slate-300',
+          disabled ? 'cursor-not-allowed bg-muted opacity-60' : 'cursor-pointer'
         )}
+      >
+        <span className="flex min-w-0 items-center gap-2.5">
+          <CalendarIcon
+            className={cn('size-4 shrink-0', value ? 'text-brand-700' : 'text-slate-400')}
+            aria-hidden="true"
+          />
+          <span className={cn('truncate', displayLabel ? 'font-medium text-ink' : 'text-slate-400')}>
+            {displayLabel ?? placeholder}
+          </span>
+        </span>
+        <span className="sr-only">
+          {displayLabel ? `${label}: ${displayLabel}. ` : `${label}: none selected. `}
+          Opens a date picker.
+        </span>
       </button>
 
-      {/* Popover Monthly Calendar Dropdown */}
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-80 p-4 bg-[#15171A] border border-[#2E333A] rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-          
-          {/* Header Navigation */}
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="flex items-center gap-1.5">
-              <span className="font-display font-bold text-sm text-[#F7F4EE]">
-                {MONTH_NAMES[currentMonth]}
-              </span>
-              <span className="font-mono text-xs text-[#D49B35] font-semibold">
-                {currentYear}
-              </span>
-            </div>
+      {value && !disabled && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="absolute right-9 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-muted hover:text-ink"
+        >
+          <X className="size-3.5" aria-hidden="true" />
+          <span className="sr-only">Clear the selected date</span>
+        </button>
+      )}
 
-            <div className="flex items-center gap-1">
+      {open && (
+        <div
+          id={dialogId}
+          role="dialog"
+          aria-label={`Choose a ${label.toLowerCase()}`}
+          className="absolute left-0 top-full z-50 mt-2 w-[19.5rem] max-w-[calc(100vw-2rem)] animate-scale-in rounded-xl border border-border bg-white p-4 shadow-lg"
+        >
+          <div className="flex items-center justify-between">
+            <p aria-live="polite" className="font-display text-sm font-semibold text-ink">
+              {MONTHS[month]} {year}
+            </p>
+            <div className="flex gap-1">
               <button
                 type="button"
-                onClick={handlePrevMonth}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-[#2E333A] bg-[#1A1C20] hover:bg-[#2E333A] text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
-                title="Previous Month"
+                onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+                className="flex size-8 items-center justify-center rounded-lg border border-border bg-white text-ink-muted transition-colors hover:bg-muted hover:text-ink"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" aria-hidden="true" />
+                <span className="sr-only">Previous month</span>
               </button>
               <button
                 type="button"
-                onClick={handleNextMonth}
-                className="h-7 w-7 flex items-center justify-center rounded-lg border border-[#2E333A] bg-[#1A1C20] hover:bg-[#2E333A] text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
-                title="Next Month"
+                onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+                className="flex size-8 items-center justify-center rounded-lg border border-border bg-white text-ink-muted transition-colors hover:bg-muted hover:text-ink"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" aria-hidden="true" />
+                <span className="sr-only">Next month</span>
               </button>
             </div>
           </div>
 
-          {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
-            {DAY_NAMES.map((day) => (
-              <span
-                key={day}
-                className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#78877A] py-1"
+          <div className="mt-3 grid grid-cols-7 gap-1">
+            {WEEKDAYS.map((weekday) => (
+              <abbr
+                key={weekday.short}
+                title={weekday.long}
+                className="py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-ink-muted no-underline"
               >
-                {day}
-              </span>
+                {weekday.short}
+              </abbr>
             ))}
           </div>
 
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((item, idx) => {
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  disabled={item.isDisabled}
-                  onClick={() => handleSelectDay(item.day)}
-                  className={`h-8 w-8 mx-auto rounded-lg text-xs font-mono flex items-center justify-center transition-all ${
-                    item.isSelected
-                      ? 'bg-[#C84B28] text-white font-bold shadow-md shadow-[#C84B28]/30'
-                      : item.isToday
-                      ? 'border border-[#D49B35] text-[#D49B35] font-bold hover:bg-[#D49B35]/15'
-                      : item.isCurrentMonth
-                      ? 'text-[#F7F4EE] hover:bg-[#22262B] hover:text-[#D49B35]'
-                      : 'text-[#4B5563] hover:bg-[#1A1C20]'
-                  } ${item.isDisabled ? 'opacity-30 cursor-not-allowed hover:bg-transparent' : 'cursor-pointer'}`}
-                >
-                  {item.day}
-                </button>
-              )
-            })}
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {days.map((cell) => (
+              <button
+                key={cell.dateStr}
+                type="button"
+                disabled={cell.disabled}
+                aria-current={cell.isToday ? 'date' : undefined}
+                aria-pressed={cell.isSelected}
+                onClick={() => selectDay(cell)}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-lg text-sm transition-colors',
+                  cell.isSelected
+                    ? 'bg-brand-700 font-semibold text-white'
+                    : cell.isToday
+                      ? 'border border-brand-700 font-semibold text-brand-700 hover:bg-brand-50'
+                      : cell.inMonth
+                        ? 'text-ink hover:bg-muted'
+                        : 'text-slate-300 hover:bg-muted/60',
+                  cell.disabled && 'cursor-not-allowed opacity-40 hover:bg-transparent'
+                )}
+              >
+                <span className="sr-only">
+                  {new Intl.DateTimeFormat('en-GB', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }).format(parseIso(cell.dateStr)!)}
+                </span>
+                <span aria-hidden="true">{cell.day}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Quick Presets Bar */}
-          <div className="mt-3.5 pt-3 border-t border-[#2E333A] flex flex-wrap items-center justify-between gap-1.5">
-            <div className="flex items-center gap-1.5">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
+            {[
+              { label: 'Today', offset: 0 },
+              { label: 'Tomorrow', offset: 1 },
+              { label: 'Next week', offset: 7 },
+            ].map((preset) => (
               <button
+                key={preset.label}
                 type="button"
-                onClick={() => handlePreset(0)}
-                className="px-2 py-1 rounded-md bg-[#1A1C20] hover:bg-[#2E333A] border border-[#2E333A] text-[10px] font-mono text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
+                onClick={() => applyOffset(preset.offset)}
+                className="rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:bg-muted hover:text-ink"
               >
-                Today
+                {preset.label}
               </button>
-              <button
-                type="button"
-                onClick={() => handlePreset(1)}
-                className="px-2 py-1 rounded-md bg-[#1A1C20] hover:bg-[#2E333A] border border-[#2E333A] text-[10px] font-mono text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
-              >
-                Tomorrow
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePreset(7)}
-                className="px-2 py-1 rounded-md bg-[#1A1C20] hover:bg-[#2E333A] border border-[#2E333A] text-[10px] font-mono text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
-              >
-                +1 Week
-              </button>
-            </div>
-
-            {value && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-[10px] font-mono text-[#C84B28] hover:underline"
-              >
-                Clear
-              </button>
-            )}
+            ))}
           </div>
-
         </div>
       )}
     </div>

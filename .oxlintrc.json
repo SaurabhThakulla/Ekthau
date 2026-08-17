@@ -3,6 +3,19 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "eslint/no-unused-vars": "warn"
+  },
+  "ignorePatterns": ["next-env.d.ts", ".next/**", "node_modules/**"],
+  "overrides": [
+    {
+      "files": ["src/app/**"],
+      "rules": {
+        // The App Router requires `metadata`, `viewport`, `generateMetadata` and
+        // route handlers to be exported from the same file as the component, so
+        // this rule can only ever produce false positives here.
+        "react/only-export-components": "off"
+      }
+    }
+  ]
 }

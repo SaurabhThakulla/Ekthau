@@ -7,7 +7,6 @@ import {
   saveQueueItemToStorage,
   getAllStoredQueueItems,
   removeQueueItemFromStorage,
-  SerializedQueueItem,
 } from './uploadStorage'
 import { executeSingleUpload } from './singleUpload'
 import { executeMultipartUpload } from './multipartUpload'
@@ -270,8 +269,8 @@ class UploadQueueManager {
         derivatives = await generateDerivatives(item.file)
       }
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
       const edgeFunctionUrl = `${supabaseUrl}/functions/v1/upload-url`
 
       let uploadResult: { mediaId: string; storagePath: string; thumbnailPath?: string; previewPath?: string }

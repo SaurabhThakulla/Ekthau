@@ -1,79 +1,119 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { MOCK_MODE, mockSession } from '@/lib/mockData'
 
-interface AuthContextType {
+interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
+  /** Set when the initial session lookup failed (offline, bad keys, outage). */
+  error: string | null
   signOut: () => Promise<void>
   forceMockLogin?: () => void
 }
 
-const AuthContext = createContext<AuthContextType>({
+const AuthContext = createContext<AuthContextValue>({
   session: null,
   user: null,
   loading: true,
+  error: null,
   signOut: async () => {},
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let active = true
+
     if (MOCK_MODE) {
       setSession(mockSession as unknown as Session)
-      setUser(mockSession.user as unknown as User)
       setLoading(false)
       return
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    /**
+     * The previous version had no rejection handler, so an unreachable Supabase
+     * left `loading` true forever and the dashboard spun indefinitely. Failures
+     * now resolve to a signed-out state with a message the UI can surface.
+     */
+    supabase.auth
+      .getSession()
+      .then(({ data, error: sessionError }) => {
+        if (!active) return
+        if (sessionError) setError(sessionError.message)
+        setSession(data.session)
+      })
+      .catch((err: unknown) => {
+        if (!active) return
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Could not verify your session. Check your connection and try again.'
+        )
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!active) return
+      setSession(nextSession)
+      setError(null)
+      setLoading(false)
     })
 
-    return () => subscription?.unsubscribe()
+    return () => {
+      active = false
+      subscription?.unsubscribe()
+    }
   }, [])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     if (MOCK_MODE) {
       setSession(null)
-      setUser(null)
       return
     }
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Local state is cleared regardless so the user is not stuck signed in.
+    }
     setSession(null)
-    setUser(null)
-  }
+  }, [])
 
-  const forceMockLogin = () => {
+  const forceMockLogin = useCallback(() => {
     setSession(mockSession as unknown as Session)
-    setUser(mockSession.user as unknown as User)
-  }
+    setLoading(false)
+  }, [])
 
-  return (
-    <AuthContext.Provider
-      value={{ session, user, loading, signOut, forceMockLogin }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      loading,
+      error,
+      signOut,
+      forceMockLogin: MOCK_MODE ? forceMockLogin : undefined,
+    }),
+    [session, loading, error, signOut, forceMockLogin]
   )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
-  return useContext(AuthContext)
-}
+export const useAuth = () => useContext(AuthContext)

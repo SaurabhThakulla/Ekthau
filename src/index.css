@@ -4,26 +4,45 @@
 
 @layer base {
   :root {
-    --background: 225 10% 8%;
-    --foreground: 45 25% 95%;
-    --card: 225 11% 12%;
-    --card-foreground: 45 25% 95%;
-    --popover: 225 11% 12%;
-    --popover-foreground: 45 25% 95%;
-    --primary: 13 67% 47%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* #1E3A8A — the brand action colour */
+    --primary: 224 64% 33%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 225 9% 16%;
-    --secondary-foreground: 45 25% 95%;
-    --muted: 225 9% 18%;
-    --muted-foreground: 220 9% 65%;
-    --accent: 39 65% 52%;
-    --accent-foreground: 225 10% 8%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 225 9% 20%;
-    --input: 225 9% 20%;
-    --ring: 13 67% 47%;
-    --radius: 0.5rem;
+
+    --secondary: 214 32% 95%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 97%;
+    --muted-foreground: 215 20% 40%;
+
+    --accent: 214 100% 97%;
+    --accent-foreground: 224 64% 33%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 74% 27%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 81% 38%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 25% 90%;
+    --input: 214 25% 88%;
+    --ring: 224 64% 33%;
+
+    --radius: 0.75rem;
+
+    /* Height of the sticky site header, used for scroll-margin offsets. */
+    --header-h: 4rem;
   }
 }
 
@@ -31,112 +50,155 @@
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
   body {
-    background-color: #121316;
-    color: #F7F4EE;
-    font-family: var(--font-sans), sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    /* Guards against any single element forcing a horizontal scrollbar. */
+    overflow-x: hidden;
   }
 
-  /* Clean up default HTML date picker indicators */
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8) sepia(50%) saturate(500%) hue-rotate(350deg);
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+  /* Anchor targets clear the sticky header instead of hiding beneath it. */
+  [id] {
+    scroll-margin-top: calc(var(--header-h) + 1rem);
   }
-  input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+
+  /*
+   * One consistent, always-visible focus treatment. Keyboard users get a ring
+   * on every interactive element; pointer users never see it.
+   */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Headings default to the display face so pages stay typographically consistent. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Media should never blow out its container on small screens. */
+  img,
+  video,
+  svg,
+  canvas {
+    max-width: 100%;
   }
 }
 
-/* Custom Scrollbar for Popovers */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #15171A;
-}
-::-webkit-scrollbar-thumb {
-  background: #2E333A;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #4B5563;
+@layer components {
+  /* Shared section rhythm so every page block lines up on the same scale. */
+  .section-y {
+    @apply py-14 md:py-20 lg:py-24;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.12em] text-brand-700;
+  }
+
+  .card-surface {
+    @apply rounded-2xl border border-border bg-card shadow-card;
+  }
 }
 
-/* Bespoke Studio Utilities */
 @layer utilities {
-  /* 35mm Sprocket Perforations */
+  .bg-ink-gradient {
+    background-image: linear-gradient(135deg, #0b132b 0%, #16264f 55%, #1e3a8a 100%);
+  }
+
+  .bg-brand-sheen {
+    background-image: linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #eff4ff 100%);
+  }
+
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-brand-950 via-brand-700 to-brand-600 bg-clip-text text-transparent;
+  }
+
+  /* 35mm sprocket perforation motif, part of the original brand language. */
   .film-sprockets {
-    background-image: radial-gradient(circle, #121316 35%, transparent 36%);
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 35%, transparent 36%);
     background-size: 16px 16px;
     background-repeat: repeat-x;
   }
 
-  .film-sprockets-light {
-    background-image: radial-gradient(circle, #22262B 35%, transparent 36%);
-    background-size: 14px 14px;
-    background-repeat: repeat-x;
+  .skeleton {
+    @apply relative overflow-hidden bg-muted;
   }
 
-  /* Brass Hairline */
-  .border-brass {
-    border-color: rgba(212, 155, 53, 0.35);
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.65),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
   }
 
-  .border-brass-subtle {
-    border-color: rgba(212, 155, 53, 0.18);
+  /* Respects iOS safe areas on the full-bleed camera screen. */
+  .pb-safe {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   }
 
-  /* Terracotta Shutter Border */
-  .border-terracotta {
-    border-color: rgba(200, 75, 40, 0.35);
-  }
-
-  /* Paper Grain Overlay */
-  .paper-grain {
-    background-color: #F7F4EE;
-    background-image: radial-gradient(rgba(18, 19, 22, 0.05) 1px, transparent 0);
-    background-size: 12px 12px;
-  }
-
-  /* Darkroom Negative Slate Box */
-  .film-negative-card {
-    background-color: #1A1C20;
-    border: 1px solid #2E333A;
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
   }
 }
 
-/* Single Deliberate Motion: Aperture Film Sequence on Entry */
-@keyframes apertureUnfurl {
-  0% {
-    opacity: 0;
-    transform: translateY(18px) scale(0.98);
-    filter: blur(4px);
-  }
+@keyframes shimmer {
   100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateX(100%);
   }
 }
 
-@keyframes filmSpoolRoll {
-  0% {
-    transform: translateX(-40px);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border: 3px solid #ffffff;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-.animate-aperture-unfurl {
-  animation: apertureUnfurl 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+/*
+ * Users who ask their OS for reduced motion get no transitions, no reveals and
+ * no smooth scrolling — only opacity is left intact so nothing disappears.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 
-.animate-film-spool {
-  animation: filmSpoolRoll 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

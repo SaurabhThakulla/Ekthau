@@ -2,7 +2,7 @@
 // Breaks large files (>= 10MB) into 6MB parts and uploads them with individual chunk retry.
 
 import { UPLOAD_CONFIG, getBackoffDelay } from './uploadConfig'
-import { SerializedPart, saveQueueItemToStorage } from './uploadStorage'
+import type { SerializedPart } from './uploadStorage'
 
 interface MultipartUploadParams {
   file: File

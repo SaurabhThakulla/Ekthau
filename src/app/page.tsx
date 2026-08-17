@@ -1,772 +1,511 @@
-'use client'
-
-import { useState } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import JoinEventModal from '@/components/JoinEventModal'
 import {
-  Camera,
-  QrCode,
   ArrowRight,
-  Tv,
+  Camera,
+  Check,
+  Download,
+  ImageOff,
+  MonitorPlay,
+  QrCode,
+  ShieldCheck,
   Sparkles,
   WifiOff,
-  Check,
-  Maximize2,
-  HardDrive,
-  Clock,
-  Users,
 } from 'lucide-react'
-import { useAuth } from '@/features/auth/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Container } from '@/components/layout/container'
+import { SiteHeader } from '@/components/layout/site-header'
+import { SiteFooter } from '@/components/layout/site-footer'
+import { JoinCodeForm } from '@/components/landing/join-code-form'
+import { PricingSection } from '@/components/landing/pricing-section'
+import { FaqSection } from '@/components/landing/faq-section'
+import { FAQS } from '@/lib/faqs'
+import { PLANS } from '@/lib/plans'
+import { absoluteUrl, site, siteUrl } from '@/lib/site'
 
-export default function LandingPage() {
-  const { session } = useAuth()
-  const [joinModalOpen, setJoinModalOpen] = useState(false)
-  const [openFaq, setOpenFaq] = useState<number | null>(0)
-  const [directCode, setDirectCode] = useState('')
+const pageTitle = 'Event Photo Sharing by QR Code — No App for Guests'
 
-  const handleDirectCodeSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!directCode.trim()) return
-    const clean = directCode.trim().replace(/^.*\/join\//, '').replace(/\?.*/, '')
-    window.location.href = `/join/${clean}`
-  }
+export const metadata: Metadata = {
+  // Set explicitly (not via the template) so the home page keeps a tight,
+  // keyword-led title instead of "… | Ekthau" appended to the brand name.
+  title: `${site.name} — ${pageTitle}`,
+  description: site.description,
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: `${site.name} — ${pageTitle}`,
+    description: site.description,
+    url: siteUrl,
+    type: 'website',
+  },
+  twitter: {
+    title: `${site.name} — ${pageTitle}`,
+    description: site.shortDescription,
+  },
+}
 
-  const pricingLedger = [
-    {
-      id: 'free',
-      tier: 'Starter',
-      capacity: '30 Guests',
-      storage: '1 GB',
-      retention: '2 Days Backup',
-      price: 'Free',
-      period: 'forever',
-      description: 'For intimate dinners and birthday brunches.',
-      highlights: [
-        'In-browser camera (zero downloads)',
-        'Printable table QR pass',
-        'Live mobile event feed',
-        '1-click ZIP download',
-      ],
-      href: '/signup',
-      cta: 'Start Free',
-      isPopular: false,
-    },
-    {
-      id: '5gb',
-      tier: 'Mini Event',
-      capacity: '100 Guests',
-      storage: '5 GB',
-      retention: '1 Month',
-      price: 'Rs. 99',
-      period: 'event',
-      description: 'For engagements and anniversary parties.',
-      highlights: [
-        'Original HD quality preservation',
-        'Short video clips (30s)',
-        'Host moderation panel',
-        'Custom venue details',
-      ],
-      href: '/signup?plan=5gb',
-      cta: 'Select 5GB',
-      isPopular: false,
-    },
-    {
-      id: '10gb',
-      tier: 'Celebration',
-      capacity: '250 Guests',
-      storage: '10 GB',
-      retention: '1 Month',
-      price: 'Rs. 499',
-      period: 'event',
-      description: 'For milestone birthdays and family reunions.',
-      highlights: [
-        '60s video clip uploads',
-        'Live TV & Projector slideshow',
-        'Priority mobile upload queue',
-        'Host welcome banner',
-      ],
-      href: '/signup?plan=10gb',
-      cta: 'Select 10GB',
-      isPopular: false,
-    },
-    {
-      id: '30gb',
-      tier: 'Grand Celebration',
-      capacity: '600 Guests',
-      storage: '30 GB',
-      retention: '1 Month',
-      price: 'Rs. 999',
-      period: 'event',
-      description: 'The favorite for Nepali weddings & receptions.',
-      highlights: [
-        'Original 4K photos & videos',
-        'Custom monogram QR stands',
-        'Interactive live projector wall',
-        'Top contributor leaderboard',
-      ],
-      href: '/signup?plan=30gb',
-      cta: 'Select 30GB',
-      isPopular: true,
-    },
-    {
-      id: '100gb',
-      tier: 'Mega Festival',
-      capacity: '2,000 Guests',
-      storage: '100 GB',
-      retention: '90 Days',
-      price: 'Rs. 1,999',
-      period: 'event',
-      description: 'For conventions, college fests, and multi-hall events.',
-      highlights: [
-        '✨ AI Selfie Scan (Coming Soon)',
-        'Multi-screen live projector sync',
-        'Automatic duplicate filtering',
-        'Google Drive cloud backup',
-      ],
-      href: '/signup?plan=100gb',
-      cta: 'Select 100GB',
-      isPopular: false,
-      ai: true,
-    },
-    {
-      id: '250gb',
-      tier: 'Royal Multi-Day',
-      capacity: 'Unlimited',
-      storage: '250 GB',
-      retention: '1 Year',
-      price: 'Rs. 4,999',
-      period: 'multi-day',
-      description: 'Full multi-day package (Haldi, Sangeet, Wedding, Reception).',
-      highlights: [
-        'Sub-event folders & separate QR stands',
-        '✨ Advanced AI Face Match + Auto-Highlights (Coming Soon)',
-        'White-label signage & custom domain',
-        'Dedicated setup concierge',
-      ],
-      href: '/signup?plan=250gb',
-      cta: 'Select Royal',
-      isPopular: false,
-      ai: true,
-    },
-  ]
+const STEPS = [
+  {
+    icon: QrCode,
+    title: 'Print the QR cards',
+    body: 'Create your event and download a print-ready QR card. Put one on every table, at the entrance, or on the back of the menu.',
+  },
+  {
+    icon: Camera,
+    title: 'Guests scan and shoot',
+    body: 'Their normal phone camera opens Ekthau in the browser. They start taking photos in seconds — no app, no login, no password.',
+  },
+  {
+    icon: Download,
+    title: 'You get everything',
+    body: 'Photos land in one gallery as they are taken. Show them on the venue screen, and download the full-resolution album whenever you like.',
+  },
+]
 
-  const realFaqs = [
-    {
-      q: 'Do guests need to install an app?',
-      a: 'No. Guests point their phone camera at the table QR code. The camera opens instantly in their native mobile browser (Safari/Chrome). No downloads, no passwords.',
-    },
-    {
-      q: 'What if the venue Wi-Fi or 4G drops?',
-      a: 'Photos save to the phone in 48ms. When reception drops, uploads queue locally and sync automatically as soon as connection returns.',
-    },
-    {
-      q: 'Does Ekthau compress photo quality?',
-      a: 'No. Original 10–25MB raw photos and 4K clips are preserved without social media compression. Download the full-resolution archive in 1-click ZIP.',
-    },
-    {
-      q: 'How does the Live Wall projector mode work?',
-      a: 'Open the Live Wall link on any laptop connected to a venue TV or projector. New approved guest photos cross-fade live on screen every 6 seconds.',
-    },
-  ]
+const COMPARISONS = [
+  {
+    icon: ImageOff,
+    problem: 'WhatsApp groups wreck the quality',
+    solution:
+      'Ekthau uploads the original file. A 24 MB photo arrives as a 24 MB photo, ready to print.',
+  },
+  {
+    icon: ShieldCheck,
+    problem: 'Shared drives need accounts and permissions',
+    solution:
+      'Guests never sign in. One scan puts them in your event, and only people with the code can get in.',
+  },
+  {
+    icon: WifiOff,
+    problem: 'Packed halls kill the signal mid-upload',
+    solution:
+      'Photos save to the phone first and finish uploading on their own once signal returns. Nothing is lost.',
+  },
+  {
+    icon: MonitorPlay,
+    problem: 'Nobody sees the photos until days later',
+    solution:
+      'Approved photos appear on the venue projector within seconds, so the party watches itself unfold.',
+  },
+]
 
+/**
+ * Product schema is generated from the same PLANS list the pricing table
+ * renders, so the marked-up offers can never contradict the visible prices.
+ */
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  '@id': absoluteUrl('/#software'),
+  name: site.name,
+  alternateName: site.nameLocal,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Web browser',
+  url: siteUrl,
+  description: site.description,
+  publisher: { '@id': absoluteUrl('/#organization') },
+  offers: PLANS.map((plan) => ({
+    '@type': 'Offer',
+    name: plan.name,
+    description: plan.summary,
+    price: plan.priceValue,
+    priceCurrency: 'NPR',
+    url: absoluteUrl(plan.id === 'free' ? '/signup' : `/signup?plan=${plan.id}`),
+    availability: 'https://schema.org/InStock',
+  })),
+}
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': absoluteUrl('/#faq'),
+  mainEntity: FAQS.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+}
+
+const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  '@id': absoluteUrl('/#how-it-works'),
+  name: 'How to collect photos from every guest at your event',
+  description:
+    'Set up a shared event gallery that guests contribute to by scanning a QR code, with no app to download.',
+  step: STEPS.map((step, index) => ({
+    '@type': 'HowToStep',
+    position: index + 1,
+    name: step.title,
+    text: step.body,
+    url: absoluteUrl('/#how-it-works'),
+  })),
+}
+
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#121316] text-[#F7F4EE] flex flex-col selection:bg-[#C84B28] selection:text-white font-sans antialiased">
-      
-      {/* ========================================================================= */}
-      {/* 1. HEADER                                                                 */}
-      {/* ========================================================================= */}
-      <header className="sticky top-0 z-50 border-b border-[#262A30] bg-[#121316]/95 backdrop-blur-md">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between gap-4">
-          
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-8 w-8 bg-[#C84B28] text-white flex items-center justify-center font-bold text-xs shadow-sm transition-transform group-hover:scale-95">
-              <Camera className="h-4 w-4" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-base tracking-tight text-[#F7F4EE]">
-                Ekthau
-              </span>
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-[#D49B35]/15 text-[#D49B35] border border-[#D49B35]/30">
-                एकठाउँ
-              </span>
-            </div>
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
 
-          {/* Nav */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-[#A0A5AC]">
-            <a href="#how-it-works" className="hover:text-[#F7F4EE] transition-colors">
-              How It Works
-            </a>
-            <a href="#live-wall" className="hover:text-[#F7F4EE] transition-colors">
-              Live Wall
-            </a>
-            <a href="#pricing" className="hover:text-[#F7F4EE] transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="hover:text-[#F7F4EE] transition-colors">
-              FAQ
-            </a>
-          </nav>
+      <main id="main" className="flex-1">
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        <section className="relative overflow-hidden border-b border-border bg-brand-sheen">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-40 right-0 hidden size-[36rem] rounded-full bg-brand-200/35 blur-3xl lg:block"
+          />
 
-          {/* Action Dock */}
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setJoinModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35]/50 text-xs font-mono text-[#E5DEC9] transition-colors"
-            >
-              <QrCode className="h-3.5 w-3.5 text-[#D49B35]" />
-              <span>Join Code</span>
-            </button>
+          <Container className="relative py-14 md:py-20 lg:py-24">
+            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+              <div className="lg:col-span-6 xl:col-span-6">
+                <Badge tone="brand" className="mb-5">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-brand-700"
+                  />
+                  No app download for guests
+                </Badge>
 
-            {session ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#C84B28] hover:bg-[#9E3416] text-white text-xs font-medium font-mono uppercase tracking-wider transition-colors"
-              >
-                Dashboard
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="hidden sm:inline-flex items-center px-2.5 py-1.5 text-xs text-[#A0A5AC] hover:text-[#F7F4EE] transition-colors"
-                >
-                  Host Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#C84B28] hover:bg-[#9E3416] text-white text-xs font-medium font-mono uppercase tracking-wider transition-colors"
-                >
-                  Host Event
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1">
-
-        {/* ========================================================================= */}
-        {/* 2. COMPACT ASYMMETRIC HERO                                                */}
-        {/* ========================================================================= */}
-        <section className="relative pt-10 pb-14 md:pt-16 md:pb-18 border-b border-[#262A30] overflow-hidden">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
-            
-            <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-              
-              {/* Left Column: Crisp Headline & Direct Action */}
-              <div className="lg:col-span-7 space-y-5 animate-aperture-unfurl">
-                
-                <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#D49B35]">
-                  <span className="h-1.5 w-1.5 bg-[#C84B28] rounded-full inline-block" />
-                  In-Browser Digital Disposable Camera
-                </div>
-
-                <h1 className="font-display text-3xl sm:text-4xl md:text-[2.65rem] font-bold tracking-tight text-[#F7F4EE] leading-[1.12] text-balance">
-                  Every table is a candid camera.{' '}
-                  <span className="text-[#D49B35] font-normal">
-                    Zero apps to download.
-                  </span>
+                <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-[3.25rem]">
+                  Every guest photo from your event,{' '}
+                  <span className="text-gradient-brand">in one shared album</span>
                 </h1>
 
-                <p className="text-sm sm:text-base text-[#A0A5AC] max-w-xl leading-relaxed">
-                  Place QR cards on dinner tables. Guests scan with their regular phone camera, snap raw candid moments, and watch memories stream live onto venue screens.
+                <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-muted">
+                  Put a QR card on each table. Guests scan with the camera they
+                  already have, shoot away, and every full-resolution photo lands in
+                  your gallery — live, and yours to download.
                 </p>
 
-                {/* Direct Action Row */}
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <Link
-                    href="/signup"
-                    className="inline-flex items-center justify-center gap-2 h-11 px-6 bg-[#C84B28] hover:bg-[#9E3416] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-colors shadow-sm"
-                  >
-                    <Camera className="h-3.5 w-3.5" />
-                    Create Event Space
-                    <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
-                  </Link>
-
-                  {/* Inline Code Input */}
-                  <form
-                    onSubmit={handleDirectCodeSubmit}
-                    className="flex items-center border border-[#2E333A] bg-[#1A1C20] focus-within:border-[#D49B35] transition-colors"
-                  >
-                    <input
-                      type="text"
-                      placeholder="ENTER CODE..."
-                      value={directCode}
-                      onChange={(e) => setDirectCode(e.target.value.toUpperCase())}
-                      className="h-11 px-3.5 bg-transparent text-xs font-mono tracking-widest text-[#F7F4EE] placeholder:text-[#5C6B5E] focus:outline-hidden w-full sm:w-36"
-                    />
-                    <button
-                      type="submit"
-                      className="h-11 px-3 border-l border-[#2E333A] text-xs font-mono uppercase text-[#D49B35] hover:bg-[#22262B] transition-colors font-bold"
-                    >
-                      Go →
-                    </button>
-                  </form>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button asChild size="lg" className="sm:w-auto">
+                    <Link href="/signup">
+                      Create your event — free
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="secondary" size="lg">
+                    <Link href="/#how-it-works">See how it works</Link>
+                  </Button>
                 </div>
 
-                {/* Proof Metrics */}
-                <div className="pt-3 border-t border-[#262A30] grid grid-cols-3 gap-3 font-mono text-[11px] text-[#A0A5AC]">
-                  <div>
-                    <span className="text-[#F7F4EE] font-bold block text-xs">100% RAW</span>
-                    Full quality files
-                  </div>
-                  <div>
-                    <span className="text-[#F7F4EE] font-bold block text-xs">&lt; 48ms</span>
-                    Instant buffer
-                  </div>
-                  <div>
-                    <span className="text-[#F7F4EE] font-bold block text-xs">1 GB FREE</span>
-                    Included per event
-                  </div>
+                <div className="mt-8 border-t border-border pt-6">
+                  <JoinCodeForm />
                 </div>
+
+                <dl className="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-border pt-6">
+                  {[
+                    { value: '1 GB', label: 'Free with every account' },
+                    { value: 'Original', label: 'Quality, never compressed' },
+                    { value: 'Offline', label: 'Uploads that finish themselves' },
+                  ].map((stat) => (
+                    <div key={stat.label}>
+                      <dt className="sr-only">{stat.label}</dt>
+                      <dd>
+                        <span className="block font-display text-lg font-bold text-ink">
+                          {stat.value}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-snug text-ink-muted">
+                          {stat.label}
+                        </span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
 
-              {/* Right Column: Signature Artifact (Table Stand & Live Film Strip) */}
-              <div className="lg:col-span-5 relative">
-                <div className="bg-[#1A1C20] border border-[#2E333A] p-4 space-y-4 shadow-xl">
-                  
-                  {/* Table Stand Header */}
-                  <div className="flex items-center justify-between border-b border-[#2E333A] pb-3">
-                    <div>
-                      <span className="font-mono text-[10px] uppercase text-[#D49B35] block font-bold">
-                        Table Signage Pass
-                      </span>
-                      <h2 className="font-display font-semibold text-sm text-[#F7F4EE]">Table 08 • Banquet Hall</h2>
+              {/* Product visual: the table card guests actually see. */}
+              <div className="lg:col-span-6 xl:col-span-6">
+                <div className="mx-auto max-w-lg overflow-hidden rounded-2xl border border-brand-950/40 bg-ink-gradient p-4 shadow-xl sm:p-5 lg:max-w-none">
+                  <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-300">
+                        Table signage
+                      </p>
+                      <p className="truncate font-display text-sm font-semibold text-white">
+                        Table 08 · Banquet Hall
+                      </p>
                     </div>
-                    <div className="px-2 py-0.5 bg-[#D49B35]/15 border border-[#D49B35]/30 text-[#D49B35] font-mono text-[10px] font-bold flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 bg-[#D49B35] rounded-full animate-pulse" />
-                      LIVE
-                    </div>
+                    <Badge tone="onDark" className="shrink-0">
+                      <span
+                        aria-hidden="true"
+                        className="size-1.5 rounded-full bg-emerald-400"
+                      />
+                      Live
+                    </Badge>
                   </div>
 
-                  {/* QR Card & In-Browser View */}
-                  <div className="grid grid-cols-12 gap-3 items-center">
-                    <div className="col-span-5 relative aspect-square bg-white border border-[#2E333A]">
+                  <div className="mt-4 grid grid-cols-5 items-center gap-4">
+                    <div className="relative col-span-2 aspect-square overflow-hidden rounded-xl border border-white/10 bg-white">
                       <Image
                         src="/images/table-qr-stand.jpg"
-                        alt="Tabletop QR stand pass"
+                        alt="A printed Ekthau QR card standing on a decorated dinner table"
                         fill
+                        priority
+                        sizes="(max-width: 640px) 40vw, (max-width: 1024px) 180px, 200px"
                         className="object-cover"
                       />
                     </div>
-                    <div className="col-span-7 space-y-1.5 text-xs text-[#A0A5AC]">
-                      <p className="text-white font-medium text-xs leading-snug">
-                        Guests scan with their default phone camera to shoot instantly.
+                    <div className="col-span-3 space-y-2">
+                      <p className="text-sm font-medium leading-snug text-white">
+                        Guests scan with their normal camera app and start shooting.
                       </p>
-                      <p className="font-mono text-[10px] text-[#78877A]">
-                        • Safari / Chrome native<br />
-                        • Works on weak signals<br />
-                        • Real-time screen sync
-                      </p>
+                      <ul className="space-y-1 text-xs text-white/65">
+                        {[
+                          'Works in Safari and Chrome',
+                          'Keeps shooting on weak signal',
+                          'Photos appear on screen live',
+                        ].map((item) => (
+                          <li key={item} className="flex items-center gap-1.5">
+                            <Check
+                              className="size-3 shrink-0 text-brand-300"
+                              aria-hidden="true"
+                            />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
 
-                  {/* Film Contact Proof */}
-                  <div className="pt-2 border-t border-[#2E333A] space-y-2">
-                    <div className="flex items-center justify-between font-mono text-[9px] uppercase text-[#A0A5AC]">
-                      <span>Live Ingest Feed</span>
-                      <span className="text-[#C84B28] font-bold">● REC ACTIVE</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="relative aspect-[4/3] bg-black border border-[#2E333A] overflow-hidden">
-                        <Image
-                          src="/images/phone-camera-snap.jpg"
-                          alt="Guest snapping candid"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute bottom-0 inset-x-0 bg-black/80 px-1.5 py-0.5 font-mono text-[8px] text-[#A0A5AC] flex justify-between">
-                          <span>FRAME 18</span>
-                          <span className="text-white">TABLE 08</span>
-                        </div>
-                      </div>
-
-                      <div className="relative aspect-[4/3] bg-black border border-[#2E333A] overflow-hidden">
-                        <Image
-                          src="/images/live-wall.jpg"
-                          alt="Crowd celebration laughter"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute bottom-0 inset-x-0 bg-black/80 px-1.5 py-0.5 font-mono text-[8px] text-[#A0A5AC] flex justify-between">
-                          <span>FRAME 19</span>
-                          <span className="text-[#D49B35]">PROJECTED</span>
-                        </div>
-                      </div>
+                  <div className="mt-4 border-t border-white/10 pt-4">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                      Arriving now
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        {
+                          src: '/images/phone-camera-snap.jpg',
+                          alt: 'A guest holding up a phone to photograph friends at a party table',
+                          caption: 'Table 08',
+                        },
+                        {
+                          src: '/images/live-wall.jpg',
+                          alt: 'Guests laughing together during a celebration',
+                          caption: 'On the wall',
+                        },
+                      ].map((shot) => (
+                        <figure
+                          key={shot.src}
+                          className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/10 bg-black"
+                        >
+                          <Image
+                            src={shot.src}
+                            alt={shot.alt}
+                            fill
+                            sizes="(max-width: 640px) 45vw, 220px"
+                            className="object-cover"
+                          />
+                          <figcaption className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1 text-[10px] font-medium text-white/85">
+                            {shot.caption}
+                          </figcaption>
+                        </figure>
+                      ))}
                     </div>
                   </div>
-
                 </div>
               </div>
-
             </div>
-
-          </div>
+          </Container>
         </section>
 
-
-        {/* ========================================================================= */}
-        {/* 3. HOW IT WORKS (CLEAN 3-STEP BREAKDOWN)                                  */}
-        {/* ========================================================================= */}
-        <section id="how-it-works" className="py-14 md:py-18 border-b border-[#262A30]">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
-            
-            <div className="max-w-xl space-y-2">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#D49B35]">
-                How It Works
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F7F4EE]">
-                Zero app downloads. 3 simple steps.
+        {/* ── How it works ─────────────────────────────────────────────── */}
+        <section id="how-it-works" className="section-y border-b border-border bg-white">
+          <Container>
+            <div className="max-w-2xl">
+              <p className="eyebrow">How it works</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                Set up in three steps, before the first guest arrives
               </h2>
+              <p className="mt-4 text-base leading-relaxed text-ink-muted">
+                Creating an event takes under a minute. Everything after that happens
+                on its own.
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              
-              {/* Step 1 */}
-              <div className="border border-[#2E333A] bg-[#15171A] p-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-[#C84B28]">STEP 1</span>
-                  <QrCode className="h-4 w-4 text-[#D49B35]" />
-                </div>
-                <h3 className="font-display font-semibold text-base text-[#F7F4EE]">
-                  Print Table QR Cards
-                </h3>
-                <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
-                  Download high-resolution printable table cards with your couple monogram and place them alongside centerpieces.
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div className="border border-[#2E333A] bg-[#15171A] p-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-[#C84B28]">STEP 2</span>
-                  <Camera className="h-4 w-4 text-[#D49B35]" />
-                </div>
-                <h3 className="font-display font-semibold text-base text-[#F7F4EE]">
-                  Guests Scan & Shoot
-                </h3>
-                <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
-                  Guests point their regular camera at the QR pass. Snapping is instant. If reception drops, photos buffer safely offline.
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div className="border border-[#2E333A] bg-[#15171A] p-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-[#C84B28]">STEP 3</span>
-                  <Tv className="h-4 w-4 text-[#D49B35]" />
-                </div>
-                <h3 className="font-display font-semibold text-base text-[#F7F4EE]">
-                  Live Wall & 1-Click ZIP
-                </h3>
-                <p className="text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
-                  Connect any laptop to the venue screen for a live slideshow. Download all 100% full-resolution raw photos in 1-click.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
+            <ol role="list" className="mt-10 grid gap-5 md:grid-cols-3 lg:mt-12">
+              {STEPS.map((step, index) => (
+                <li
+                  key={step.title}
+                  className="group rounded-2xl border border-border bg-white p-6 shadow-card transition-shadow hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                      <step.icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="font-display text-3xl font-bold text-brand-100"
+                    >
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink">
+                    <span className="sr-only">Step {index + 1}: </span>
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                    {step.body}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </Container>
         </section>
 
-
-        {/* ========================================================================= */}
-        {/* 4. LIVE SCREEN & AI DISCOVERY SHOWCASE                                    */}
-        {/* ========================================================================= */}
-        <section id="live-wall" className="py-14 md:py-18 bg-[#0C0D0F] border-b border-[#262A30]">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
-            
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div className="space-y-2">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#D49B35]">
-                  Venue Projection Mode
-                </span>
-                <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F7F4EE]">
-                  Stream guest candids live on venue screens.
-                </h2>
-              </div>
-
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-1.5 px-4 py-2 border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35] text-xs font-mono uppercase text-[#F7F4EE] transition-colors self-start"
-              >
-                <Maximize2 className="h-3.5 w-3.5 text-[#D49B35]" />
-                Launch Live Wall
-              </Link>
+        {/* ── Why it beats the alternatives ────────────────────────────── */}
+        <section className="section-y border-b border-border bg-muted/40">
+          <Container>
+            <div className="max-w-2xl">
+              <p className="eyebrow">Why hosts switch</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                The photos you actually want are on other people&apos;s phones
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-ink-muted">
+                Your photographer captures the ceremony. Table six captures the
+                moment your uncle finally danced. Ekthau collects both without asking
+                anyone to install anything.
+              </p>
             </div>
 
-            {/* Projection Visual */}
-            <div className="relative aspect-[16/8] sm:aspect-[21/8] bg-black border border-[#2E333A] overflow-hidden">
+            <ul role="list" className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-12">
+              {COMPARISONS.map((item) => (
+                <li
+                  key={item.problem}
+                  className="flex gap-4 rounded-2xl border border-border bg-white p-6 shadow-card"
+                >
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                    <item.icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3 className="text-base font-semibold text-ink">
+                      {item.problem}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                      {item.solution}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Container>
+        </section>
+
+        {/* ── Live wall ────────────────────────────────────────────────── */}
+        <section
+          id="live-wall"
+          className="section-y border-b border-brand-950 bg-ink-gradient text-white"
+        >
+          <Container>
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+                  Live photo wall
+                </p>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  Put the celebration on the venue screen as it happens
+                </h2>
+                <p className="mt-4 max-w-prose text-base leading-relaxed text-white/70">
+                  Plug any laptop into the projector or TV and open your live wall
+                  link. Approved photos fade in seconds after they are taken.
+                </p>
+              </div>
+              <Button asChild variant="onDark" size="lg" className="shrink-0">
+                <Link href="/signup">
+                  Set up a live wall
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+
+            <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-xl sm:aspect-[21/9]">
               <Image
                 src="/images/projector-live-wall.jpg"
-                alt="Venue live projector slideshow"
+                alt="Guest photos projected onto a large screen above a celebration dance floor"
                 fill
+                loading="lazy"
+                sizes="(max-width: 1024px) 100vw, 1100px"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25"
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 p-4 text-xs text-white/80">
+                <span>Photos rotate automatically every few seconds</span>
+                <span className="hidden sm:inline">Works over HDMI on any laptop</span>
+              </figcaption>
+            </figure>
 
-              <div className="absolute top-3 left-3 right-3 flex items-center justify-between font-mono text-[10px]">
-                <span className="px-2 py-1 bg-black/80 border border-[#2E333A] text-white">
-                  ● LIVE STREAM • 6S ROTATION
-                </span>
-                <span className="px-2 py-1 bg-[#D49B35]/20 border border-[#D49B35]/40 text-[#D49B35] font-bold">
-                  MODERATION ACTIVE
-                </span>
-              </div>
-
-              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs font-mono text-[#E5DEC9]">
-                <span>TABLE 14 • 24.2MB RAW ORIGINAL</span>
-                <span className="text-[#A0A5AC] hidden sm:inline">Plug into HDMI / TV / LED Wall</span>
-              </div>
-            </div>
-
-            {/* AI Scan + Offline Dual Feature */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="border border-[#2E333A] bg-[#15171A] p-5 space-y-2">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#D49B35]">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  ✨ AI Selfie Face Scan (Coming Soon)
-                </div>
-                <p className="text-xs sm:text-sm text-[#A0A5AC]">
-                  Guests will be able to snap a 1-second selfie to find all the photos and videos they appear in across thousands of event uploads.
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <ShieldCheck className="size-4 text-brand-300" aria-hidden="true" />
+                  You approve what goes up
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/70">
+                  Switch moderation on and nothing reaches the screen or the shared
+                  gallery until you have seen it in your dashboard.
                 </p>
               </div>
-
-              <div className="border border-[#2E333A] bg-[#15171A] p-5 space-y-2">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#78877A]">
-                  <WifiOff className="h-3.5 w-3.5" />
-                  Crowded Hall Signal Resilience
-                </div>
-                <p className="text-xs sm:text-sm text-[#A0A5AC]">
-                  Photos buffer to device storage in 48ms. When mobile networks choke inside packed halls, uploads sync automatically when signal returns.
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <Sparkles className="size-4 text-brand-300" aria-hidden="true" />
+                  Find yourself with a selfie
+                  <Badge tone="onDark" className="ml-1">
+                    In development
+                  </Badge>
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/70">
+                  We are building a selfie search so guests can pull up every photo
+                  they appear in. It is not live yet — plans that mention it are
+                  labelled clearly.
                 </p>
               </div>
             </div>
-
-          </div>
+          </Container>
         </section>
 
+        <PricingSection />
+        <FaqSection />
 
-        {/* ========================================================================= */}
-        {/* 5. PRICING MATRIX                                                         */}
-        {/* ========================================================================= */}
-        <section id="pricing" className="py-14 md:py-18 border-b border-[#262A30]">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
-            
-            <div className="max-w-xl space-y-2">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#D49B35]">
-                Pricing & Capacity
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F7F4EE]">
-                Simple plans. Start with 1 GB free.
-              </h2>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {pricingLedger.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`border p-6 flex flex-col justify-between transition-colors relative ${
-                    plan.isPopular
-                      ? 'border-[#D49B35] bg-[#1A1C20]'
-                      : 'border-[#2E333A] bg-[#15171A]'
-                  }`}
-                >
-                  {plan.isPopular && (
-                    <div className="absolute -top-3 right-4 px-2.5 py-0.5 bg-[#D49B35] text-[#121316] font-mono text-[9px] font-bold uppercase tracking-wider">
-                      Most Popular
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-display font-bold text-lg text-[#F7F4EE]">{plan.tier}</h3>
-                        {plan.ai && (
-                          <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#D49B35]/15 border border-[#D49B35]/30 text-[#D49B35]">
-                            AI (COMING SOON)
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-mono text-xs text-[#D49B35] font-semibold mt-0.5">
-                        {plan.capacity} • {plan.storage}
-                      </p>
-                    </div>
-
-                    <div className="border-y border-[#2E333A] py-3">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-display font-bold text-2xl text-[#F7F4EE]">{plan.price}</span>
-                        <span className="font-mono text-xs text-[#A0A5AC]">/ {plan.period}</span>
-                      </div>
-                      <p className="font-mono text-[10px] text-[#78877A] mt-0.5">
-                        {plan.retention} retention
-                      </p>
-                    </div>
-
-                    <p className="text-xs text-[#A0A5AC]">
-                      {plan.description}
-                    </p>
-
-                    <ul className="space-y-2 pt-1 font-mono text-xs text-[#E5DEC9]">
-                      {plan.highlights.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-1.5 text-[11px]">
-                          <Check className="h-3 w-3 text-[#C84B28] shrink-0 mt-0.5" />
-                          <span className={item.includes('AI') ? 'text-[#D49B35] font-bold' : ''}>
-                            {item}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-6">
-                    <Link
-                      href={plan.href}
-                      className={`w-full h-10 flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-wider font-bold transition-all ${
-                        plan.isPopular
-                          ? 'bg-[#D49B35] hover:bg-[#A6741F] text-[#121316]'
-                          : 'border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35] text-[#F7F4EE]'
-                      }`}
-                    >
-                      {plan.cta}
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
-        </section>
-
-
-        {/* ========================================================================= */}
-        {/* 6. CONCISE FAQ                                                            */}
-        {/* ========================================================================= */}
-        <section id="faq" className="py-14 md:py-18 border-b border-[#262A30]">
-          <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
-            
-            <div className="text-center space-y-1">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#D49B35]">
-                FAQ
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F7F4EE]">
-                Frequently asked questions
-              </h2>
-            </div>
-
-            <div className="space-y-3">
-              {realFaqs.map((faq, index) => {
-                const isOpen = openFaq === index
-                return (
-                  <div
-                    key={index}
-                    className="border border-[#2E333A] bg-[#15171A] p-4.5 cursor-pointer transition-colors hover:border-[#D49B35]/40"
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <h4 className="font-display font-medium text-sm sm:text-base text-[#F7F4EE]">
-                        {faq.q}
-                      </h4>
-                      <span className="font-mono text-xs text-[#D49B35] px-1.5 py-0.5 bg-[#1A1C20] border border-[#2E333A]">
-                        {isOpen ? '−' : '+'}
-                      </span>
-                    </div>
-                    {isOpen && (
-                      <p className="mt-3 pt-3 border-t border-[#2E333A] text-xs sm:text-sm text-[#A0A5AC] leading-relaxed">
-                        {faq.a}
-                      </p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-          </div>
-        </section>
-
-
-        {/* ========================================================================= */}
-        {/* 7. BOTTOM CTA                                                             */}
-        {/* ========================================================================= */}
-        <section className="py-16 md:py-20 bg-[#0C0D0F] text-center">
-          <div className="w-full max-w-xl mx-auto px-4 space-y-6">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F7F4EE]">
-              Start capturing every angle of your celebration.
+        {/* ── Closing CTA ──────────────────────────────────────────────── */}
+        <section className="bg-ink-gradient py-16 text-white md:py-20">
+          <Container width="narrow" className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Your next celebration deserves every angle
             </h2>
-            <p className="text-xs sm:text-sm text-[#A0A5AC]">
-              Set up your event space in 30 seconds. Includes 1 GB free storage.
+            <p className="mx-auto mt-4 max-w-prose text-base leading-relaxed text-white/70">
+              Create your event, print the QR card, and let your guests do the rest.
+              The first gigabyte is free.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link
-                href="/signup"
-                className="w-full sm:w-auto h-11 px-7 bg-[#C84B28] hover:bg-[#9E3416] text-white font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center justify-center gap-2 shadow-sm transition-all"
-              >
-                <Camera className="h-3.5 w-3.5" />
-                Create Event Space
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-
-              <button
-                onClick={() => setJoinModalOpen(true)}
-                className="w-full sm:w-auto h-11 px-6 border border-[#2E333A] bg-[#1A1C20] hover:border-[#D49B35] text-[#E5DEC9] font-mono text-xs uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2"
-              >
-                <QrCode className="h-3.5 w-3.5 text-[#D49B35]" />
-                Join with Code
-              </button>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button asChild variant="onDark" size="lg">
+                <Link href="/signup">
+                  Create your event
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="onDarkGhost" size="lg">
+                <Link href="/join">
+                  <QrCode aria-hidden="true" />
+                  I&apos;m a guest
+                </Link>
+              </Button>
             </div>
-          </div>
+          </Container>
         </section>
-
       </main>
 
+      <SiteFooter />
 
-      {/* ========================================================================= */}
-      {/* 8. FOOTER                                                                 */}
-      {/* ========================================================================= */}
-      <footer className="border-t border-[#262A30] py-8 bg-[#121316] font-mono text-[11px] text-[#A0A5AC]">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          
-          <div className="flex items-center gap-2 text-[#F7F4EE]">
-            <div className="h-6 w-6 bg-[#C84B28] text-white flex items-center justify-center font-bold text-[10px]">
-              <Camera className="h-3 w-3" />
-            </div>
-            <span className="font-display font-semibold text-xs">Ekthau (एकठाउँ)</span>
-          </div>
-
-          <div className="flex items-center gap-5 uppercase text-[10px]">
-            <a href="#how-it-works" className="hover:text-[#D49B35] transition-colors">
-              How It Works
-            </a>
-            <a href="#pricing" className="hover:text-[#D49B35] transition-colors">
-              Pricing
-            </a>
-            <Link href="/join" className="hover:text-[#D49B35] transition-colors">
-              Join Event
-            </Link>
-            <Link href="/login" className="hover:text-[#D49B35] transition-colors">
-              Host Sign In
-            </Link>
-          </div>
-
-          <p className="text-[10px] text-[#78877A]">
-            © {new Date().getFullYear()} Ekthau
-          </p>
-
-        </div>
-      </footer>
-
-      {/* Global Join Event Modal */}
-      <JoinEventModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
-
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([productSchema, howToSchema, faqSchema]),
+        }}
+      />
     </div>
   )
 }

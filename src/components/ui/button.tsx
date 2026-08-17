@@ -1,30 +1,54 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  cn(
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl',
+    'text-sm font-semibold leading-none transition-[background-color,border-color,color,box-shadow,transform] duration-200',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+    'disabled:pointer-events-none disabled:opacity-55',
+    'active:scale-[0.98]',
+    '[&_svg]:pointer-events-none [&_svg]:shrink-0'
+  ),
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        primary:
+          'bg-brand-700 text-white shadow-sm hover:bg-brand-800 active:bg-brand-900',
+        ink: 'bg-ink text-white shadow-sm hover:bg-ink-soft',
+        secondary:
+          'border border-border bg-white text-ink shadow-xs hover:border-brand-200 hover:bg-brand-50',
+        subtle: 'bg-muted text-ink hover:bg-secondary',
+        ghost: 'text-ink-muted hover:bg-muted hover:text-ink',
+        destructive:
+          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        outlineDestructive:
+          'border border-destructive/30 bg-white text-destructive hover:bg-destructive/5',
+        link: 'text-brand-700 underline-offset-4 hover:underline',
+        onDark:
+          'bg-white text-ink shadow-sm hover:bg-brand-50',
+        onDarkGhost:
+          'border border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20',
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        // Every size clears 40px so nothing becomes a fiddly tap target on a
+        // phone; `md` and `lg` clear the 44px comfort guideline.
+        sm: 'h-10 px-3.5 text-[13px] [&_svg]:size-4',
+        md: 'h-11 px-5 [&_svg]:size-4',
+        lg: 'h-12 px-6 text-base [&_svg]:size-5',
+        icon: 'h-10 w-10 [&_svg]:size-4',
+        iconLg: 'h-11 w-11 [&_svg]:size-5',
+      },
+      block: {
+        true: 'w-full',
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: 'primary',
+      size: 'md',
     },
   }
 )
@@ -33,20 +57,62 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  /** Shows a spinner and blocks repeat submits. Ignored when `asChild`. */
+  loading?: boolean
+  loadingText?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  (
+    {
+      className,
+      variant,
+      size,
+      block,
+      asChild = false,
+      loading = false,
+      loadingText,
+      disabled,
+      children,
+      type,
+      ...props
+    },
+    ref
+  ) => {
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(buttonVariants({ variant, size, block, className }))}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Slot>
+      )
+    }
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <button
+        // Defaulting to "button" stops buttons inside forms submitting by accident.
+        type={type ?? 'button'}
+        className={cn(buttonVariants({ variant, size, block, className }))}
         ref={ref}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
-      />
+      >
+        {loading ? (
+          <>
+            <Loader2 className="animate-spin" aria-hidden="true" />
+            {loadingText ?? children}
+          </>
+        ) : (
+          children
+        )}
+      </button>
     )
   }
 )
-Button.displayName = "Button"
+Button.displayName = 'Button'
 
 export { Button, buttonVariants }
