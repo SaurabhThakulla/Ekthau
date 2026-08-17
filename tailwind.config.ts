@@ -160,16 +160,34 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
-        /** Continuous feature strip. Travels exactly half the track, which holds
-         *  a duplicated list, so the loop is seamless. */
         marquee: {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-50%)" },
         },
-        /** Gentle bob for the callout badges pinned around the hero card. */
         float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-7px)" },
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        "float-reverse": {
+          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+          "50%": { transform: "translateY(8px) rotate(-1deg)" },
+        },
+        blob: {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(25px, -30px) scale(1.08)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.94)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.03)" },
+        },
+        "gradient-x": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        "radar-ping": {
+          "75%, 100%": { transform: "scale(2.2)", opacity: "0" },
         },
       },
       animation: {
@@ -180,6 +198,12 @@ const config: Config = {
         marquee: "marquee 38s linear infinite",
         float: "float 5s ease-in-out infinite",
         "float-slow": "float 7s ease-in-out infinite",
+        "float-reverse": "float-reverse 6s ease-in-out infinite",
+        blob: "blob 10s infinite cubic-bezier(0.4, 0, 0.2, 1)",
+        "blob-slow": "blob 16s infinite cubic-bezier(0.4, 0, 0.2, 1)",
+        "pulse-glow": "pulse-glow 4s ease-in-out infinite",
+        "gradient-x": "gradient-x 8s ease infinite",
+        "radar-ping": "radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite",
       },
     },
   },

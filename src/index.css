@@ -151,6 +151,12 @@
     background-image: linear-gradient(105deg, #2b1470 0%, #4a24b8 55%, #6d28d9 100%);
   }
 
+  .bg-cta-animated {
+    background: linear-gradient(135deg, #1b1145 0%, #3a1c92 35%, #5b2fd9 70%, #7c3aed 100%);
+    background-size: 200% 200%;
+    animation: gradient-x 12s ease infinite;
+  }
+
   /* Masks the marquee track so pills fade out instead of clipping hard. */
   .marquee-mask {
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
@@ -180,6 +186,21 @@
     animation: shimmer 1.6s infinite;
   }
 
+  .glow-blob {
+    filter: blur(48px);
+    opacity: 0.45;
+    mix-blend-mode: multiply;
+  }
+
+  /* Smooth details open/close transition */
+  details > summary {
+    user-select: none;
+  }
+
+  details[open] summary ~ * {
+    animation: fade-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   /* Respects iOS safe areas on the full-bleed camera screen. */
   .pb-safe {
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
@@ -187,6 +208,17 @@
 
   .pt-safe {
     padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+}
+
+@keyframes fade-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
