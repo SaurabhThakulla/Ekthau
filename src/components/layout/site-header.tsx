@@ -50,11 +50,28 @@ export function SiteHeader() {
     }
   }, [menuOpen])
 
+  const [isMenuRendered, setIsMenuRendered] = useState(false)
+  const [isMenuClosing, setIsMenuClosing] = useState(false)
+
+  useEffect(() => {
+    if (menuOpen) {
+      setIsMenuRendered(true)
+      setIsMenuClosing(false)
+    } else if (isMenuRendered) {
+      setIsMenuClosing(true)
+      const timer = window.setTimeout(() => {
+        setIsMenuRendered(false)
+        setIsMenuClosing(false)
+      }, 180)
+      return () => window.clearTimeout(timer)
+    }
+  }, [menuOpen, isMenuRendered])
+
   return (
     <>
-      <header className="sticky top-0 z-50 pt-3 sm:pt-4">
+      <header className="sticky top-0 z-50 pt-3 sm:pt-4 transition-all duration-300">
         <Container>
-          <div className="relative rounded-2xl border border-white/70 bg-white/80 shadow-pill backdrop-blur-xl">
+          <div className="relative rounded-2xl border border-white/70 bg-white/80 shadow-pill backdrop-blur-xl transition-all duration-300">
             <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
               <Logo />
 
@@ -115,7 +132,7 @@ export function SiteHeader() {
                 <button
                   ref={toggleRef}
                   type="button"
-                  onClick={() => setMenuOpen((open) => !open)}
+                  onClick={() => setMenuOpen(!menuOpen)}
                   aria-expanded={menuOpen}
                   aria-controls="mobile-nav"
                   className="flex size-10 items-center justify-center rounded-full border border-border text-ink transition-colors hover:bg-brand-50 md:hidden"
@@ -130,11 +147,13 @@ export function SiteHeader() {
               </div>
             </div>
 
-            {menuOpen && (
+            {isMenuRendered && (
               <div
                 ref={panelRef}
                 id="mobile-nav"
-                className="animate-fade-in border-t border-border px-3 py-2 md:hidden"
+                className={`border-t border-border px-3 py-2 md:hidden ${
+                  isMenuClosing ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'
+                }`}
               >
                 <nav aria-label="Mobile">
                   <ul className="flex flex-col">

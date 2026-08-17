@@ -3,23 +3,25 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
-interface ScrollRevealProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ScrollRevealProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
-  /** Delay in milliseconds before animation starts */
+  /** Delay in milliseconds before animation starts on entrance */
   delay?: number
   /** Direction from which the element enters */
   direction?: 'up' | 'down' | 'left' | 'right' | 'none'
   /** Pixel offset to slide from */
   distance?: number
-  /** Duration of transition in seconds */
+  /** Duration of entrance transition in seconds */
   duration?: number
-  /** If true, triggers only once. Defaults to true */
+  /** Duration of exit transition in seconds */
+  exitDuration?: number
+  /** If true, triggers only once. Defaults to false for full fade in and out transitions */
   once?: boolean
   /** Viewport intersection threshold (0.0 to 1.0) */
   threshold?: number
   /** Extra class names */
   className?: string
-  /** If true, wraps children in staggered reveals */
+  /** If true, wraps direct children in staggered reveals */
   stagger?: boolean
   /** Stagger step in ms between child elements */
   staggerStep?: number
@@ -29,13 +31,14 @@ export function ScrollReveal({
   children,
   delay = 0,
   direction = 'up',
-  distance = 24,
-  duration = 0.7,
-  once = true,
-  threshold = 0.12,
+  distance = 20,
+  duration = 0.6,
+  exitDuration = 0.35,
+  once = false,
+  threshold = 0.1,
   className,
   stagger = false,
-  staggerStep = 100,
+  staggerStep = 80,
   style,
   ...props
 }: ScrollRevealProps) {
@@ -46,7 +49,7 @@ export function ScrollReveal({
     const element = ref.current
     if (!element) return
 
-    // Immediately show if user prefers reduced motion
+    // Immediately show without transitions if user prefers reduced motion
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setIsVisible(true)
       return
@@ -65,7 +68,7 @@ export function ScrollReveal({
       },
       {
         threshold,
-        rootMargin: '0px 0px -40px 0px',
+        rootMargin: '0px 0px -20px 0px',
       }
     )
 
@@ -73,8 +76,8 @@ export function ScrollReveal({
     return () => observer.disconnect()
   }, [once, threshold])
 
-  const getTransform = () => {
-    if (isVisible) return 'none'
+  const getTransform = (visible: boolean) => {
+    if (visible) return 'none'
     switch (direction) {
       case 'up':
         return `translateY(${distance}px)`
@@ -91,22 +94,19 @@ export function ScrollReveal({
   }
 
   if (stagger && React.isValidElement(children)) {
-    // If stagger is requested on children container
     return (
       <div
         ref={ref}
         className={cn('transition-all', className)}
-        style={{
-          ...style,
-        }}
+        style={{ ...style }}
         {...props}
       >
         {React.Children.map(children, (child, index) => {
           if (!React.isValidElement(child)) return child
-          const childDelay = delay + index * staggerStep
+          const childDelay = isVisible ? delay + index * staggerStep : 0
           return (
             <div
-              className="transition-all"
+              className="transition-all will-change-transform"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible
@@ -116,9 +116,11 @@ export function ScrollReveal({
                     : direction === 'down'
                       ? `translateY(-${distance}px)`
                       : 'none',
-                transitionDuration: `${duration}s`,
+                transitionDuration: isVisible ? `${duration}s` : `${exitDuration}s`,
                 transitionDelay: `${childDelay}ms`,
-                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                transitionTimingFunction: isVisible
+                  ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+                  : 'cubic-bezier(0.4, 0, 1, 1)',
               }}
             >
               {child}
@@ -132,16 +134,15 @@ export function ScrollReveal({
   return (
     <div
       ref={ref}
-      className={cn(
-        'transition-all will-change-transform',
-        className
-      )}
+      className={cn('transition-all will-change-transform', className)}
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: getTransform(),
-        transitionDuration: `${duration}s`,
-        transitionDelay: `${delay}ms`,
-        transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: getTransform(isVisible),
+        transitionDuration: isVisible ? `${duration}s` : `${exitDuration}s`,
+        transitionDelay: isVisible ? `${delay}ms` : '0ms',
+        transitionTimingFunction: isVisible
+          ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+          : 'cubic-bezier(0.4, 0, 1, 1)',
         ...style,
       }}
       {...props}

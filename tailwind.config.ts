@@ -149,13 +149,25 @@ const config: Config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        "fade-out": {
+          from: { opacity: "1" },
+          to: { opacity: "0" },
+        },
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.97)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "scale-out": {
+          from: { opacity: "1", transform: "scale(1)" },
+          to: { opacity: "0", transform: "scale(0.97)" },
+        },
         "slide-up": {
           from: { transform: "translateY(100%)" },
           to: { transform: "translateY(0)" },
+        },
+        "slide-down": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(100%)" },
         },
         shimmer: {
           "100%": { transform: "translateX(100%)" },
@@ -193,8 +205,11 @@ const config: Config = {
       animation: {
         "fade-up": "fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
         "fade-in": "fade-in 0.3s ease-out both",
+        "fade-out": "fade-out 0.2s ease-in both",
         "scale-in": "scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-out": "scale-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) both",
         "slide-up": "slide-up 0.24s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-down": "slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1) both",
         marquee: "marquee 38s linear infinite",
         float: "float 5s ease-in-out infinite",
         "float-slow": "float 7s ease-in-out infinite",

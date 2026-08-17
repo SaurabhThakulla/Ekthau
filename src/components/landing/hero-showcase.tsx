@@ -38,12 +38,12 @@ export function HeroShowcase() {
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const cardRef = useRef<HTMLDivElement>(null)
 
-  // Subtle real-time photo ticker simulation
+  // Real-time photo ticker with crossfade
   useEffect(() => {
     const timer = setInterval(() => {
-      setPhotoIndex((prev) => (prev + 1) % (ARRIVING_PHOTOS.length - 1))
+      setPhotoIndex((prev) => (prev + 1) % ARRIVING_PHOTOS.length)
       setPhotoCount((prev) => prev + 1)
-    }, 4500)
+    }, 4000)
 
     return () => clearInterval(timer)
   }, [])
@@ -66,10 +66,9 @@ export function HeroShowcase() {
     setTilt({ x: 0, y: 0 })
   }
 
-  const currentPair = [
-    ARRIVING_PHOTOS[photoIndex],
-    ARRIVING_PHOTOS[(photoIndex + 1) % ARRIVING_PHOTOS.length],
-  ]
+  // Two visible cards with staggered indices for variety
+  const slot1Index = photoIndex
+  const slot2Index = (photoIndex + 1) % ARRIVING_PHOTOS.length
 
   return (
     <div
@@ -81,7 +80,7 @@ export function HeroShowcase() {
       {/* Dynamic ambient glowing mesh */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-10 animate-blob rounded-[3rem] bg-gradient-to-br from-brand-300/40 via-violet-400/25 to-pink-300/20 blur-3xl"
+        className="pointer-events-none absolute -inset-10 animate-blob rounded-[3rem] bg-gradient-to-br from-brand-300/40 via-violet-400/25 to-pink-300/20 blur-3xl transition-opacity duration-700"
       />
       <div
         aria-hidden="true"
@@ -120,11 +119,11 @@ export function HeroShowcase() {
           </span>
         </div>
 
-        {/* Headline metric + QR, mirroring the host dashboard */}
+        {/* Headline metric + QR */}
         <div className="relative mt-5 overflow-hidden rounded-2xl bg-cta-gradient p-4 text-white shadow-cta transition-transform duration-300 group-hover:scale-[1.01]">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-white/10 blur-xl"
+            className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-white/10 blur-xl animate-pulse-glow"
           />
           <div className="relative flex items-center gap-4">
             <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-white p-1 shadow-sm transition-transform duration-300 group-hover:rotate-1">
@@ -138,7 +137,7 @@ export function HeroShowcase() {
               />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-white/75 font-medium">Photos collected</p>
+              <p className="text-xs font-medium text-white/75">Photos collected</p>
               <p className="font-display text-3xl font-bold leading-tight tracking-tight">
                 {photoCount.toLocaleString()}
               </p>
@@ -170,7 +169,7 @@ export function HeroShowcase() {
           ))}
         </dl>
 
-        {/* Recent arrivals with live crossfade transitions */}
+        {/* Recent arrivals with smooth crossfade transitions */}
         <div className="mt-4">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
@@ -183,24 +182,53 @@ export function HeroShowcase() {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            {currentPair.map((shot, idx) => (
-              <figure
-                key={`${shot.src}-${idx}`}
-                className="group/photo relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted transition-all duration-500 hover:border-brand-300 hover:shadow-sm"
-              >
-                <Image
-                  src={shot.src}
-                  alt={shot.alt}
-                  fill
-                  sizes="(max-width: 640px) 42vw, 200px"
-                  className="object-cover transition-transform duration-700 group-hover/photo:scale-105"
-                />
-                <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-ink/90 via-ink/60 to-transparent p-2 text-[10px] font-medium text-white backdrop-blur-[1px]">
-                  <span>{shot.caption}</span>
-                  <span className="text-[9px] text-white/75">{shot.time}</span>
-                </figcaption>
-              </figure>
-            ))}
+            {/* Slot 1 Crossfader */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted">
+              {ARRIVING_PHOTOS.map((shot, idx) => (
+                <figure
+                  key={shot.src}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                    idx === slot1Index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
+                    fill
+                    sizes="(max-width: 640px) 42vw, 200px"
+                    className="object-cover"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-ink/90 via-ink/60 to-transparent p-2 text-[10px] font-medium text-white backdrop-blur-[1px]">
+                    <span>{shot.caption}</span>
+                    <span className="text-[9px] text-white/75">{shot.time}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+
+            {/* Slot 2 Crossfader */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted">
+              {ARRIVING_PHOTOS.map((shot, idx) => (
+                <figure
+                  key={shot.src}
+                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                    idx === slot2Index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
+                    fill
+                    sizes="(max-width: 640px) 42vw, 200px"
+                    className="object-cover"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-ink/90 via-ink/60 to-transparent p-2 text-[10px] font-medium text-white backdrop-blur-[1px]">
+                    <span>{shot.caption}</span>
+                    <span className="text-[9px] text-white/75">{shot.time}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         </div>
       </div>

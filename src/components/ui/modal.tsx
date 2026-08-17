@@ -142,12 +142,30 @@ export function Modal({
     return () => document.removeEventListener('keydown', onKeyDown, true)
   }, [open, onClose])
 
-  if (!mounted || !open) return null
+  const [isOpenRendered, setIsOpenRendered] = React.useState(open)
+  const [isClosing, setIsClosing] = React.useState(false)
+
+  React.useEffect(() => {
+    if (open) {
+      setIsOpenRendered(true)
+      setIsClosing(false)
+    } else if (isOpenRendered) {
+      setIsClosing(true)
+      const timer = window.setTimeout(() => {
+        setIsOpenRendered(false)
+        setIsClosing(false)
+      }, 180)
+      return () => window.clearTimeout(timer)
+    }
+  }, [open, isOpenRendered])
+
+  if (!mounted || !isOpenRendered) return null
 
   return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-[100] flex animate-fade-in bg-ink/60 p-4 backdrop-blur-sm',
+        'fixed inset-0 z-[100] flex bg-ink/60 p-4 backdrop-blur-sm',
+        isClosing ? 'animate-fade-out pointer-events-none' : 'animate-fade-in',
         variant === 'sheet' ? 'items-end justify-center sm:items-center' : 'items-center justify-center'
       )}
       onMouseDown={(event) => {
@@ -164,9 +182,13 @@ export function Modal({
         tabIndex={-1}
         className={cn(
           'flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden bg-card text-card-foreground shadow-xl outline-none',
-          variant === 'sheet'
-            ? 'animate-slide-up rounded-t-2xl sm:max-w-md sm:animate-scale-in sm:rounded-2xl'
-            : 'max-w-md animate-scale-in rounded-2xl',
+          isClosing
+            ? variant === 'sheet'
+              ? 'animate-slide-down rounded-t-2xl sm:max-w-md sm:animate-scale-out sm:rounded-2xl'
+              : 'max-w-md animate-scale-out rounded-2xl'
+            : variant === 'sheet'
+              ? 'animate-slide-up rounded-t-2xl sm:max-w-md sm:animate-scale-in sm:rounded-2xl'
+              : 'max-w-md animate-scale-in rounded-2xl',
           className
         )}
       >
